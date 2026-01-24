@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Utopia Parser v1.4.3</title>
+<style>
+    body {font-family: Arial; background:#0d0d0d; color:#e0e0e0; padding:20px; max-width:1000px; margin:auto;}
+    h1 {text-align:center; color:#4fc3f7;}
+    textarea {width:100%; height:450px; background:#1e1e1e; color:#fff; border:1px solid #444; padding:12px; font-family:consolas; font-size:14px; box-sizing:border-box;}
+    button {width:100%; padding:15px; background:#4fc3f7; color:#000; font-weight:bold; font-size:18px; border:none; border-radius:6px; cursor:pointer; margin:15px 0;}
+    button:hover {background:#81d4fa;}
+    #output {background:#000; padding:20px; border:1px solid #444; font-family:consolas; line-height:1.6; white-space:pre-wrap; word-wrap:break-word;}
+    .copy {float:right; background:#333; padding:8px 15px; border-radius:4px; cursor:pointer; margin-top:10px;}
+    .bold {font-weight:bold;}
+    .underline {text-decoration:underline;}
+    .title {font-size:1.5em; font-weight:bold;}
+    .details {display:none; margin:10px 0 15px 20px; padding:10px; border-left:3px solid #4fc3f7; background:#111; border-radius:4px;}
+    .prov-line {color:#b0e0ff; display:block; margin:2px 0;}
+    .expand-link {color:#60a5fa; cursor:pointer; text-decoration:underline;}
+	
+	/* LIGHT MODE OVERRIDES — copied from Planner */
+body.light-mode {
+    background: #f5f5f5;
+    color: #1a1a1a !important;
+}
+
+body.light-mode h1 { color: #1976d2 !important; }
+
+body.light-mode button {
+    background: #1976d2 !important;
+    color: #ffffff !important;
+}
+body.light-mode button:hover {
+    background: #1565c0 !important;
+}
+
+/* Make output and details readable in light mode */
+body.light-mode #output {
+    background: #ffffff !important;
+    border-color: #ccc !important;
+    color: #000 !important;
+}
+body.light-mode .details {
+    background: #f0f0f0 !important;
+    border-left-color: #1976d2 !important;
+}
+body.light-mode .prov-line { color: #0056b3 !important; }
+body.light-mode .expand-link { color: #1976d2 !important; }
+body.light-mode .copy { background: #e0e0e0 !important; color: #000 !important; }
+
+/* Textarea & input adjustments */
+body.light-mode textarea,
+body.light-mode input,
+body.light-mode select {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #999 !important;
+}
+
+/* Smooth transitions for all elements */
+body, body * {
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+	
+</style>
+</head>
+<body>
+<!-- FIXED LEFT NAVIGATION BUTTONS -->
+<div style="position:fixed; left:0; top:16px; z-index:9999; display:flex; flex-direction:column; gap:3px; padding:10px;">
+    <!-- Planner -->
+    <button onclick="goToPage('Planner v1.3.3.html')" style="
+        width:140px;
+		margin: 0;
+        padding:6px 16px;
+        background:#1976d2;
+        color:#ffffff;
+        text-align:left;
+        font-size:16px;
+        font-weight:bold;
+        border:2px solid #FFD700;
+        border-radius:1;
+        cursor:pointer;
+        box-shadow:4px 0 12px rgba(0,0,0,0.6);
+        transition:background 0.2s;">
+        Planner
+    </button>
+
+    <!-- Sciences -->
+    <button onclick="goToPage('Sciences v1.0.4.html')" style="
+        width:140px;
+		margin: 0;
+        padding:6px 16px;
+        background:#1976d2;
+        color:#ffffff;
+        text-align:left;
+        font-size:16px;
+        font-weight:bold;
+        border:2px solid #FFD700;
+        border-radius:1;
+        cursor:pointer;
+        box-shadow:4px 0 12px rgba(0,0,0,0.6);
+        transition:background 0.2s;">
+        Sciences
+    </button>
+
+    <!-- Parser (highlighted as current page) -->
+    <button onclick="goToPage('Parser v1.4.3.html')" style="
+        width:140px;
+		margin: 0;
+        padding:6px 16px;
+        background:#1976d2;           /* blue to indicate active page */
+        color:#ffffff;
+        text-align:left;
+        font-size:16px;
+        font-weight:bold;
+        border:2px solid #FFD700;
+        border-radius:;
+        cursor:pointer;
+        box-shadow:4px 0 12px rgba(0,0,0,0.6);
+        transition:background 0.2s;">
+        Parser
+    </button>
+</div>
+
+<!-- VERTICAL SEPARATOR LINE -->
+<div style="position:fixed; left:160px; top:0; bottom:0; width:2px; background:#444; z-index:9998; box-shadow:0 0 8px rgba(0,0,0,0.6);">
+</div>
+
+<div style="position: fixed; left: 0; bottom: 16px; z-index: 9999; padding: 10px;">
+    <!-- LIGHT/DARK MODE TOGGLE -->
+    <button id="themeToggle" style="
+        width:140px;
+        padding:6px 16px;
+        background:#4fc3f7;
+        color:#000;
+        text-align:left;
+        font-size:14px;
+        font-weight:bold;
+        border:2px solid #FFD700;
+        border-radius:1;
+        cursor:pointer;
+        box-shadow:4px 0 12px rgba(0,0,0,0.6);
+        transition:background 0.2s;">
+        🌙 Dark Mode
+    </button>
+</div>
+
+<h1>Utopia T/M War Parser v2.0 - FINAL & PERFECT</h1>
+<p style="text-align:center;">Paste your full province news log → Click Generate</p>
+<textarea id="input" placeholder="Paste your entire province log here..."></textarea>
+<button onclick="parseLog()">GENERATE WAR SUMMARY</button>
+<div id="output">Summary will appear here...</div>
+<div class="copy" onclick="copyOutput()">Copy Summary</div>
+
+<script>
+// BEST OF BOTH WORLDS: v1.3.7's rock-solid province extractor
+function getTargetProvince(line) {
+    let match;
+
+    // Existing patterns
+    match = line.match(/lands of ([^()]+?)\s*\(/i) ||
+            line.match(/skies of ([^()]+?)\s*\(/i) ||
+            line.match(/guilds of ([^()]+?)\s*\(/i) ||
+            line.match(/over ([^()]+?)\s*\(/i) ||
+            line.match(/of them[.,]?\s+([^()]+?)\s*\(/i) ||
+            line.match(/to and from ([^()]+?)\s*\(/i);
+
+    if (match) {
+        let prov = match[1].trim();
+        prov = prov.replace(/\b(the|and|but|with|from|for|to|in|on|at|of|is|was|were|has|have)\b/gi, '').trim();
+        if (prov.length > 2) {
+            const kingdom = line.match(/\(\d+:\d+\)/)[0];
+            return prov + " " + kingdom;
+        }
+    }
+
+    // Ultimate fallback — grab last word group before kingdom
+    const kingdomMatch = line.match(/\(\d+:\d+\)/);
+    if (!kingdomMatch) return "Unknown";
+    const before = line.substring(0, kingdomMatch.index).trim();
+    const fallback = before.match(/([A-Za-z][\w\s'&.-]{2,})\s*$/);
+    return fallback ? fallback[1].trim() + " " + kingdomMatch[0] : "Unknown";
+}
+
+const c = {fireball:0,fbP:0,nightmare:0,nmM:0,tornado:0,torA:0,landlust:0,llAcres:0,kidnap:0,kdP:0,nightstrike:0,nsT:0,arson:0,arsA:0,riots:0,riotDays:0,abolish:0,abolishPct:0,pitfalls:0,pitDays:0,exposeThieves:0,exposeDays:0,explosions:0,explosionDays:0,vaultRob:0,goldStolen:0,granRob:0,foodStolen:0,towerRob:0,runesStolen:0,spellAttempts:0,spellSuccess:0,thiefAttempts:0,thiefSuccess:0,aidOutG:0,aidOutB:0,aidOutR:0,aidOutS:0,aidInG:0,aidInB:0,aidInR:0,aidInS:0,dragG:0,dragB:0,dragT:0,dragDmg:0};
+
+const hits = {fireball:[],nightmare:[],tornado:[],landlust:[],kidnap:[],nightstrike:[],arson:[],abolish:[],pitfalls:[],exposeThieves:[],explosions:[],riots:[],vault:[],granary:[],tower:[]};
+
+const perTarget = {fireball:new Map(),nightmare:new Map(),tornado:new Map(),landlust:new Map(),abolish:new Map(),pitfalls:new Map(),exposeThieves:new Map(),explosions:new Map(),kidnap:new Map(),nightstrike:new Map(),arson:new Map(),riots:new Map(),vault:new Map(),granary:new Map(),tower:new Map()};
+
+function parseLog() {
+    const text = document.getElementById('input').value.trim();
+    if (!text) return alert("Paste your log!");
+
+    // Reset
+    Object.keys(c).forEach(k => c[k] = 0);
+    Object.keys(hits).forEach(k => hits[k] = []);
+    Object.keys(perTarget).forEach(k => perTarget[k].clear());
+
+    text.split('\n').forEach(origLine => {
+        const line = origLine.toLowerCase().trim();
+        if (!line) return;
+
+        const target = getTargetProvince(origLine);
+
+        // Failures
+        if (line.includes("spell fails") || line.includes("fizzles")) c.spellAttempts++;
+        if (line.includes("foiled") || line.includes("caught") || (line.includes("lost") && line.includes("thieves"))) c.thiefAttempts++;
+
+        // Successful spells
+        if (/spell succeeds/i.test(line) && !/reflected/i.test(line)) {
+            c.spellAttempts++; c.spellSuccess++;
+
+            if (/fireball/i.test(line)) {
+                const m = origLine.match(/(\d[\d,]*)\s+peasants/);
+                if (m) { const v = parseInt(m[1].replace(/,/g,''),10); c.fireball++; c.fbP += v; hits.fireball.push(v);
+                    if (!perTarget.fireball.has(target)) perTarget.fireball.set(target,{c:0,t:0});
+                    const e = perTarget.fireball.get(target); e.c++; e.t += v; }
+            }
+            if (/nightmare/i.test(line)) {
+                const m = origLine.match(/(\d[\d,]*)\s+of the (men|troops)/);
+                if (m) { const v = parseInt(m[1].replace(/,/g,''),10); c.nightmare++; c.nmM += v; hits.nightmare.push(v);
+                    if (!perTarget.nightmare.has(target)) perTarget.nightmare.set(target,{c:0,t:0});
+                    const e = perTarget.nightmare.get(target); e.c++; e.t += v; }
+            }
+            if (/tornado/i.test(line)) {
+                const m = origLine.match(/waste to\s+(\d[\d,]*)\s+acres/i);
+                if (m) { const v = parseInt(m[1].replace(/,/g,''),10); c.tornado++; c.torA += v; hits.tornado.push(v);
+                    if (!perTarget.tornado.has(target)) perTarget.tornado.set(target,{c:0,t:0});
+                    const e = perTarget.tornado.get(target); e.c++; e.t += v; }
+            }
+        }
+
+		if (/infest the guilds/i.test(line) && /ritual is now.*% destroyed/i.test(line)) {
+            c.spellAttempts++; c.spellSuccess++; c.abolish++;
+
+            // Special target extraction — "guilds of Province (X:Y)"
+            let abolishTarget = target;
+            const guildsMatch = origLine.match(/guilds of ([^()]+?)\s*\(\d+:\d+\)/i);
+            if (guildsMatch) {
+                const prov = guildsMatch[1].trim();
+                const kingdom = origLine.match(/\(\d+:\d+\)/)[0];
+                abolishTarget = prov + " " + kingdom;
+            }
+
+            if (!perTarget.abolish.has(abolishTarget)) perTarget.abolish.set(abolishTarget,{c:0,t:0});
+            perTarget.abolish.get(abolishTarget).c++;
+
+            const v = 2;  // Each cast destroys 2%
+            c.abolishPct += v;
+            hits.abolish.push(v);
+            perTarget.abolish.get(abolishTarget).t += v;
+        }
+		
+		if (/pitfalls will haunt/i.test(line) && /for \d+ days/i.test(line)) {
+            c.spellAttempts++; c.spellSuccess++; c.pitfalls++;
+
+            if (!perTarget.pitfalls.has(target)) perTarget.pitfalls.set(target,{c:0,t:0});
+            perTarget.pitfalls.get(target).c++;
+
+            const m = origLine.match(/for (\d+) days/i);
+            if (m) {
+                const v = parseInt(m[1],10);
+                c.pitDays += v;
+                hits.pitfalls.push(v);
+                perTarget.pitfalls.get(target).t += v;
+            }
+        }
+		
+		if (/many of our thieves have been exposed/i.test(line) && /for \d+ days/i.test(line)) {
+            c.thiefAttempts++; c.thiefSuccess++; c.exposeThieves++;
+
+            if (!perTarget.exposeThieves.has(target)) perTarget.exposeThieves.set(target,{c:0,t:0});
+            perTarget.exposeThieves.get(target).c++;
+
+            const m = origLine.match(/for (\d+) days/i);
+            if (m) {
+                const v = parseInt(m[1],10);
+                c.exposeDays += v;
+                hits.exposeThieves.push(v);
+                perTarget.exposeThieves.get(target).t += v;
+            }
+        }
+		
+		if (/explosions will rock/i.test(line) && /for \d+ days/i.test(line)) {
+            c.spellAttempts++; c.spellSuccess++; c.explosions++;
+
+            if (!perTarget.explosions.has(target)) perTarget.explosions.set(target,{c:0,t:0});
+            perTarget.explosions.get(target).c++;
+
+            const m = origLine.match(/for (\d+) days/i);
+            if (m) {
+                const v = parseInt(m[1],10);
+                c.explosionDays += v;
+                hits.explosions.push(v);
+                perTarget.explosions.get(target).t += v;
+            }
+        }
+
+        if (/land lust/i.test(line) && /succeeds/i.test(line)) {
+            c.spellAttempts++; c.spellSuccess++; c.landlust++;
+            if (!perTarget.landlust.has(target)) perTarget.landlust.set(target,{c:0,t:0});
+            perTarget.landlust.get(target).c++;
+            const m = origLine.match(/given us another ([\d,]+) acres/i);
+            if (m) { const v = parseInt(m[1].replace(/,/g,''),10); c.llAcres += v; hits.landlust.push(v); perTarget.landlust.get(target).t += v; }
+        }
+
+        if (/kidnapped many people/i.test(line)) {
+            c.thiefAttempts++; c.thiefSuccess++;
+            const m = origLine.match(/return with\s+(\d[\d,]*)\s+of them/i);
+            if (m) { const v = parseInt(m[1].replace(/,/g,''),10); c.kidnap++; c.kdP += v; hits.kidnap.push(v);
+                if (!perTarget.kidnap.has(target)) perTarget.kidnap.set(target,{c:0,t:0});
+                const e = perTarget.kidnap.get(target); e.c++; e.t += v; }
+        }
+
+        if (/early indications.+success/i.test(line) && /assassinated/i.test(line)) {
+            c.thiefAttempts++; c.thiefSuccess++; c.nightstrike++;
+            if (!perTarget.nightstrike.has(target)) perTarget.nightstrike.set(target,{c:0,t:0});
+            perTarget.nightstrike.get(target).c++;
+
+            const m = origLine.match(/assassinated\s+(\d[\d,]*)\s+enemy\s+(?:troops?|soldiers?|men)/i);
+            if (m) {
+                const v = parseInt(m[1].replace(/,/g,''),10);
+                c.nsT += v;
+                hits.nightstrike.push(v);
+                perTarget.nightstrike.get(target).t += v;
+            }
+        }
+
+        // ARSON — FIXED TO CATCH "torch X acres" AND "burned down X acres"
+        if (/early indications.+success/i.test(line) && /arson|burn|torch/i.test(line)) {
+            c.thiefAttempts++; c.thiefSuccess++; c.arson++;
+            if (!perTarget.arson.has(target)) perTarget.arson.set(target,{c:0,t:0});
+            perTarget.arson.get(target).c++;
+
+            // This regex catches BOTH "torch 6 acres" and "burned down 14 acres"
+            const m = origLine.match(/(?:torch(?:ed|ing)?|burned down)\s+(\d[\d,]*)\s+acres/i);
+            if (m) {
+                const v = parseInt(m[1].replace(/,/g,''),10);
+                c.arsA += v;
+                hits.arson.push(v);
+                perTarget.arson.get(target).t += v;
+            }
+        }
+
+        if ((line.includes("incite riots") || line.includes("caused rioting")) && /success|caused/i.test(line)) {
+            c.thiefAttempts++; c.thiefSuccess++; c.riots++;
+            let days = 7;
+            const dm = origLine.match(/(?:last|lasting|for)\s+(\d+)\s+days/i);
+            if (dm) days = parseInt(dm[1],10);
+            c.riotDays += days; hits.riots.push(days);
+            if (!perTarget.riots.has(target)) perTarget.riots.set(target,{c:0,t:0});
+            const e = perTarget.riots.get(target); e.c++; e.t += days;
+        }
+
+        // ROBBERY OPS — now works perfectly
+        if ((line.includes("returned with") || line.includes("steal")) && (line.includes("gold") || line.includes("bushel") || line.includes("rune"))) {
+            c.thiefAttempts++; c.thiefSuccess++;
+
+            const gold = origLine.match(/([\d,]+)\s*(?:gold|gc)/i);
+            if (gold) { const v = parseInt(gold[1].replace(/,/g,''),10); c.vaultRob++; c.goldStolen += v; hits.vault.push(v);
+                if (!perTarget.vault.has(target)) perTarget.vault.set(target,{c:0,t:0}); perTarget.vault.get(target).c++; perTarget.vault.get(target).t += v; }
+
+            const food = origLine.match(/([\d,]+)\s*bushels?/i);
+            if (food) { const v = parseInt(food[1].replace(/,/g,''),10); c.granRob++; c.foodStolen += v; hits.granary.push(v);
+                if (!perTarget.granary.has(target)) perTarget.granary.set(target,{c:0,t:0}); perTarget.granary.get(target).c++; perTarget.granary.get(target).t += v; }
+
+            const runes = origLine.match(/([\d,]+)\s*runes?/i);
+            if (runes) { const v = parseInt(runes[1].replace(/,/g,''),10); c.towerRob++; c.runesStolen += v; hits.tower.push(v);
+                if (!perTarget.tower.has(target)) perTarget.tower.set(target,{c:0,t:0}); perTarget.tower.get(target).c++; perTarget.tower.get(target).t += v; }
+        }
+
+        // Aid & Dragon unchanged...
+        if (!/dragon/i.test(line)) {
+            ["gold coins","runes","bushels","soldiers","troops","men"].forEach(r => {
+                let m = origLine.match(new RegExp(`we have sent ([\\d,]+) ${r}`, 'i'));
+                if (m) { let v = parseInt(m[1].replace(/,/g,''),10);
+                    if (/gold/.test(r)) c.aidOutG += v;
+                    if (/rune/.test(r)) c.aidOutR += v;
+                    if (/bushel/.test(r)) c.aidOutB += v;
+                    if (/soldier|troop|men/.test(r)) c.aidOutS += v;
+                }
+                m = origLine.match(new RegExp(`received .* ([\\d,]+) ${r}`, 'i'));
+                if (m) { let v = parseInt(m[1].replace(/,/g,''),10);
+                    if (/gold/.test(r)) c.aidInG += v;
+                    if (/rune/.test(r)) c.aidInR += v;
+                    if (/bushel/.test(r)) c.aidInB += v;
+                    if (/soldier|troop|men/.test(r)) c.aidInS += v;
+                }
+            });
+        }
+
+        const dg = origLine.match(/donated.*?([\d,]+)\s+(?:gold|gc)/i); if(dg) c.dragG += parseInt(dg[1].replace(/,/g,''),10);
+        const db = origLine.match(/donated.*?([\d,]+)\s+bushels?/i); if(db) c.dragB += parseInt(db[1].replace(/,/g,''),10);
+        const dt = origLine.match(/send out ([\d,]+) troops/i); if(dt) c.dragT += parseInt(dt[1].replace(/,/g,''),10);
+        const dd = origLine.match(/weakened.*?by.*?([\d,]+)/i); if(dd) c.dragDmg += parseInt(dd[1].replace(/,/g,''),10);
+    });
+
+    // Output code — same as v1.3.8 but with clean spacing
+    const details = (op, name, unit = "") => {
+        if (c[op] === 0) return "";
+        const arr = hits[op];
+        const high = arr.length ? Math.max(...arr) : 0;
+        const low = arr.length ? Math.min(...arr) : 0;
+        const list = Array.from(perTarget[op]).map(([p,d])=>({prov:p,c:d.c,t:d.t})).sort((a,b)=>b.t-a.t);
+        let s = `Single Highest ${name}: ${high.toLocaleString()}${unit}\n`;
+        s += `Single Lowest ${name}: ${low.toLocaleString()}${unit}\n`;
+        s += `Provinces Targeted:\n`;
+        list.forEach((e,i)=> s += `<span class="prov-line">${i+1}. ${e.prov} - ${e.c} (${e.t.toLocaleString()})</span>`);
+        return s;
+    };
+
+	const abolishDetails = () => {
+        if (c.abolish === 0) return "";
+        const list = Array.from(perTarget.abolish).map(([p,d])=>({prov:p,c:d.c,t:d.t})).sort((a,b)=>b.t-a.t);
+        let s = `Provinces Targeted:\n`;
+        list.forEach((e,i)=> s += `<span class="prov-line">${i+1}. ${e.prov} - ${e.c} (${e.t.toLocaleString()}%)</span>`);
+        return s;
+    };
+
+    let out = `<span class="title">T/M War Summary</span>\n${"=".repeat(35)}\n\n`;
+
+    if (c.spellSuccess) {
+        out += `<span class="bold underline">Sorcery Ops (${c.spellSuccess}/${c.spellAttempts} - ${c.spellAttempts ? Math.round(c.spellSuccess/c.spellAttempts*100) : 0}%):</span>\n`;
+        if (c.fireball) out += `Fireballs: ${c.fireball} - Peasants Killed: ${c.fbP.toLocaleString()} (Avg: ${Math.round(c.fbP/c.fireball)})\n<div class="details">${details("fireball","Fireball")}</div>`;
+        if (c.nightmare) out += `Nightmares: ${c.nightmare} - Troops Affected: ${c.nmM.toLocaleString()} (Avg: ${Math.round(c.nmM/c.nightmare)})\n<div class="details">${details("nightmare","Nightmare")}</div>`;
+        if (c.tornado) out += `Tornadoes: ${c.tornado} - Acres Destroyed: ${c.torA.toLocaleString()} (Avg: ${Math.round(c.torA/c.tornado)})\n<div class="details">${details("tornado","Tornado"," acres")}</div>`;
+		if (c.abolish) out += `Abolish Ritual: ${c.abolish} - Destroyed: ${c.abolishPct}%\n<div class="details">${abolishDetails()}</div>`;
+        if (c.pitfalls) out += `Pitfalls: ${c.pitfalls} - Total Days: ${c.pitDays} (Avg: ${Math.round(c.pitDays / c.pitfalls)} days)\n<div class="details">${details("pitfalls","Pitfall"," days")}</div>`;
+		if (c.exposeThieves) out += `Expose Thieves: ${c.exposeThieves} - Total Days: ${c.exposeDays} (Avg: ${Math.round(c.exposeDays / c.exposeThieves)} days)\n<div class="details">${details("exposeThieves","Expose Thieves"," days")}</div>`;
+		if (c.explosions) out += `Explosions: ${c.explosions} - Total Days: ${c.explosionDays} (Avg: ${Math.round(c.explosionDays / c.explosions)} days)\n<div class="details">${details("explosions","Explosion"," days")}</div>`;
+		if (c.landlust) out += `Land Lust: ${c.landlust} - Acres Gained: ${c.llAcres.toLocaleString()} (Avg: ${Math.round(c.llAcres/c.landlust)})\n<div class="details">${details("landlust","Land Lust"," acres")}</div>`;
+        out += `\n`;
+    }
+
+    if (c.thiefSuccess) {
+        out += `<span class="bold underline">Sabotage & Robbery Ops (${c.thiefSuccess}/${c.thiefAttempts} - ${c.thiefAttempts ? Math.round(c.thiefSuccess/c.thiefAttempts*100) : 0}%):</span>\n`;
+        if (c.kidnap) out += `Kidnaps: ${c.kidnap} - Peasants Kidnapped: ${c.kdP.toLocaleString()} (Avg: ${Math.round(c.kdP/c.kidnap)})\n<div class="details">${details("kidnap","Kidnap")}</div>`;
+        if (c.nightstrike) out += `Night Strikes: ${c.nightstrike} - Troops Killed: ${c.nsT.toLocaleString()} (Avg: ${Math.round(c.nsT/c.nightstrike)})\n<div class="details">${details("nightstrike","Night Strike")}</div>`;
+        if (c.arson) out += `Arson: ${c.arson} - Acres Burned: ${c.arsA.toLocaleString()} (Avg: ${Math.round(c.arsA/c.arson)})\n<div class="details">${details("arson","Arson"," acres")}</div>`;
+        if (c.riots) out += `Riots: ${c.riots} - Total Days: ${c.riotDays} (Avg: ${Math.round(c.riotDays/c.riots)} days)\n<div class="details">${details("riots","Riot"," days")}</div>`;
+        if (c.vaultRob) out += `Vaults Robbed: ${c.vaultRob} - Gold Stolen: ${c.goldStolen.toLocaleString()} gc (Avg: ${Math.round(c.goldStolen/c.vaultRob).toLocaleString()})\n<div class="details">${details("vault","Vault Rob"," gc")}</div>`;
+        if (c.granRob) out += `Granaries Robbed: ${c.granRob} - Food Stolen: ${c.foodStolen.toLocaleString()} bushels (Avg: ${Math.round(c.foodStolen/c.granRob).toLocaleString()})\n<div class="details">${details("granary","Granary Rob"," bushels")}</div>`;
+        if (c.towerRob) out += `Towers Robbed: ${c.towerRob} - Runes Stolen: ${c.runesStolen.toLocaleString()} runes (Avg: ${Math.round(c.runesStolen/c.towerRob).toLocaleString()})\n<div class="details">${details("tower","Tower Rob"," runes")}</div>`;
+        out += `\n`;
+    }
+
+    // Aid & Dragon sections unchanged...
+	if (c.aidOutG+c.aidInG+c.aidOutR+c.aidInR+c.aidOutS+c.aidInS+c.aidOutB+c.aidInB) {
+        out += `<span class="bold underline">Aid Summary:</span>\n`;
+        const net = (o,i) => o - i;
+        const color = v => v > 0 ? '#4ade80' : (v < 0 ? '#f87171' : '#e0e0e0');
+        const sign = v => v > 0 ? '+' : '';
+        if(c.aidOutG||c.aidInG) out += `Gold: Out ${c.aidOutG.toLocaleString()} | In ${c.aidInG.toLocaleString()} | Net <span class="bold" style="color:${color(net(c.aidOutG,c.aidInG))}">${sign(net(c.aidOutG,c.aidInG))}${net(c.aidOutG,c.aidInG).toLocaleString()}</span> gc\n`;
+        if(c.aidOutR||c.aidInR) out += `Runes: Out ${c.aidOutR.toLocaleString()} | In ${c.aidInR.toLocaleString()} | Net <span class="bold" style="color:${color(net(c.aidOutR,c.aidInR))}">${sign(net(c.aidOutR,c.aidInR))}${net(c.aidOutR,c.aidInR).toLocaleString()}</span> runes\n`;
+        if(c.aidOutS||c.aidInS) out += `Soldiers: Out ${c.aidOutS.toLocaleString()} | In ${c.aidInS.toLocaleString()} | Net <span class="bold" style="color:${color(net(c.aidOutS,c.aidInS))}">${sign(net(c.aidOutS,c.aidInS))}${net(c.aidOutS,c.aidInS).toLocaleString()}</span> sols\n`;
+        if(c.aidOutB||c.aidInB) out += `Food: Out ${c.aidOutB.toLocaleString()} | In ${c.aidInB.toLocaleString()} | Net <span class="bold" style="color:${color(net(c.aidOutB,c.aidInB))}">${sign(net(c.aidOutB,c.aidInB))}${net(c.aidOutB,c.aidInB).toLocaleString()}</span> bu\n`;
+        out += `\n`;
+    }
+
+    if (c.dragG || c.dragB || c.dragT || c.dragDmg) {
+        out += `<span class="bold underline">Dragon Contributions:</span>\n`;
+        if(c.dragG) out += `Gold Donated: ${c.dragG.toLocaleString()} gc\n`;
+        if(c.dragB) out += `Food Donated: ${c.dragB.toLocaleString()} bushels\n`;
+        if(c.dragT || c.dragDmg) out += `Troops Sent: ${c.dragT.toLocaleString()} - Damage Dealt: ${c.dragDmg.toLocaleString()} hp\n`;
+    }
+
+    out += `<div style="text-align:right;margin:20px 0;"><span class="expand-link" onclick="document.querySelectorAll('.details').forEach(d=>d.style.display=d.style.display==='block'?'none':'block'); this.innerHTML=document.querySelector('.details')?.style.display==='block'?'collapse details':'expand for more details';">expand for more details</span></div>`;
+
+    document.getElementById('output').innerHTML = out;
+}
+
+function copyOutput() {
+    navigator.clipboard.writeText(document.getElementById('output').textContent);
+    alert("Copied!");
+}
+function goToPage(page) {
+    window.location.href = page;  // Navigates to the selected page
+}
+
+// DARK / LIGHT MODE TOGGLE
+const toggleButton = document.getElementById('themeToggle');
+const body = document.body;
+
+// Load saved theme preference
+const savedTheme = localStorage.getItem('utopiaTheme');
+if (savedTheme === 'light') {
+    body.classList.add('light-mode');
+    toggleButton.textContent = '🌙 Dark Mode';
+} else {
+    toggleButton.textContent = '☀️ Light Mode';
+}
+
+// Toggle on click
+toggleButton.addEventListener('click', () => {
+    body.classList.toggle('light-mode');
+
+    if (body.classList.contains('light-mode')) {
+        toggleButton.textContent = '🌙 Dark Mode';
+        localStorage.setItem('utopiaTheme', 'light');
+    } else {
+        toggleButton.textContent = '☀️ Light Mode';
+        localStorage.setItem('utopiaTheme', 'dark');
+    }
+});
+
+</script>
+</body>
+</html>
