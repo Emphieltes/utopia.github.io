@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sciences v1.0.4</title>
+    <style>
+        body {
+			font-family: Arial, sans-serif;
+			background:#f8f9fa;
+			color:#000000;
+			margin:0;
+			padding-left: 180px;
+			padding-right: 20px;
+			min-height:100vh;
+			box-sizing: border-box;
+		}
+        h1 { text-align: center; color: #333; }
+        h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-top: 40px; }
+        h2:first-of-type { margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: top; }
+        th { background-color: #007bff; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #e9ecef; }
+        input[type="number"] { width: 120px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        input[type="number"]:focus { outline: none; border-color: #007bff; box-shadow: 0 0 5px rgba(0,123,255,0.3); }
+        .output { font-weight: bold; color: #28a745; }
+        .req { font-weight: bold; color: #dc3545; }
+        .overshot { font-weight: bold; color: #28a745; }
+        .total { background-color: #ffc107 !important; font-size: 1em; font-weight: bold; color: #000; text-align: center; }
+        #grand-total { margin-top: 40px; }
+        .section-table { margin-bottom: 40px; }
+        .effect { font-size: 0.9em; color: #666; max-width: 200px; }
+        
+        /* Improved table sizing - column widths & row heights */
+        table {
+        table-layout: fixed;
+        width: 100%;
+        border-spacing: 0;          /* optional: remove any extra space between cells */
+        }
+
+        th, td {
+        padding: 6px 8px;           /* ← much smaller vertical padding (was 14px) */
+        line-height: 1.2;           /* ← tighter text */
+        font-size: 13px;            /* ← slightly smaller text helps a lot */
+        }
+
+        /* Column widths (your current values kept) */
+        th:nth-child(1), td:nth-child(1) { width: 8%; }   /* Science name */
+        th:nth-child(2), td:nth-child(2) { width: 8%; }   /* Books Invested */
+        th:nth-child(3), td:nth-child(3) { width: 30%; }  /* Effect */
+        th:nth-child(4), td:nth-child(4) { width: 10%; }
+        th:nth-child(5), td:nth-child(5) { width: 6%; }
+        th:nth-child(6), td:nth-child(6) { width: 10%; }
+        
+        /* Center content in Books Invested and Target % columns */
+        th:nth-child(2), td:nth-child(2),          /* Books Invested column */
+        th:nth-child(5), td:nth-child(5) {         /* Target % column */
+        text-align: center;
+        }
+
+        /* Make sure the inputs themselves are centered nicely */
+        td:nth-child(2) input[type="number"],
+        td:nth-child(5) input[type="number"] {
+        margin: 0 auto;
+        display: block;
+        text-align: center;
+        }
+
+        /* Row heights - use min-height instead of height for safety */
+        tr {
+        min-height: 28px;           /* ← this is now realistic minimum */
+        }
+
+        thead tr {
+        min-height: 34px;
+        }
+
+        /* Make inputs compact */
+        input[type="number"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 3px 6px;           /* very tight padding inside input */
+        font-size: 13px;
+        height: 24px;               /* force smaller input height */
+    }
+    
+        th, td { vertical-align: middle !important; }
+    
+        /* Narrower width for Books Invested input fields only */
+        td:nth-child(2) input[data-type="invested"] {
+            width: 140px;                /* ← adjust this value: 120px = very narrow, 160px = more room */
+            max-width: 100%;             /* prevents overflow on small screens */
+            margin: 0 auto;              /* keeps it centered */
+            display: block;              /* necessary for margin: auto to work */
+            text-align: center;
+    }
+    
+        /* Fixed Libraries panel in top-right corner */
+        #libraries-section {
+            position: fixed;              /* Sticks to viewport */
+            top: 20px;                    /* Distance from top of screen */
+            right: 20px;                  /* Distance from right edge */
+            z-index: 1000;                /* Stays above other content */
+            width: 180px;                 /* Fixed width – adjust if needed */
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            padding: 15px;
+            text-align: center;
+    }
+
+        /* Optional: Make it slightly transparent or add hover effect */
+        #libraries-section:hover {
+                box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+
+        /* Ensure the bonus display is nice */
+        #bonus-display {
+            margin-top: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+    }
+    
+        #libraries-section h2 {
+            font-size: 1.2em;          /* Smaller than before – adjust to 1.1em or 1.3em if needed */
+            margin: 0 0 12px 0;
+            font-weight: bold;
+            color: #1e40af;
+    }
+    
+        #libraries-section input[type="number"] {
+            width: 100px;              /* Compact size */
+            padding: 8px;
+            font-size: 1.1em;
+            text-align: center;        /* Centers the numbers inside the field */
+            margin: 8px auto;          /* Centers the whole input box */
+            display: block;
+            border-radius: 6px;
+            border: 1px solid #999;
+    }
+    
+DARK/LIGHT MODE TOGGLE (copied from Planner v1.3.3)
+─────────────────────────────────────────────────────────────── */
+
+/* Default is light mode (your current #f8f9fa background) */
+body {
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Dark mode (matches planner's dark theme) */
+body.dark-mode {
+    background: #0d0d0d !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode h1,
+body.dark-mode h2 {
+    color: #4fc3f7 !important;
+}
+
+body.dark-mode table,
+body.dark-mode th,
+body.dark-mode td {
+    background: #111 !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+}
+
+body.dark-mode th {
+    background: #222 !important;
+}
+
+body.dark-mode tr:nth-child(even) {
+    background: #1a1a1a !important;
+}
+
+body.dark-mode tr:hover {
+    background: #333 !important;
+}
+
+body.dark-mode input[type="number"],
+body.dark-mode input[type="text"] {
+    background: #222 !important;
+    color: #fff !important;
+    border: 1px solid #444 !important;
+}
+
+body.dark-mode .total {
+    background: #fcfc03 !important; /* darker yellow for visibility */
+    color: #000 !important;
+}
+
+body.dark-mode #libraries-section {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode #bonus-display {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode #bonus-display strong {
+    color: #4ade80 !important;
+}
+
+body.dark-mode .output {
+    color: #4ade80 !important;
+}
+
+body.dark-mode .req {
+    color: #ff6b6b !important;
+}
+
+body.dark-mode .overshot {
+    color: #4ade80 !important;
+}
+
+body.dark-mode #libraries-section {
+    background: #111 !important;
+    color: #e0e0e0 !important;
+    border-color: #444 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
+}
+
+/* Button hover in dark mode */
+body.dark-mode button:hover {
+    background: #81d4fa !important;
+}
+
+/* Smooth transitions for everything */
+body, body * {
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+
+.section-table {
+    max-width: 1300px;
+    margin-left: 0px;
+    margin-right: auto;
+}
+    
+    </style>
+</head>
+<body>
+<!-- LEFT FIXED NAVIGATION + VERTICAL SEPARATOR -->
+<div style="position:fixed; left:0; top:16px; z-index:9999; display:flex; flex-direction:column; gap:3px; padding:10px;">
+    
+    <!-- BUTTON 1 - PLANNER -->
+    <button onclick="goToPage('Planner v1.3.3.html')" style="
+        width:140px;
+        padding:6px 16px;
+        background:#1976d2;
+        color:#ffffff;
+        text-align:left;
+        font-size:16px;
+        font-weight:bold;
+        font-family:Arial, sans-serif;
+        border:2px solid #FFD700;
+        border-radius:6px;
+        cursor:pointer;
+        box-shadow:4px 0 12px rgba(0,0,0,0.6);
+        margin:0;
+        transition:background 0.2s;">
+        Planner
+    </button>
+
+    <!-- BUTTON 2 - SCIENCES -->
+    <button onclick="goToPage('Sciences v1.0.4.html')" style="
+        width:140px;
+        padding:6px 16px;
+        background:#1976d2;           /* Highlight active page – change color if preferred */
+        color:#ffffff;
+        text-align:left;
+        font-size:16px;
+        font-weight:bold;
+        border:2px solid #FFD700;
+        border-radius:6px;
+        cursor:pointer;
+        box-shadow:4px 0 12px rgba(0,0,0,0.6);
+        margin:0;
+        transition:background 0.2s;">
+        Sciences
+    </button>
+
+    <!-- BUTTON 3 - PARSER -->
+    <button onclick="goToPage('Parser v1.4.3.html')" style="
+        width:140px;
+        padding:6px 16px;
+        background:#1976d2;
+        color:#ffffff;
+        text-align:left;
+        font-size:16px;
+        font-weight:bold;
+        border:2px solid #FFD700;
+        border-radius:6px;
+        cursor:pointer;
+        box-shadow:4px 0 12px rgba(0,0,0,0.6);
+        margin:0;
+        transition:background 0.2s;">
+        Parser
+    </button>
+</div>
+
+<!-- VERTICAL SEPARATOR LINE -->
+<div style="position:fixed; left:160px; top:0; bottom:0; width:2px; background:#444; z-index:9998; box-shadow:0 0 8px rgba(0,0,0,0.6);"></div>
+
+<!-- BUTTON 4 - LIGHT/DARK MODE TOGGLE -->
+<div style="position: fixed; left: 0; bottom: 16px; z-index: 9999; padding: 10px;">
+    <button id="themeToggle" style="
+        width:140px;
+        padding:6px 16px;
+        background:#1976d2;
+        color:#ffffff;
+        text-align:left;
+        font-size:14px;
+        font-weight:bold;
+        border:2px solid #FFD700;
+        border-radius:6px;          /* matches your current rounded buttons */
+        cursor:pointer;
+        box-shadow:4px 0 12px rgba(0,0,0,0.6);
+        margin:0;
+        transition:background 0.2s;">
+        🌙 Dark Mode
+    </button>
+</div>
+
+<!-- Last saved timestamp - bottom right -->
+<div id="lastSaved" 
+     style="position: fixed; 
+            bottom: 12px; 
+            right: 16px; 
+            font-size: 12px; 
+            color: #888; 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            z-index: 9999; 
+            pointer-events: none;">
+    Last Edited: <span id="fileDate">--</span>
+</div>
+
+<script>
+// Show the file's actual last-modified date/time
+const dateSpan = document.getElementById('fileDate');
+if (document.lastModified && document.lastModified !== "01/01/1970 00:00:00") {
+    const d = new Date(document.lastModified);
+    dateSpan.textContent = d.toLocaleString('en-CA', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false
+    });  // Example: Feb 8, 2026, 14:37
+} else {
+    dateSpan.textContent = "Unknown";
+}
+</script>
+
+    <!-- FIXED LIBRARIES PANEL -->
+    <div id="libraries-section">
+        <h2>Libraries Bonus</h2>
+        <p>Current Libraries %:</p>
+        <input type="number" id="libraries-percent" min="0" max="100" step="0.01" value="0">
+        <p id="bonus-display">Current bonus: <strong>0.00%</strong></p>
+    </div>
+
+    <!-- SCIENCES HEADER/TITLE -->
+    <h1>Utopia Sciences Book Calculator</h1>
+    <p>Enter your current <strong>Books Invested</strong> and desired <strong>Target %</strong> for each science. Calculations update automatically in real-time using the exact game formula:<br>
+    <p id="bonus-info" style="color: #007bff; font-weight: bold; font-style: italic; margin: 10px 0;">
+		Current bonuses: <span id="raceBonusText">None</span> | <span id="persBonusText">None</span>
+	</p>
+	<strong>Effectiveness % = (Books)^{8/17} × Science Multiplier</strong><br>
+    Books Required = rounded integer. Negative values indicate overshot (you can reallocate those books).</p>
+
+    <!-- SCIENCES ECONOMY TABLE -->
+    <div id="economy-table" class="section-table" data-section="Economy">
+        <h2>Economy</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Science</th>
+                    <th>Books Invested</th>
+                    <th>Effect</th>
+                    <th>Current Output (%)</th>
+                    <th>Target (%)</th>
+                    <th>Books Required</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- ALCHEMY -->
+                <tr data-section="Economy" data-factor="0.0725" data-science="Alchemy">
+                    <td>Alchemy</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="154087" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Income</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="20" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- TOOLS -->
+                <tr data-section="Economy" data-factor="0.0535" data-science="Tools">
+                    <td>Tools</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="104246" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Building Effectiveness</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="15" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- HOUSING -->
+                <tr data-section="Economy" data-factor="0.0266" data-science="Housing">
+                    <td>Housing</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="168766" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Population Limits</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="7.5" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- PRODUCTION -->
+                <tr data-section="Economy" data-factor="0.2172" data-science="Production">
+                    <td>Production</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="248830" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Food & Rune Production</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="90" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- BOOKKEEPING -->
+                <tr data-section="Economy" data-factor="0.069" data-science="Bookkeeping">
+                    <td>Bookkeeping</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="54765" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Wage Reduction</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="15" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- ARTISAN -->
+                <tr data-section="Economy" data-factor="0.0478" data-science="Artisan">
+                    <td>Artisan</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Construction Time Reduction, Construction & Raze Cost Reduction</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="0" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>TOTAL</strong></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td data-type="total" class="total">-</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <!-- SCIENCES MILITARY TABLE -->
+    <div id="military-table" class="section-table" data-section="Military">
+        <h2>Military</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Science</th>
+                    <th>Books Invested</th>
+                    <th>Effect</th>
+                    <th>Current Output (%)</th>
+                    <th>Target (%)</th>
+                    <th>Books Required</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- STRATEGY -->
+                <tr data-section="Military" data-factor="0.0367" data-science="Strategy">
+                    <td>Strategy</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="22004" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Defensive Military Efficiency</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="10" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- SIEGE -->
+                <tr data-section="Military" data-factor="0.0262" data-science="Siege">
+                    <td>Siege</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Battle Gains</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="0" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- TACTICS -->
+                <tr data-section="Military" data-factor="0.0367" data-science="Tactics">
+                    <td>Tactics</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Offensive Military Efficiency</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="0" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- VALOR -->
+                <tr data-section="Military" data-factor="0.0582" data-science="Valor">
+                    <td>Valor</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Reduced Military Train Time, Increased Dragon Slaying Strength</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="0" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- HEROISM -->
+                <tr data-section="Military" data-factor="0.0418" data-science="Heroism">
+                    <td>Heroism</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Draft Speed & Draft Costs Reduction</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="0" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- RESILIENCE -->
+                <tr data-section="Military" data-factor="0.0489" data-science="Resilience">
+                    <td>Resilience</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Reduced Military Casualties</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="0" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>TOTAL</strong></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td data-type="total" class="total">-</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <!-- SCIENCES ARCANE ARTS TABLE -->
+    <div id="arcane-table" class="section-table" data-section="Arcane Arts">
+        <h2>Arcane Arts</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Science</th>
+                    <th>Books Invested</th>
+                    <th>Effect</th>
+                    <th>Current Output (%)</th>
+                    <th>Target (%)</th>
+                    <th>Books Required</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- CRIME -->
+                <tr data-section="Arcane Arts" data-factor="0.1557" data-science="Crime">
+                    <td>Crime</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="156964" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Thievery Effectiveness</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="75" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- CHANNELING -->
+                <tr data-section="Arcane Arts" data-factor="0.1875" data-science="Channeling">
+                    <td>Channeling</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="106190" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Magic Effectiveness</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="75" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- SHIELDING -->
+                <tr data-section="Arcane Arts" data-factor="0.0314" data-science="Shielding">
+                    <td>Shielding</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Reduced Damage from Enemy Thievery and Magic Instant Operations</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="0" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- CUNNING -->
+                <tr data-section="Arcane Arts" data-factor="0.0314" data-science="Cunning">
+                    <td>Cunning</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="69926" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Increased Thievery Operation Damage</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="7.5" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- SORCERY -->
+                <tr data-section="Arcane Arts" data-factor="0.0314" data-science="Sorcery">
+                    <td>Sorcery</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="82963" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Increased Magic Instant Damage</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="7.5" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+                <!-- FINESSE -->
+                <tr data-section="Arcane Arts" data-factor="0.0965" data-science="Finesse">
+                    <td>Finesse</td>
+                    <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="111716" data-type="invested" min="0" step="1"></td>
+                    <td class="effect">Reduced Wizards and Thieves lost on Failed Spells and Operations</td>
+                    <td data-type="output">-</td>
+                    <td><input type="number" step="0.01" value="30" data-type="target" min="0"></td>
+                    <td data-type="req">-</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>TOTAL</strong></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td data-type="total" class="total">-</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <script>
+    const EXP = 8 / 17;
+    const INV_EXP = 17 / 8;
+	
+	// RACE & PERSONALITY SCIENCE BONUSES (15% fields)
+
+	// These are the known bonuses this age (update as needed per patch)
+	const RACE_SCIENCE_BONUS = {
+		'Avian': 1.00,
+		'Dark Elf': 1.00,
+		'Dwarf': 1.00,
+		'Elf': 1.00,
+		'Faery': 1.00,
+		'Halfling': 1.00,
+		'Human': 1.15,
+		'Orc': 1.00,
+		'Undead': 1.00,
+		// 'Gnome': 1.00,
+	};
+
+	const PERS_SCIENCE_BONUS = {
+		'Artisan': { Economy: 1.15 },
+		'Heretic': { 'Arcane Arts': 1.15 },
+		'Mystic': { Channeling: 1.15 },
+		'Rogue': { Crime: 1.15 },
+		'Tactician': { Siege: 1.15 },
+		'Warrior': { Tactics: 1.15 },
+		'Paladin': { Valor: 1.15 },
+		'Necromancer': { Channeling: 1.15 },
+		'General': { Bookkeeping: 1.15 },
+		// 'War Hero': { Bookkeeping: 1.15 },
+	};
+
+	// Helper: Get current race & personality from Planner's localStorage
+	function getCurrentRacePers() {
+		const saved = localStorage.getItem('utopiaPlanner');
+		if (!saved) return { race: '', pers: '' };
+  
+		try {
+			const data = JSON.parse(saved);
+			return {
+				race: data.race || '',
+				pers: data.pers || ''
+			};
+		} catch (e) {
+			console.warn('Failed to parse utopiaPlanner storage:', e);
+			return { race: '', pers: '' };
+		}
+	}
+
+	// Apply race + personality bonuses to a science's factor
+	function applyBonuses(factor, scienceName, sectionName) {
+		const { race, pers } = getCurrentRacePers();
+  
+		let bonus = 1.0;
+
+		// Race-wide bonus (e.g. Human +15% all)
+		if (RACE_SCIENCE_BONUS[race]) {
+			bonus *= RACE_SCIENCE_BONUS[race];
+		}
+
+		// Personality specific bonus
+		if (pers && PERS_SCIENCE_BONUS[pers]) {
+			const persBonus = PERS_SCIENCE_BONUS[pers];
+    
+			// Check if this personality gives bonus to the whole section
+			if (persBonus[sectionName]) {
+				bonus *= persBonus[sectionName];
+			}
+			// Or to a specific science
+			else if (persBonus[scienceName]) {
+				bonus *= persBonus[scienceName];
+			}
+		}
+
+		return factor * bonus;
+	}
+	
+	// Display current race/personality bonuses (optional Step 3)
+	function updateBonusDisplay() {
+		const { race, pers } = getCurrentRacePers();
+		let raceText = 'None';
+		let persText = 'None';
+
+		if (race && RACE_SCIENCE_BONUS[race]) {
+			raceText = `${race}: +${((RACE_SCIENCE_BONUS[race] - 1) * 100).toFixed(0)}% all sciences`;
+		}
+
+		if (pers && PERS_SCIENCE_BONUS[pers]) {
+			const bonuses = [];
+			for (const [field, mult] of Object.entries(PERS_SCIENCE_BONUS[pers])) {
+				bonuses.push(`${field}: +${((mult - 1) * 100).toFixed(0)}%`);
+			}
+			persText = `${pers}: ${bonuses.join(', ')}`;
+		}
+
+		const raceEl = document.getElementById('raceBonusText');
+		const persEl = document.getElementById('persBonusText');
+
+		if (raceEl) raceEl.textContent = raceText;
+		if (persEl) persEl.textContent = persText;
+	}
+
+    // LIBRARIES BONUS FORMULA
+    function SciBonusPct(libsPercent) {
+        const M1 = 1.49;
+        const L1 = 1;
+        const M2 = 18.94;
+        const L2 = 15;
+
+        if (libsPercent <= 0) return 0;
+
+        let r = 0.95;
+        for (let i = 0; i < 100; i++) {
+            if (r <= 0) r = 0.000001;
+            if (r >= 0.999999) r = 0.999999;
+
+            const f = M2 * (1 - r) - M1 * (1 - Math.pow(r, L2));
+            let fp = -M2 + M1 * L2 * Math.pow(r, L2 - 1);
+
+            if (Math.abs(fp) < 1e-12) {
+                r *= 0.999;
+            } else {
+                r -= f / fp;
+            }
+
+            if (r < 0) r = 0;
+            if (r > 0.999999) r = 0.999999;
+            if (Math.abs(f) < 1e-10) break;
+        }
+
+        let a = (1 - r) === 0 ? 0 : M1 / (1 - r);
+        return a * (1 - Math.pow(r, libsPercent));
+    }
+
+    // Format helpers
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function unformatNumber(str) {
+        return str.replace(/,/g, '');
+    }
+    
+    // Allow only numbers + prevent invalid chars
+    function restrictToNumbers(input) {
+        input.addEventListener('input', function(e) {
+            const value = this.value.replace(/[^0-9]/g, ''); // remove anything not 0-9
+            if (value !== this.value) {
+            this.value = value;
+            }
+        });
+    }
+
+	function calculateRow(row) {
+		const investedInput = row.querySelector('[data-type="invested"]');
+		const targetInput   = row.querySelector('[data-type="target"]');
+
+		const investedRaw = unformatNumber(investedInput.value || '0');
+		const invested    = parseFloat(investedRaw) || 0;
+		const target      = parseFloat(targetInput.value) || 0;
+		let   factor      = parseFloat(row.dataset.factor) || 0;
+
+		// NEW: Apply race & personality science bonuses
+		const scienceName = row.dataset.science;
+		const sectionName = row.dataset.section;
+		factor = applyBonuses(factor, scienceName, sectionName);
+
+		// Libraries bonus
+		const libsInput = document.getElementById('libraries-percent');
+		const libs      = parseFloat(libsInput ? libsInput.value : 0) || 0;
+		const bonusPct  = SciBonusPct(libs);
+		const bonusFactor = 1 + (bonusPct / 100);
+
+		const effectiveMultiplier = factor * bonusFactor;
+
+		const outputCell = row.querySelector('[data-type="output"]');
+		const reqCell    = row.querySelector('[data-type="req"]');
+
+		// Current output %
+		let output = 0;
+		if (invested > 0 && effectiveMultiplier > 0) {
+			output = Math.pow(invested, EXP) * effectiveMultiplier;
+		}
+		outputCell.textContent = (isNaN(output) || output === 0) ? '-' : output.toFixed(1) + '%';
+		outputCell.className = 'output';
+
+		// Books required
+		let booksTarget = 0;
+		if (target > 0 && effectiveMultiplier > 0) {
+			booksTarget = Math.pow(target / effectiveMultiplier, INV_EXP);
+		}
+		const req = Math.round(booksTarget - invested);
+		reqCell.textContent = req === 0 ? '0' : req.toLocaleString();
+		reqCell.className = '';
+		if (req > 0) reqCell.className = 'req';
+		else if (req < 0) reqCell.className = 'overshot';
+
+		// Re-format invested input
+		if (!investedInput.matches(':focus') && investedRaw !== '') {
+			investedInput.value = formatNumber(Math.round(invested));
+		}
+
+		// Save Housing % for Planner (unchanged)
+		if (scienceName === "Housing") {
+			const housingOutput = (isNaN(output) || output === 0) ? '0.00' : output.toFixed(2);
+			localStorage.setItem('utopiaHousingOutputPercent', housingOutput);
+		}
+	}
+
+    function calculateSectionTotal(sectionName) {
+        let sum = 0;
+        document.querySelectorAll(`tr[data-section="${sectionName}"] [data-type="req"]`).forEach(cell => {
+            sum += parseInt(unformatNumber(cell.textContent)) || 0;
+        });
+        const totalCell = document.querySelector(`div[data-section="${sectionName}"] [data-type="total"]`);
+        if (totalCell) {
+            totalCell.textContent = sum.toLocaleString();
+            totalCell.className = 'total';
+            if (sum > 0) totalCell.classList.add('req');
+            else if (sum < 0) totalCell.classList.add('overshot');
+        }
+        return sum;
+    }
+
+    function calculateAll() {
+        document.querySelectorAll('tbody tr').forEach(calculateRow);
+        ['Economy', 'Military', 'Arcane Arts'].forEach(calculateSectionTotal);
+
+        // Update live bonus display
+        const libsInput = document.getElementById('libraries-percent');
+        const bonusDisplay = document.getElementById('bonus-display');
+        if (libsInput && bonusDisplay) {
+            const libs = parseFloat(libsInput.value) || 0;
+            const bonus = SciBonusPct(libs);
+            bonusDisplay.innerHTML = `Current bonus: <strong>${bonus.toFixed(2)}%</strong>`;
+
+            // NEW: Save the raw Housing % so Planner can display it
+            localStorage.setItem('utopiaHousingPercent', libs.toFixed(2));
+        }
+    }
+
+    // Setup formatting for invested inputs
+    function setupInvestedFormatting() {
+    document.querySelectorAll('td:nth-child(2) input[data-type="invested"]').forEach(input => {
+        restrictToNumbers(input);
+
+        input.addEventListener('blur', () => {
+            const raw = unformatNumber(input.value);
+            if (!isNaN(raw) && raw.trim() !== '') {
+                input.value = formatNumber(Math.round(parseFloat(raw)));
+            }
+            calculateAll();
+            saveToStorage();
+        });
+
+        input.addEventListener('focus', () => {
+            input.value = unformatNumber(input.value);
+        });
+    });
+}
+
+    // localStorage persistence
+    const STORAGE_KEY = 'utopia-sciences-calculator-v1';
+
+    function saveToStorage() {
+        const data = {};
+        document.querySelectorAll('input[data-type]').forEach(input => {
+            const key = input.closest('tr').dataset.science + '-' + input.dataset.type;
+            data[key] = unformatNumber(input.value);
+        });
+        const libsInput = document.getElementById('libraries-percent');
+        if (libsInput) data['libraries-percent'] = libsInput.value;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadFromStorage() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        const data = JSON.parse(saved);
+        document.querySelectorAll('input[data-type]').forEach(input => {
+            const key = input.closest('tr').dataset.science + '-' + input.dataset.type;
+            if (data[key] !== undefined) {
+                let value = data[key];
+                if (input.dataset.type === 'invested' && value !== '') {
+                    value = formatNumber(Math.round(parseFloat(value)));
+                }
+                input.value = value;
+            }
+        });
+        const libsInput = document.getElementById('libraries-percent');
+        if (libsInput && data['libraries-percent'] !== undefined) {
+            libsInput.value = data['libraries-percent'];
+        }
+    }
+
+    // Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadFromStorage();
+    setupInvestedFormatting();
+	updateBonusDisplay();
+    calculateAll();  // Initial load
+
+    // NEW: Force-save the current libraries % on page load so Planner sees it immediately
+    const libsInput = document.getElementById('libraries-percent');
+    if (libsInput) {
+        const libs = parseFloat(libsInput.value) || 0;
+        localStorage.setItem('utopiaHousingPercent', libs.toFixed(2));
+    }
+
+    // Debounced update...
+    let updateTimeout;
+    function debouncedUpdate() {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(() => {
+            calculateAll();
+            saveToStorage();
+        }, 300);
+    }
+
+    // Attach listeners...
+    document.querySelectorAll('input[data-type], #libraries-percent').forEach(input => {
+        input.addEventListener('input', debouncedUpdate);
+
+        if (input.dataset.type === 'invested') {
+            input.addEventListener('blur', () => {
+                const raw = unformatNumber(input.value);
+                if (!isNaN(raw) && raw.trim() !== '') {
+                    input.value = formatNumber(Math.round(parseFloat(raw)));
+                }
+                calculateAll();
+                saveToStorage();
+            });
+        }
+    });
+});
+
+    // Optional reset
+    function resetStorage() {
+        if (confirm("Clear all saved values (including Libraries %)?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
+    }
+    
+    function goToPage(page) {
+    window.location.href = page;  // Navigates to the file (same window)
+}
+
+// DARK/LIGHT MODE TOGGLE
+const toggleButton = document.getElementById('themeToggle');
+const bodyElement = document.body;
+
+// LOAD SAVED THEME PREFERENCE
+const savedTheme = localStorage.getItem('utopiaTheme');
+if (savedTheme === 'dark') {
+    bodyElement.classList.add('dark-mode');
+    toggleButton.textContent = '☀️ Light Mode';
+} else {
+    toggleButton.textContent = '🌙 Dark Mode';
+}
+
+// DARK/LIGHT MODE TOGGLE ON CLICK
+toggleButton.addEventListener('click', () => {
+    bodyElement.classList.toggle('dark-mode');
+
+    if (bodyElement.classList.contains('dark-mode')) {
+        toggleButton.textContent = '☀️ Light Mode';
+        localStorage.setItem('utopiaTheme', 'dark');
+    } else {
+        toggleButton.textContent = '🌙 Dark Mode';
+        localStorage.setItem('utopiaTheme', 'light');
+    }
+});
+
+// Listen for changes from Planner
+window.addEventListener('storage', (e) => {
+  if (e.key === 'utopiaPlanner') {
+    updateBonusDisplay();
+    calculateAll();  // also recalculate with new bonuses
+  }
+});
+
+</script>
+</body>
+</html>
