@@ -1,0 +1,3294 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1200">
+  <title>Utopia Planner</title>
+  <style>
+    :root {
+      --bg: #32373b;
+      --text: #e0e0e0;
+      --text-muted: #a0a0a0;
+      --surface: #3a3f44;
+      --surface-hover: #43484e;
+      --border: #4a5057;
+      --accent: #4fc3f7;
+      --accent-dark: #3aa0d8;
+      --success: #4ade80;
+      --danger: #ff6b6b;
+      --warning: #ff9f43;
+      --gold: #d4af37;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box; /* ensures no padding/margin surprises */
+        width: 100%;
+        min-height: 100vh;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: auto;
+    }
+
+    .planner-container {
+      min-width: 1780px; /* adjust if needed */
+}
+
+    /* Main content wrapper – this is what you'll position */
+    .planner-container {
+      padding-top: 10px;
+      padding-right: 40px;
+      padding-bottom: 40px;
+      padding-left: 60px;     /* Moves everything left or right */
+      max-width: none;
+      margin: 0;
+      transition: margin-left 0.3s ease;
+    }
+
+    /* Header section – easy to move up/down/left/right */
+    .header-section {
+    margin-left: 0px;
+    }
+
+    h1 {
+      color: var(--text);
+      margin: 0 0 8px 0;
+      font-size: 2.2rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin: 0 0 24px 0;
+    }
+
+    /* Input row styling */
+    .row {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+	  margin-left: 0px;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    label {
+      width: 100px;
+      text-align: right;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    select,
+    input[type="number"] {
+      width: 200px;
+      padding: 10px 12px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    select:focus,
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
+    }
+	
+.bonuses-container {
+  display: flex;
+  gap: 40px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.race-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.racebonus-column {
+  width: max-content;
+  min-width: 340px;
+  max-width: 450px;
+  background: var(--surface);
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #4a5057;
+  border-left: 6px solid #4ade80;
+}
+
+.racepenalty-column {
+  min-width: 340px;
+  max-width: 340px;
+  background: #363b40;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #4a5057;
+  border-left: 6px solid var(--danger);
+}
+
+.personality-column {
+  width: max-content;
+  min-width: 320px;
+  max-width: 420px;
+  background: #3d4348;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #4a5057;
+  border-left: 6px solid #4ade80;
+}
+
+.bonus-header {
+  color: #d8d8d8;
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.bonus {
+    color: var(--text);
+    font-size: 0.9rem;
+}
+.penalty { 
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.unique-line {
+  margin: 6px 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ===== COLLAPSIBLE SECTIONS ===== */
+.collapsible {
+    overflow: hidden;
+    max-height: 500px;
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+        max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.7s ease,
+        transform 0.7s ease;
+}
+
+.collapsed {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-8px);
+    margin: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.no-transition {
+    transition: none !important;
+}
+
+.planner-box-accent {
+    background: var(--surface);
+    border: 1px solid #444;
+    border-left: 4px solid #ff4fd8; /* fuchsia accent */
+    border-radius: 10px;
+    padding: 0px 16px;
+    margin-bottom: 12px;
+    display: inline-block;
+}
+
+.settings-btn {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--bg);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+
+  transition: all 0.2s ease;
+}
+
+.settings-btn:hover {
+  background: var(--surface-hover);
+  transform: rotate(20deg);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.2);
+}
+
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 275px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.4);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 10000;
+}
+
+.settings-panel.open {
+  transform: translateX(0);
+}
+
+.settings-content {
+  padding: 20px;
+  font-size: 0.85rem;
+}
+
+.settings-header {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-option {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip
+}
+
+.settings-option input {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.settings-option.indent {
+  margin-left: 20px;
+}
+
+#resetDefaultsBtn {
+  width: calc(100% - 40px); /* leave 20px padding on each side */
+  margin: 20px;
+  padding: 10px 0;
+  background-color: var(--text);  /* dark gray, consistent with panel borders */
+  color: #2c2c2c;             /* text color matches theme */
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;             /* horizontally center text */
+  display: block;                 /* ensures text-align works */
+  line-height: 1.2; 
+  transition: all 0.2s ease;
+}
+
+#resetDefaultsBtn:hover {
+  background-color: #a1a4a7;  /* slightly lighter gray on hover */
+}
+
+/* LEFT PANEL BUTTON STYLE */
+.left-panel-btn {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10%;
+  border: 1px solid var(--bg);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  transition: all 0.2s ease;
+}
+
+.left-panel-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
+}
+
+/* LEFT PANEL STYLE */
+.left-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 150px;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 10px;
+  z-index: 10000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+/* When open */
+.left-panel.open {
+  transform: translateX(0);
+}
+
+.left-panel.open ~ .planner-container {
+  margin-left: 120px; /* same as panel width */
+}
+
+.nav-btn {
+  width: 100%;
+  padding: 5px 0;
+  background-color: var(--text);   /* same as reset button */
+  color: #2c2c2c;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.nav-btn:first-child {
+  margin-top: 60px;
+}
+
+/* Hover effect with blue ring */
+.nav-btn:hover {
+    box-shadow: 
+    0 0 0 2px var(--accent), 
+    0 0 8px rgba(79, 195, 247, 0.2); /* your accent color */
+}
+
+/* Active (selected page) */
+.nav-btn.active {
+  background-color: var(--text);   /* same gray as others */
+  color: #2c2c2c;
+  box-shadow: 
+    0 0 0 2px var(--accent), 
+    0 0 8px rgba(79, 195, 247, 0.6); /* same as hover glow */
+}
+
+/* ====================== MILITARY TARGETS ====================== */
+
+.military-targets {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    width: 520px;
+    border-left: 6px solid #297ac5;
+    margin-right: 0;
+}
+
+.military-title {
+    text-align: left;
+    font-weight: 700;
+    margin-bottom: 16px;
+    font-size: 1.4rem;
+    color: var(--text);
+}
+
+/* OME / DME row */
+.mil-target-inputs {
+    display: flex;
+    justify-content: flex-start;
+    gap: 50px;
+    margin-bottom: 10px;
+}
+
+.mil-target-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mil-target-box label {
+    font-weight: 600;
+    color: var(--text-muted);
+    min-width: 50px;
+}
+
+.mil-target-box input {
+    width: 80px;
+    height: 23px;
+    text-align: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.mil-target-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.25);
+}
+
+/* ====================== MILITARY TABLE ====================== */
+
+#militaryTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.90rem;
+    background: transparent;
+}
+
+#militaryTable th {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 0.90rem;
+    background: rgba(255,255,255,0.04);
+    text-align: center;
+    border-bottom: 2px solid var(--border);
+}
+
+#militaryTable th:first-child {
+    text-align: left;
+    padding-left: 11px;
+}
+
+/* Table body */
+#militaryTable td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);   /* keep horizontal lines */
+    vertical-align: middle;
+}
+
+/* FORCE REMOVE all vertical borders */
+#militaryTable th,
+#militaryTable td {
+    border-left: none !important;
+    border-right: none !important;
+}
+
+/* Units column tighter */
+/* Column widths */
+#militaryTable th:nth-child(1),
+#militaryTable td:nth-child(1) {
+    text-align: left;
+    width: 200px;   /* Units */
+}
+
+#militaryTable th:nth-child(2),
+#militaryTable td:nth-child(2) {
+    text-align: center;
+    width: 50px;    /* Owned */
+}
+
+#militaryTable th:nth-child(3),
+#militaryTable td:nth-child(3) {
+    text-align: center;
+    width: 50px;    /* Training */
+}
+
+#militaryTable th:nth-child(4),
+#militaryTable td:nth-child(4) {
+    text-align: center;
+    width: 120px;    /* Cost */
+}
+
+/* Remove border from last row */
+#militaryTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+#militaryTable input {
+    width: 90px;
+    height: 23px;
+    text-align: center;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 8px 5px 6px;
+    font-size: 0.9rem;
+}
+
+#militaryTable input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.25);
+}
+
+/* Remove number input arrows */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.military-row {
+    display: flex;
+    align-items: flex-start;
+}
+
+.raw-mod-box {
+    width: 260px;
+    margin-left: -10px;
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    box-shadow: none;
+}
+
+#rawModTable {
+    width: calc(100% + 27px);
+    margin-left: -27px;
+    border-collapse: collapse;
+    font-size: 0.90rem;
+    background: transparent;
+    margin-top: 50px;
+}
+
+#rawModTable th {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 0.90rem;
+    background: rgba(255,255,255,0.04);
+    text-align: center;
+    border-bottom: 2px solid var(--border);
+}
+
+#rawModTable td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+#rawModTable input {
+    width: 90px;
+    height: 23px;
+    text-align: center;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 8px 5px 6px;
+    font-size: 0.9rem;
+}
+
+#rawModTable input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.25);
+}
+
+#rawModTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.raw-mod-box {
+    width: 270px;
+    overflow: hidden;
+    position: relative;
+    margin-left: -20px;
+}
+
+/* Inner content that slides */
+.raw-mod-inner {
+    width: 260px;
+    transform: translateX(0);
+    transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Collapsed state */
+.raw-mod-box.collapsed .raw-mod-inner {
+    transform: translateX(-230px); /* 260 - 40 = 220 */
+}
+
+.military-row {
+    position: relative; /* anchor for the floating arrow */
+    display: flex;
+    align-items: flex-start;
+}
+
+#targetsToggle {
+    position: absolute;
+    top: 14px;           /* vertical alignment with tables */
+    left: 740px;         /* horizontal position at the right edge of the mod-target panel when expanded; adjust as needed */
+    width: 18px;
+    height: 18px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    z-index: 1000;
+    transition: left 0.25s ease;
+}
+
+#targetsToggle:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.unit-expand {
+    display: none;
+    font-size: 12px;
+    color: #8fa6c9;
+    font-style: italic;
+    
+}
+
+.unit-expand td {
+    padding: 4px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    line-height: 12px;
+}
+
+.unit-expand-spacer {
+    display: none;
+}
+
+.unit-expand-spacer td {
+    padding: 4px 10px;        /* match the expand row */
+    font-size: 11px;
+    line-height: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+#militaryTable,
+#rawModTable {
+    border-collapse: collapse;
+}
+
+.unit-expand td input,
+.unit-expand-spacer td input {
+    height: 14px;         /* smaller than default 23px */
+    padding: 2px 6px;     /* reduce vertical padding */
+    font-size: 11px;      /* match text size */
+    box-sizing: border-box; /* ensures padding doesn’t overflow */
+}
+
+.unit-expand,
+.unit-expand-spacer {
+    height: 25px;              /* adjust as needed */
+}
+
+/* ==== Military Parser (Floating Box) ==== */
+.military-parser {
+    position: fixed;
+    top: 20px;
+    right: 100px;
+    width: 450px;
+    height: 160px;
+    z-index: 999;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 16px;
+    max-width: 600px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    transition: right 0.3s ease;
+}
+
+/* Textarea */
+.military-parser textarea {
+    width: 100%;
+    height: 95px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Button */
+.parser-actions button {
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: var(--text);
+    color: #2c2c2c;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: right 0.3s ease;
+}
+
+.parser-actions button:hover {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Status text */
+#militaryPasteStatus {
+    margin-left: 10px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* ==== UTOPIA CALENDAR ==== */
+.utopia-calendar {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    width: 260px;
+}
+
+/* Header */
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.calendar-header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: 160px;
+}
+
+#calendarMonth {
+    min-width: 90px;
+    text-align: left;
+}
+
+#calendarYear {
+    min-width: 60px;
+    text-align: right;
+}
+
+.calendar-clickable {
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.calendar-clickable:hover {
+    color: var(--accent);
+}
+
+.calendar-header button {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 6px;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.calendar-header button:hover {
+    border-color: var(--accent);
+}
+
+/* Grid */
+.utopia-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+}
+
+/* Days */
+.utopia-day {
+    padding: 4px;
+    text-align: center;
+    font-size: 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.utopia-day:hover {
+    border-color: var(--accent);
+}
+
+.utopia-day.selected {
+    background: var(--accent);
+    color: #000;
+}
+
+/* Popups */
+.calendar-popup {
+    position: absolute;
+    top: 45px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.95);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    width: 200px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.15s ease;
+    z-index: 1000;
+}
+
+.calendar-popup.active {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+    pointer-events: auto;
+}
+
+.calendar-popup div {
+    text-align: center;
+    padding: 4px;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--bg);
+    border: 1px solid var(--border);
+}
+
+.calendar-popup div:hover {
+    border-color: var(--accent);
+}
+
+.calendar-popup .active-year {
+    background: var(--accent);
+    color: #000;
+}
+
+/* Month picker wider */
+#monthPicker {
+    width: 240px;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Calculation Section */
+.calendar-calculations {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.calendar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.calendar-row input {
+    width: 52px;
+    padding: 3px 4px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    text-align: center;
+}
+
+.result-row strong {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* === PROVINCE SUMMARY BOX === */
+.planner-summary-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    width: 260px;
+    margin-top: 14px;
+}
+
+.planner-summary-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+.summary-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    color: var(--text);
+}
+
+.summary-row strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.summary-row input {
+    width: 70px;
+    padding: 4px 6px;
+    font-size: 0.8rem;
+    text-align: center;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.pers-indent {
+  display: block;
+  padding-left: 252px;   /* controls indentation */
+}
+
+.war-indent {
+  display: block;
+  padding-left: 155px;   /* controls indentation */
+}
+
+.race-indent {
+  display: block;
+  padding-left: 208px;   /* controls indentation */
+}
+	
+  </style>
+</head>
+<body>
+<!-- Last saved timestamp - bottom right -->
+  <div id="lastSaved" 
+       style="position: fixed; 
+              bottom: 16px; 
+              right: 24px; 
+              font-size: 0.8rem; 
+              color: var(--text-muted); 
+              padding: 6px 12px; 
+              border-radius: 6px; 
+              z-index: 9999; 
+              pointer-events: none;
+              backdrop-filter: blur(4px);">
+      Last Edited: <span id="fileDate">--</span>
+  </div>
+
+  <script>
+    // Show the file's actual last-modified date/time
+    const dateSpan = document.getElementById('fileDate');
+    if (document.lastModified && document.lastModified !== "01/01/1970 00:00:00") {
+      const d = new Date(document.lastModified);
+      dateSpan.textContent = d.toLocaleString('en-CA', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
+    } else {
+      dateSpan.textContent = "Unknown";
+    }
+  </script>
+
+<div class="left-panel">
+  <button class="nav-btn active">Planner</button>
+  <button class="nav-btn">Sciences</button>
+  <button class="nav-btn">Parser</button>
+</div>
+
+<button id="leftPanelBtn" class="left-panel-btn">☰</button>
+
+<script>
+  const leftBtn = document.getElementById('leftPanelBtn');
+  const leftPanel = document.querySelector('.left-panel');
+
+  // Load saved state on page load
+  if (localStorage.getItem('leftPanelOpen') === 'true') {
+    leftPanel.classList.add('open');
+  }
+
+  // Toggle and save state
+  leftBtn.addEventListener('click', () => {
+    leftPanel.classList.toggle('open');
+
+    const isOpen = leftPanel.classList.contains('open');
+    localStorage.setItem('leftPanelOpen', isOpen);
+  });
+</script>
+
+<script>
+  // Get the Planner button
+  const plannerBtn = document.querySelector('.left-panel .nav-btn:nth-child(1)');
+
+  // Navigate to Planner page
+  plannerBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Planner.html'; // EDIT: if file name is different
+  });
+
+  // Get the Sciences button
+  const sciencesBtn = document.querySelector('.left-panel .nav-btn:nth-child(2)');
+
+  // Navigate to Sciences page
+  sciencesBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Sciences.html'; // EDIT: if file name is different
+  });
+
+  // Get the Parser button
+  const parserBtn = document.querySelector('.left-panel .nav-btn:nth-child(3)');
+
+  // Navigate to Parser page
+  parserBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Parser.html'; // EDIT: if file name is different
+  });
+</script>
+
+<!-- Main content wrapper -->
+  <div class="planner-container">
+
+<!-- Settings Button -->
+<button id="settingsBtn" class="settings-btn" title="Settings">
+  ⚙
+</button>
+
+<!-- Settings Panel -->
+<div id="settingsPanel" class="settings-panel">
+  <div class="settings-content">
+    <div class="settings-header">Settings</div>
+    
+		<div class="settings-group">
+			<div class="settings-header">Display Options</div>
+
+		<label class="settings-option">
+			<input type="radio" name="minimize" value="none" checked>
+			Expand All
+		</label>
+
+		<label class="settings-option">
+			<input type="radio" name="minimize" value="all">
+			Collapse All
+		</label>
+
+		<label class="settings-option indent">
+			<input type="radio" name="minimize" value="race-bonuses">
+			Collapse Race Bonuses
+		</label>
+
+		<label class="settings-option indent">
+			<input type="radio" name="minimize" value="race-penalties">
+			Collapse Race Penalties
+		</label>
+
+		<label class="settings-option indent">
+			<input type="radio" name="minimize" value="personality">
+			Collapse Personality Bonuses
+		</label>
+
+        <label class="settings-option indent">
+            <input type="radio" name="minimize" value="uniques">
+            Collapse Uniques/War Doctrine
+        </label>
+        
+        <div class="settings-header">Elites Specs Per Acres</div>
+
+        <label class="settings-option">
+            <input type="radio" name="eliteMode" value="offense" id="eliteOffense" checked>
+            Calculate for Offense
+        </label>
+        
+        <label class="settings-option">
+            <input type="radio" name="eliteMode" value="defense" id="eliteDefense">
+            Calculate for Defense
+        </label>
+	</div>
+  </div>
+    <button id="resetDefaultsBtn" class="settings-option" style="margin-top: 20px;">
+    Reset to Defaults
+    </button>
+</div>
+
+<script>
+// ==== SETTINGS PANEL TOGGLE + FLOATING PARSER SHIFT ====
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+const MARGIN = 100;
+
+function getParser() {
+    return document.querySelector('.military-parser');
+}
+
+function updateParserPosition() {
+    const militaryParser = getParser();
+    if (!militaryParser) return;
+
+    const isOpen = settingsPanel.classList.contains('open');
+    
+    if (isOpen) {
+        militaryParser.style.right = (190 + MARGIN) + 'px';   // 275px = settings panel width
+    } else {
+        militaryParser.style.right = MARGIN + 'px';
+    }
+}
+
+// Toggle panel
+settingsBtn.addEventListener('click', () => {
+    settingsPanel.classList.toggle('open');
+    updateParserPosition();
+});
+
+// Close when clicking outside
+document.addEventListener('click', (e) => {
+    if (settingsPanel.classList.contains('open') && 
+        !settingsPanel.contains(e.target) && 
+        e.target !== settingsBtn) {
+        
+        settingsPanel.classList.remove('open');
+        updateParserPosition();
+    }
+});
+
+// Run on load and resize
+window.addEventListener('load', updateParserPosition);
+window.addEventListener('resize', updateParserPosition);
+
+// ==== MINIMIZE OPTIONS LOGIC (KEEP THIS) ====
+const radios = document.querySelectorAll('input[name="minimize"]');
+
+function applyMinimizeSetting(value) {
+    const raceBonus = document.getElementById('raceBonusBox');
+    const racePenalty = document.getElementById('racePenaltyBox');
+    const persBonus = document.getElementById('persBonusBox');
+    const uniquesBox = document.getElementById('uniquesBox');
+
+    const allBoxes = [raceBonus, racePenalty, persBonus, uniquesBox];
+
+    // Reset all first
+    allBoxes.forEach(el => {
+        if (el) el.classList.remove('collapsed');
+    });
+
+    if (value === "all") {
+        allBoxes.forEach(el => {
+            if (el) el.classList.add('collapsed');
+        });
+    }
+
+    if (value === "race-bonuses" && raceBonus) raceBonus.classList.add('collapsed');
+    if (value === "race-penalties" && racePenalty) racePenalty.classList.add('collapsed');
+    if (value === "personality" && persBonus) persBonus.classList.add('collapsed');
+    if (value === "uniques" && uniquesBox) uniquesBox.classList.add('collapsed');
+
+    localStorage.setItem("minimizeSetting", value);
+}
+
+// Attach change listeners
+radios.forEach(radio => {
+    radio.addEventListener('change', (e) => applyMinimizeSetting(e.target.value));
+});
+</script>
+
+<!-- Reset Values -->
+<script>
+const resetBtn = document.getElementById('resetDefaultsBtn');
+
+resetBtn.addEventListener('click', () => {
+  // Default values
+  const defaults = {
+    race: 'Avian',
+    personality: 'Artisan',
+    acres: 400,
+    title: 'Peasant',
+    minimize: 'none'
+  };
+
+  // Reset form fields
+  document.getElementById('race').value = defaults.race;
+  document.getElementById('pers').value = defaults.personality;
+  document.getElementById('acres').value = defaults.acres;
+  document.getElementById('title').value = defaults.title;
+
+  // Reset minimize radios
+  const radios = document.querySelectorAll('input[name="minimize"]');
+  radios.forEach(radio => {
+    radio.checked = radio.value === defaults.minimize;
+  });
+
+  const event = new Event('change');
+  document.querySelector('input[name="minimize"]:checked').dispatchEvent(event);
+
+  // Update bonuses
+  if (typeof updateBonuses === "function") {
+    updateBonuses();
+  }
+
+  // ✅ IMPORTANT: Rebuild military table FIRST
+  if (typeof buildMilitaryTable === "function") {
+    buildMilitaryTable();
+  }
+
+  // ==== RESET HOMES ====
+  document.getElementById('homesPercent').value = 0;
+
+  // ==== RESET RAW TARGETS ====
+  for (let i = 1; i <= 4; i++) {
+    const rawInput = document.getElementById('raw' + i);
+    if (rawInput) rawInput.value = 0;
+  }
+
+  // ==== RESET MILITARY ====
+  setTimeout(() => {
+    document.querySelectorAll('#militaryTable input').forEach(input => {
+      input.value = 0;
+    });
+
+    calculateTotalArmy();
+  }, 0);
+
+  // ==== RESET OME / DME ====
+  if (document.getElementById('ome')) document.getElementById('ome').value = 100;
+  if (document.getElementById('dme')) document.getElementById('dme').value = 100;
+
+  // ==== RESET CALENDAR ====
+  currentYear = 0;
+  currentMonth = 0;
+  selectedDay = 1;
+
+  document.getElementById('trainingPeriod').value = 0;
+  document.getElementById('draftPeriod').value = 0;
+
+  // ==== FORCE UI UPDATE ====
+  renderUtopiaCalendar();
+  calculateTotalPopulation();
+  calculateDates();
+
+  // ==== HARD RESET STORAGE ====
+  localStorage.removeItem('utopiaPlanner');
+
+  // Save fresh clean defaults
+  savePlannerData();
+
+});
+</script>
+
+<!-- Military Paste Parser -->
+<div class="military-parser">
+    <textarea id="pasteMilitary" placeholder="Copy & Paste Utopia Military Page here"></textarea>
+
+    <div class="parser-actions">
+        <button onclick="parseMilitaryPaste()">Apply Military</button>
+        <span id="militaryPasteStatus"></span>
+    </div>
+</div>
+
+<script>
+// === MILITARY PASTE PARSER (Protect Owned Thieves) ===
+function parseMilitaryPaste() {
+    const textarea = document.getElementById('pasteMilitary');
+    const status   = document.getElementById('militaryPasteStatus');
+    const text     = textarea.value.trim();
+
+    if (!text) {
+        status.textContent = "❌ Nothing pasted!";
+        status.style.color = "#ff6b6b";
+        return;
+    }
+
+    status.textContent = "Parsing...";
+    status.style.color = "#4fc3f7";
+
+    let updates = 0;
+    let messages = [];
+
+    const race = document.getElementById('race').value || 'Human';
+    const lines = text.split('\n').map(l => l.trim());
+
+    // IMPORTANT: Save current owned thieves before resetting anything
+    const currentThievesOwned = document.getElementById('curThief').value || "0";
+
+    // Reset all military inputs to 0 EXCEPT owned thieves
+    const resetIds = ['curOff', 'trainOff', 'curDef', 'trainDef', 'curElite', 'trainElite', 'trainThief'];
+    resetIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "0";
+    });
+
+    // 1. Acres
+    let acres = null;
+    for (let i = 0; i < lines.length - 1; i++) {
+        if (lines[i].includes('Money') && lines[i].includes('Peasants') && lines[i].includes('Land')) {
+            const nextLine = lines[i + 1];
+            if (nextLine && /^\d/.test(nextLine)) {
+                const fields = nextLine.split(/[\t\s]+/).filter(f => f);
+                if (fields.length >= 6) {
+                    acres = parseInt(fields[5].replace(/,/g, ''), 10);
+                    break;
+                }
+            }
+        }
+    }
+
+    if (acres && acres > 10) {
+        document.getElementById('acres').value = acres;
+        updates++;
+        messages.push(`Acres → ${acres}`);
+    }
+
+    // 2. OME & DME
+    const omeMatch = text.match(/Offensive Military Effectiveness\s+([\d.]+)%/i);
+    if (omeMatch) {
+        document.getElementById('ome').value = parseFloat(omeMatch[1]);
+        updates++;
+        messages.push(`OME → ${omeMatch[1]}%`);
+    }
+
+    const dmeMatch = text.match(/Defensive Military Effectiveness\s+([\d.]+)%/i);
+    if (dmeMatch) {
+        document.getElementById('dme').value = parseFloat(dmeMatch[1]);
+        updates++;
+        messages.push(`DME → ${dmeMatch[1]}%`);
+    }
+
+    // 3. Owned Units (except Thieves)
+    const armyMatch = text.match(/Army Availability([\s\S]*?)(?=Military Training Estimates|$)/i);
+    if (armyMatch) {
+        const section = armyMatch[1];
+        const armyLines = section.split('\n').map(l => l.trim()).filter(l => l);
+
+        const patterns = {
+            Avian:     { off: /griffin/i,     def: /harpy/i,      elite: /drake/i },
+            "Dark Elf":{ off: /night ranger/i,def: /druid/i,      elite: /drow/i },
+            Dwarf:     { off: /warrior/i,     def: /axeman/i,     elite: /berserker/i },
+            Elf:       { off: /ranger/i,      def: /archer/i,      elite: /elf lord/i },
+            Faery:     { off: /magician/i,    def: /druid/i,      elite: /beastmaster/i },
+            Halfling:  { off: /strongarm/i,   def: /slinger/i,    elite: /brute/i },
+            Human:     { off: /swordsman/i,   def: /archer/i,     elite: /knight/i },
+            Orc:       { off: /goblin/i,      def: /troll/i,       elite: /ogre/i },
+            Undead:    { off: /skeleton/i,    def: /zombie/i,     elite: /ghoul/i },
+            Gnome:     { off: /quick blade/i, def: /pikeman/i,    elite: /golem/i }
+        }[race] || { off: /swordsman/i, def: /archer/i, elite: /knight/i };
+
+        for (const line of armyLines) {
+            const parts = line.replace(/[\t\s]{2,}/g, '\t').split('\t').map(p => p.trim());
+            if (parts.length < 2) continue;
+
+            const unitName = parts[0].toLowerCase();
+            const countStr = parts.find(p => /^\d[\d,]*$/.test(p)) || parts[1];
+            const count = parseInt(countStr.replace(/,/g, ''), 10) || 0;
+
+            if (patterns.off.test(unitName)) {
+                document.getElementById('curOff').value = count;
+                messages.push(`Owned Off → ${count}`);
+            } else if (patterns.def.test(unitName)) {
+                document.getElementById('curDef').value = count;
+                messages.push(`Owned Def → ${count}`);
+            } else if (patterns.elite.test(unitName)) {
+                document.getElementById('curElite').value = count;
+                messages.push(`Owned Elite → ${count}`);
+            }
+            updates++;
+        }
+    }
+
+    // 4. Training Estimates
+    const trainingMatch = text.match(/Military Training Estimates([\s\S]*?)(?=$)/i);
+    if (trainingMatch) {
+        const section = trainingMatch[1];
+        const trainLines = section.split('\n').map(l => l.trim()).filter(l => /^[A-Za-z]/.test(l));
+
+        const trainPatterns = {
+            Avian:     { off: /griffin/i,     def: /harpy/i,      elite: /drake/i,     thief: /thief/i },
+            "Dark Elf":{ off: /night ranger/i,def: /druid/i,      elite: /drow/i,      thief: /thief/i },
+            Dwarf:     { off: /warrior/i,     def: /axeman/i,     elite: /berserker/i, thief: /thief/i },
+            Elf:       { off: /ranger/i,      def: /archer/i,      elite: /elf lord/i,  thief: /thief/i },
+            Faery:     { off: /magician/i,    def: /druid/i,      elite: /beastmaster/i,thief: /thief/i },
+            Halfling:  { off: /strongarm/i,   def: /slinger/i,    elite: /brute/i,     thief: /thief/i },
+            Human:     { off: /swordsman/i,   def: /archer/i,     elite: /knight/i,    thief: /thief/i },
+            Orc:       { off: /goblin/i,      def: /troll/i,       elite: /ogre/i,      thief: /thief/i },
+            Undead:    { off: /skeleton/i,    def: /zombie/i,     elite: /ghoul/i,     thief: /thief/i },
+            Gnome:     { off: /quick blade/i, def: /pikeman/i,    elite: /golem/i,     thief: /thief/i }
+        }[race] || { off: /swordsman/i, def: /archer/i, elite: /knight/i, thief: /thief/i };
+
+        for (const line of trainLines) {
+            let parts = line.split(/\t+/).map(p => p.trim());
+            if (parts.length < 2) continue;
+
+            const unitName = parts[0].toLowerCase();
+            let totalTraining = 0;
+
+            for (let i = 1; i < parts.length; i++) {
+                const cleaned = parts[i].replace(/,/g, '').trim();
+                if (cleaned !== '' && !isNaN(cleaned)) {
+                    totalTraining += parseInt(cleaned, 10);
+                }
+            }
+
+            if (trainPatterns.off.test(unitName)) {
+                document.getElementById('trainOff').value = totalTraining;
+                messages.push(`Train Off → ${totalTraining}`);
+            } else if (trainPatterns.def.test(unitName)) {
+                document.getElementById('trainDef').value = totalTraining;
+                messages.push(`Train Def → ${totalTraining}`);
+            } else if (trainPatterns.elite.test(unitName)) {
+                document.getElementById('trainElite').value = totalTraining;
+                messages.push(`Train Elite → ${totalTraining}`);
+            } else if (trainPatterns.thief.test(unitName)) {
+                document.getElementById('trainThief').value = totalTraining;
+                messages.push(`Train Thieves → ${totalTraining}`);
+            }
+            updates++;
+        }
+    }
+
+    // Restore owned thieves (this is the important protection)
+    document.getElementById('curThief').value = currentThievesOwned;
+    messages.push(`Owned Thieves → kept at ${currentThievesOwned}`);
+
+    // Final Step
+    if (updates > 0) {
+        calculateOffNeeded();
+        calculateDefNeeded();
+        calculateEliteNeeded();
+        calculateTPA();
+        updateTargetRatios();
+        updateExpandRows();
+        saveMilitaryInputs();
+        savePlannerData();
+
+        status.textContent = `✅ Success! Updated ${updates} values.`;
+        status.style.color = "#4ade80";
+        textarea.value = "";
+    } else {
+        status.textContent = "⚠️ Could not find usable military data.";
+        status.style.color = "#ff9f43";
+    }
+}
+</script>
+<script>
+// === THIEF COST WITH PERSONALITY (Heretic -40% Discount) ===
+function getThiefCostWithPersonality() {
+    const baseCost = 500;
+    const pers = document.getElementById('pers').value || "Artisan";
+    if (pers === "Heretic") {
+        return Math.round(baseCost * 1.0);
+    }
+    return baseCost;
+}
+</script>
+
+<script>
+// === GENERAL TRAINING COST MODIFIER ===
+function getUnitTrainingCost(baseCost) {
+    const pers = document.getElementById('pers')?.value || "";
+
+    if (pers === "General") {
+        return Math.round(baseCost * 0.8);
+    }
+
+    return baseCost;
+}
+</script>
+
+<script>
+// === TOTAL ARMY ===
+function calculateTotalArmy() {
+    const ids = [
+        'curOff', 'trainOff',
+        'curDef', 'trainDef',
+        'curElite', 'trainElite',
+        'curThief', 'trainThief'
+    ];
+
+    let total = 0;
+
+    ids.forEach(id => {
+        const input = document.getElementById(id);
+        if (!input) return;
+
+        const cleanValue = input.value.replace(/,/g, '').trim();
+        const value = parseInt(cleanValue, 10) || 0;
+
+        total += value;
+    });
+
+    const totalArmyCell = document.getElementById('totalArmy');
+
+    if (totalArmyCell) {
+        totalArmyCell.textContent = total.toLocaleString();
+        totalArmyCell.style.color = total > 0 ? '#4ade80' : '#ccc';
+    }
+
+    calculateDraftTarget();
+}
+
+// === HOUSING SCIENCE DISPLAY ===
+function updateHousingScienceDisplay() {
+    const savedValue = localStorage.getItem('utopiaHousingOutputPercent');
+    const displayEl = document.getElementById('displayHousingScience');
+
+    if (!displayEl) return;
+
+    if (savedValue && savedValue !== '0.00') {
+        displayEl.textContent = savedValue + '%';
+        displayEl.style.color = '#4ade80';
+    } else {
+        displayEl.textContent = '—%';
+        displayEl.style.color = '#888';
+    }
+
+    calculateTotalPopulation();
+}
+
+// === TOTAL POPULATION ===
+function calculateTotalPopulation() {
+    const acres = parseFloat(document.getElementById('acres')?.value) || 0;
+    const homesPercent = parseFloat(document.getElementById('homesPercent')?.value) || 0;
+    const race = document.getElementById('race')?.value || 'Human';
+    const title = document.getElementById('title')?.value || 'Peasant';
+
+    const housingDisplay =
+        document.getElementById('displayHousingScience')?.textContent || '—%';
+
+    let housingSciencePercent = 0;
+
+    if (housingDisplay !== '—%') {
+        housingSciencePercent = parseFloat(housingDisplay.replace('%', '')) || 0;
+    }
+
+    const basePop = acres * 25;
+    const homesPop = acres * (homesPercent / 100) * 10;
+
+    let raceBonus = 1;
+
+    switch (race) {
+        case 'Halfling':
+            raceBonus = 1.10;
+            break;
+
+        case 'Faery':
+            raceBonus = 0.95;
+            break;
+
+        default:
+            raceBonus = 1;
+    }
+
+    let honorBonus = 1;
+
+    switch (title) {
+        case 'Knight/Lady': honorBonus = 1.01; break;
+        case 'Lord/Noble Lady': honorBonus = 1.02; break;
+        case 'Baron/Baroness': honorBonus = 1.03; break;
+        case 'Viscount/Viscountess': honorBonus = 1.04; break;
+        case 'Count/Countess': honorBonus = 1.06; break;
+        case 'Marquis/Marchioness': honorBonus = 1.08; break;
+        case 'Duke/Duchess': honorBonus = 1.10; break;
+        case 'Prince/Princess': honorBonus = 1.12; break;
+    }
+
+    const finalPop = Math.round(
+        (basePop + homesPop) *
+        raceBonus *
+        (1 + housingSciencePercent / 100) *
+        honorBonus
+    );
+
+    const totalPopEl = document.getElementById('totalPopulation');
+
+    if (totalPopEl) {
+        totalPopEl.textContent = finalPop.toLocaleString();
+        totalPopEl.style.color = finalPop > 0 ? '#4ade80' : '#ccc';
+    }
+
+    calculateDraftTarget();
+}
+
+// === DRAFT TARGET ===
+function calculateDraftTarget() {
+    const army =
+        parseInt(
+            document.getElementById('totalArmy')?.textContent.replace(/,/g, '')
+        ) || 0;
+
+    const pop =
+        parseInt(
+            document.getElementById('totalPopulation')?.textContent.replace(/,/g, '')
+        ) || 0;
+
+    const displayEl = document.getElementById('draftTargetDisplay');
+
+    if (!displayEl) return;
+
+    const percent = pop > 0 ? (army / pop) * 100 : 0;
+
+    displayEl.textContent = percent.toFixed(1) + '%';
+
+    if (percent <= 68) {
+        displayEl.style.color = '#4ade80';
+    } else if (percent <= 79) {
+        displayEl.style.color = '#ff9f43';
+    } else {
+        displayEl.style.color = '#ff6b6b';
+    }
+}
+
+document.addEventListener('input', (e) => {
+    if (e.target.matches('#militaryTable input')) {
+        calculateTotalArmy();
+    }
+
+    if (
+        e.target.id === 'homesPercent' ||
+        e.target.id === 'acres'
+    ) {
+        calculateTotalPopulation();
+    }
+});
+
+['race', 'title'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.addEventListener('change', calculateTotalPopulation);
+    el.addEventListener('input', calculateTotalPopulation);
+});
+
+window.addEventListener('storage', (e) => {
+    if (e.key === 'utopiaHousingOutputPercent') {
+        updateHousingScienceDisplay();
+    }
+});
+</script>
+
+<!-- HEADER -->
+<div class="header-section">
+    <h1>Utopia Province Planner - AGE 115</h1>
+
+<!-- RACE -->
+<div class="row">
+	<label>Race</label>
+    <select id="race" style="width:200px; height:30px; padding-top: 5px; padding-bottom: 5px;">
+    <option>Avian</option>
+    <option>Dark Elf</option>
+    <option>Dwarf</option>
+    <option>Elf</option>
+    <option>Faery</option>
+    <option>Halfling</option>
+    <option>Human</option>
+    <option>Orc</option>
+    <option>Undead</option>
+	<!--<option>Gnome</option> -->
+    </select>
+<!-- PERSONALITY -->
+    <label>Personality</label>
+    <select id="pers" style="width:200px; height:30px; padding-top: 5px; padding-bottom: 5px;">
+    <option>Artisan</option>
+    <option>Heretic</option>
+    <option>Mystic</option>
+    <option>Rogue</option>
+    <option>Tactician</option>
+    <option>Warrior</option>
+    <option>Paladin</option>
+    <option>Necromancer</option>
+    <option>General</option>
+    <option>War Hero</option>
+    </select>
+</div>
+
+<!-- ACRES -->
+<div class="row">
+	<label>Acres</label>
+    <input type="number" id="acres" style="width:200px; height:30px; padding-top: 5px; padding-bottom: 5px;" value="400" min="1" />
+<!-- HONOR -->
+    <label>Honor Title</label>
+    <select id="title" style="width:200px; height:30px; padding-top: 5px; padding-bottom: 5px;">
+    <option>Peasant</option>
+    <option>Knight/Lady</option>
+    <option>Lord/Noble Lady</option>
+    <option>Baron/Baroness</option>
+    <option>Viscount/Viscountess</option>
+    <option>Count/Countess</option>
+    <option>Marquis/Marchioness</option>
+    <option>Duke/Duchess</option>
+    <option>Prince/Princess</option>
+    </select>
+</div>
+
+<!-- SIDE-BY-SIDE RACE & PERSONALITY BONUSES -->
+<div class="bonuses-container">
+    <div class="race-column">
+        <div class="racebonus-column collapsible" id="raceBonusBox"></div>
+        <div class="racepenalty-column collapsible" id="racePenaltyBox"></div>
+    </div>
+    <div class="personality-column collapsible" id="persBonusBox"></div>
+</div>
+
+<div class="planner-box-accent collapsible" id="uniquesBox">
+
+    <!-- RACE UNIQUE ABILITY -->
+    <div class="unique-line" id="raceUniqueLine">
+        <strong>Race Unique Ability:</strong> 
+        <span id="uniqueText">Select a race to see its unique ability</span>
+    </div>
+
+    <!-- PERSONALITY UNIQUE ABILITY -->
+    <div class="unique-line" id="persUniqueLine">
+        <strong>Personality Unique Ability:</strong> 
+        <span id="persUniqueText">Select a personality to see its unique ability</span>
+    </div>
+
+    <!-- WAR DOCTRINE -->
+    <div class="unique-line" id="warDoctrineLine" style="display: none;">
+        <strong>War Doctrine:</strong> 
+        <span id="warDoctrineText">Select a race to see its war doctrine</span>
+    </div>
+
+</div>
+
+<!-- MILITARY TARGETS TABLE -->
+<div class="military-row">
+<div class="military-targets">
+    <div class="military-title">Military Targets</div>
+
+    <!-- OME / DME Row -->
+    <div class="mil-target-inputs">
+        <div class="mil-target-box">
+            <label>OME</label>
+            <input type="number" id="ome" value="100" step="0.1" min="0">
+            <span>%</span>
+        </div>
+        <div class="mil-target-box">
+            <label>DME</label>
+            <input type="number" id="dme" value="100" step="0.1" min="0">
+            <span>%</span>
+        </div>
+    </div>
+
+    <!-- Military Units Table -->
+    <table id="militaryTable" class="section-table">
+        <thead>
+            <tr>
+                <th>Units</th>
+                <th>Owned</th>
+                <th>Training</th>
+                <th>Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be dynamically added by JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+    <!-- Raw/Mod Target Table // EDIT:-->
+    <div class="military-targets raw-mod-box">
+        <div class="raw-mod-inner">
+            <div class="military-title">
+                Targets
+            </div>
+
+            <div id="targetsContent">
+                <table id="rawModTable">
+                    <thead>
+                        <tr>
+                            <th>Raw Target</th>
+                            <th>Mod Target</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="number" id="raw1" oninput="updateExpandRows(); calculateOffNeeded(); saveMilitaryInputs();"></td>
+                            <td><span id="mod1">0</span></td>
+                        </tr>
+                        <tr class="unit-expand-spacer" id="spacer1"><td colspan="2"></td></tr>
+
+                        <tr>
+                            <td><input type="number" id="raw2" oninput="updateExpandRows(); calculateDefNeeded(); saveMilitaryInputs();"></td>
+                            <td><span id="mod2">0</span></td>
+                        </tr>
+                        <tr class="unit-expand-spacer" id="spacer2"><td colspan="2"></td></tr>
+
+                        <tr>
+                            <td><input type="number" id="raw3" oninput="updateExpandRows(); calculateEliteNeeded(); saveMilitaryInputs();"></td>
+                            <td><span id="mod3">0</span></td>
+                        </tr>
+                        <tr class="unit-expand-spacer" id="spacer3"><td colspan="2"></td></tr>
+
+                        <tr>
+                            <td><input type="number" id="raw4" oninput="updateExpandRows(); calculateTPA(); saveMilitaryInputs();"></td>
+                            <td><span id="mod4">0</span></td>
+                        </tr>
+                        <tr class="unit-expand-spacer" id="spacer4"><td colspan="2"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="targetsToggle" onclick="toggleTargets()">◀</div>
+</div>
+
+<!-- Utopia Calendar -->
+<div class="utopia-calendar">
+
+  <div class="calendar-header">
+    <button id="prevBtn">◀</button>
+
+    <div class="calendar-header-center">
+      <span id="calendarMonth" class="calendar-clickable"></span>
+      <span id="calendarYear" class="calendar-clickable"></span>
+    </div>
+
+    <button id="nextBtn">▶</button>
+  </div>
+
+  <div class="calendar-popup" id="yearPicker"></div>
+  <div class="calendar-popup" id="monthPicker"></div>
+
+  <div id="utopiaGrid" class="utopia-grid"></div>
+
+  <div class="calendar-calculations">
+    <div class="calendar-row">
+      <span>Training Period (Days)</span>
+      <input type="number" id="trainingPeriod" value="0" min="0">
+    </div>
+
+    <div class="calendar-row">
+      <span>Drafting Period (Days)</span>
+      <input type="number" id="draftPeriod" value="0" min="0">
+    </div>
+
+    <div class="calendar-row result-row">
+      <span>Draft By</span>
+      <strong id="draftByDate">—</strong>
+    </div>
+
+    <div class="calendar-row result-row">
+      <span>Train By</span>
+      <strong id="trainByDate">—</strong>
+    </div>
+  </div>
+</div>
+
+<!-- POPULATION -->
+<div class="planner-summary-box">
+    <div class="planner-summary-title">Province Summary</div>
+
+    <div class="summary-grid">
+        <div class="summary-row">
+            <span>Total Army</span>
+            <strong id="totalArmy">0</strong>
+        </div>
+
+        <div class="summary-row">
+            <span>Total Population</span>
+            <strong id="totalPopulation">0</strong>
+        </div>
+
+        <div class="summary-row">
+            <span>Draft Target</span>
+            <strong id="draftTargetDisplay">0%</strong>
+        </div>
+
+        <div class="summary-row">
+            <span>Homes %</span>
+            <input type="number" id="homesPercent" value="0" min="0" max="100">
+        </div>
+
+        <div class="summary-row">
+            <span>Housing Science</span>
+            <strong id="displayHousingScience">—%</strong>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateBonuses() {
+    const race = document.getElementById('race').value;
+    const pers = document.getElementById('pers').value;
+
+    // === RACE Bonuses/Penalities ===
+    let raceHtml = '';
+    let raceUnique = "Select a race to see its unique ability";
+	let warDoctrine = "Select a race to see its war doctrine";
+
+	// === AVIAN ===
+    if (race === "Avian") {
+        raceBonusHtml = `
+			<div class="bonus-header">Race Bonuses</div>
+			<span class="bonus">• -20% Attack Time</span><br>
+            <span class="bonus">• -25% Training Time</span><br>
+			<span class="bonus">• -25% Military Wages</span><br>
+            <span class="bonus">• Spells: Town Watch, Illuminate Shadows</span>
+		`;
+
+		racePenaltyHtml = `
+			<div class="bonus-header">Race Penalties</div>
+			<span class="penalty">• -5% Building Efficiency</span><br>
+			<span class="penalty">• No Access to Stables/War Horses</span>
+		`;
+        raceUnique = "(Passive) - Your offensive specialists gain +2 offense point (War Only) (Does not affect NW)";
+		warDoctrine = "(In War): Provides up to −10% Attack Time and +12.5% Birth Rates to you and all your kingdom.";
+    }
+	// === DARK ELF ===
+    else if (race === "Dark Elf") {
+        raceBonusHtml = `
+            <div class="bonus-header">Race Bonuses</div>
+            <span class="bonus">• +35% Instant Spell Damage</span><br>
+            <span class="bonus">• -35% Rune Cost (Not Including Ritual)</span><br>
+            <span class="bonus">• Can Train Thieves with Specialist Credits</span><br>
+            <span class="bonus">• Spells: Blizzard, Mage's Fury, Illuminate Shadows, Pitfalls, Mind Focus</span>
+        `;
+		racePenaltyHtml = `
+			<div class="bonus-header">Race Penalties</div>
+            <span class="penalty">• -15% Birth Rates</span>
+        `;
+        raceUnique = "(Passive) - Successful offensive instant spells refund 40% rune cost.";
+		warDoctrine = "(In War): Provides up to +12.5% Instant Spell Damage and −12.5% Rune Costs to you and all your kingdom.";
+    }
+	// === DWARF ===
+    else if (race === "Dwarf") {
+        raceBonusHtml = `
+            <div class="bonus-header">Race Bonuses</div>
+            <span class="bonus">• +30% Building Efficiency</span><br>
+            <span class="bonus">• -50% Construction Time</span><br>
+            <span class="bonus">• Spells: Miner's Mystique, Town Watch, Reflect Magic</span><br>
+        `;    
+		racePenaltyHtml = `	
+			<div class="bonus-header">Race Penalties</div>
+            <span class="penalty">• Cannot Accelerate Construction</span><br>
+            <span class="penalty">• +10% Attack Time Costs</span>
+        `;
+        raceUnique = "(Passive) - Incoming Raze damage reduced by 15% and Raze damage increased by 20%";
+		warDoctrine = "(In War): Provides up to -12.5% Construction Costs and +12.5% Income for you and all your kingdom.";
+    }
+	// === ELF ===
+    else if (race === "Elf") {
+        raceBonusHtml = `
+            <div class="bonus-header">Race Bonuses</div>
+            <span class="bonus">• +40% Magic Effectiveness (WPA)</span><br>
+            <span class="bonus">• +1 Mana per Tick</span><br>
+            <span class="bonus">• +40% Rune Production</span><br>
+            <span class="bonus">• Spells: Pitfalls, Wrath, Vermin, Sloth</span>
+        `;    
+		racePenaltyHtml = `	
+			<div class="bonus-header">Race Penalties</div>
+            <span class="penalty">• -20% TPA</span>
+        `;
+        raceUnique = "(Passive) - Whenever your province’s mana drops below 40%, all spells you cast while under that threshold deal +25% spell damage. Boost disappears once mana climbs above 40%.";
+		warDoctrine = "(In War): Provides up to +12.5% Offensive WPA and +12.5% Spell Duration to you and all your kingdom.";
+    }
+	// === FAERY ===
+    else if (race === "Faery") {
+        raceBonusHtml = `
+            <div class="bonus-header">Race Bonuses</div>
+            <span class="bonus">• +20% Magic Effectiveness (WPA)</span><br>
+            <span class="bonus">• +25% Spell Duration</span><br>
+            <span class="bonus">• +1 Mana per Tick</span><br>
+            <span class="bonus">• Spells: All Racial Spells</span>
+        `;    
+		racePenaltyHtml = `	
+			<div class="bonus-header">Race Penalties</div>
+            <span class="penalty">• -5% Population</span>
+        `;
+        raceUnique = "(Passive) - Enemy spells cast against Faery provinces have a 20% chance to fail.";
+		warDoctrine = "(In War): Provides up to +12.5% Defensive WPA and -12.5% Damage from Enemy Thievery Operations to you and all your kingdom.";
+    }
+	// === HALFLING ===
+    else if (race === "Halfling") {
+        raceBonusHtml = `
+            <div class="bonus-header">Race Bonuses</div>
+            <span class="bonus">• +10% Max Population</span><br>
+            <span class="bonus">• +1 Stealth per Tick</span><br>
+            <span class="bonus">• +20% Thievery Effectiveness (TPA)</span><br>
+            <span class="bonus">• Spells: Tree of Gold, Greater Protection</span>
+        `;    
+		racePenaltyHtml = `	
+			<div class="bonus-header">Race Penalties</div>
+            <span class="penalty">• +10% Military Casaulties</span>
+        `;
+        raceUnique = "(Passive) - Sabotage operations suffer 50% fewer thievery losses.";
+		warDoctrine = "(In War): Provides up to +12.5% Sabotage Damage and +12.5% Offensive TPA to you and all your kingdom.";
+    }
+	// === HUMAN ===
+    else if (race === "Human") {
+        raceBonusHtml = `
+            <div class="bonus-header">Race Bonuses</div>
+            <span class="bonus">• All lands hold prisoners - 2 per acre</span><br>
+            <span class="bonus">• +1 Stealth per Tick</span><br>
+            <span class="bonus">• -30% Damage from Learn Attacks</span><br>
+            <span class="bonus">• +10% Science Efficiency</span><br>
+            <span class="bonus">• Spells: Fountain of Knowledge, Revelation, Invisibility, Guile, Steal War Horses</span>
+        `;    
+		
+		racePenaltyHtml = `		
+			<div class="bonus-header">Race Penalties</div>
+			<span class="penalty">• Military wage increases take twice as long to fully apply. Wage reductions apply normally.</span><br>
+			<span class="penalty">• +40% Rune Cost (Does NOT Include Rituals)</span>
+        `;
+        raceUnique = "(Passive) - Prisoners generate an additional 2gc per tick and Mercenary costs are reduced by 40%.";
+		warDoctrine = "(In War): Provides up to +12.5% Book Generation and +12.5% Science Effectiveness to you and all your kingdom.";
+    }
+	// === ORC ===
+    else if (race === "Orc") {
+        raceBonusHtml = `
+            <div class="bonus-header">Race Bonuses</div>
+            <span class="bonus">• +5% Gains (Out of War) & +15% Gains (In War)</span><br>
+            <span class="bonus">• -50% Draft Costs</span><br>
+            <span class="bonus">• Spells: Bloodlust, Wrath</span>
+        `;    
+		racePenaltyHtml = `	
+			<div class="bonus-header">Race Penalties</div>
+            <span class="penalty">• -15% Defensive Military Efficiency (DME)</span>
+        `;
+        raceUnique = "(Passive) - Every time an Orc makes a successful attack, a random bonus effect is applied to that attack — the spirit of war is unpredictable and wild.<br>" +
+                            "<span class='race-indent'>• Destroy 25% of enemy resources (gold, runes, food)</span>" +
+                            "<span class='race-indent'>• Increases Military Wages by 25% for 4-6 ticks.</span>" +
+                            "<span class='race-indent'>• -30% Military Losses</span>"
+		warDoctrine = "(In War): Provides up to +10% Offensive Military Efficiency and +12.5% Raze Damage to you and all your kingdom."                            
+    }
+	// === UNDEAD ===
+    else if (race === "Undead") {
+        raceBonusHtml = `
+            <div class="bonus-header">Race Bonuses</div>
+            <span class="bonus">• -45% Military Losses</span><br>
+            <span class="bonus">• Immune to Plague</span><br>
+            <span class="bonus">• No Food Needed</span><br>
+            <span class="bonus">• Always carries Plague and chance to spread</span><br>
+            <span class="bonus">• Spells: Animate Dead, Aggression</span>
+        `;    
+		racePenaltyHtml = `	
+			<div class="bonus-header">Race Penalties</div>
+            <span class="penalty">• -10% Science Efficiency</span>
+        `;
+        raceUnique = "(Passive) - Converts 45% of offensive losses into Soldiers instantly.";
+		warDoctrine = "(In War): Provides up to -12.5% Enemy Battle Gains and +12.5% Increased Plague spread chance (does not grant the ability to spread Plague)";
+    }
+	// === GNOME ===
+    else if (race === "Gnome") {
+        raceBonusHtml = `
+            <div class="bonus-header">Race Bonuses</div>
+            <span class="bonus">• -10% Attack Time (War Only)</span><br>
+            <span class="bonus">• +15% Enemy Military Casualties</span><br>
+            <span class="bonus">• +15% Thievery Effectiveness (TPA)</span><br>
+        `;    
+		racePenaltyHtml = `	
+			<div class="bonus-header">Race Penalties</div>
+            <span class="penalty">• +25% Rune Cost</span><br>
+            <span class="penalty">• -15% Wizards per Acre (WPA)</span>
+        `;
+        raceUnique = "(Passive) - Each successful attack has a chance to provide all the following thievery boosts for 6 days: +20% TPA; –30% Thief Losses; +25% Sabotage Damage. These boosts can stack and display timers on your Throne.";
+		warDoctrine = "(In War): Provides up to −5% Attack Time to you and all your kingdom.";
+    }
+
+    document.getElementById('raceBonusBox').innerHTML = raceBonusHtml;
+	document.getElementById('racePenaltyBox').innerHTML = racePenaltyHtml;
+    document.getElementById('uniqueText').innerHTML = raceUnique;
+	
+	// WAR DOCTRINE DISPLAY
+    const doctrineText = document.getElementById('warDoctrineText');
+    const doctrineLine = document.getElementById('warDoctrineLine');
+
+    if (doctrineText && doctrineLine) {
+        doctrineText.innerHTML = warDoctrine || "No War Doctrine defined for this race.";
+        doctrineLine.style.display = warDoctrine ? "block" : "none";
+    }
+
+    // === PERSONALITY Bonuses ===
+    let persHtml = '';
+    let persUnique = "";
+
+	// === ARTISAN ===
+    if (pers === "Artisan") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +40% Building Capacity (Homes, Stables, Dungeons)</span><br>
+            <span class="bonus">• +40% Building Production (Banks, Farms, Stables, Towers)</span><br>
+            <span class="bonus">• Immune to Plunder, Greed and Incite Riots</span><br>
+            <span class="bonus">• +15% Economy Science Effectiveness</span><br>
+            <span class="bonus">• Spells: Ghost Workers, Greater Protection</span>
+        `;
+        persUnique = "(Passive) - For 3 ticks after a successful attack, enemy's/target's building efficiency is reduced by 10% (Does not stack).";
+    }
+	// === CLERIC ===
+    else if (pers === "Cleric") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +1 Elite Defensive Strength</span><br>
+            <span class="bonus">• +1 Defensive Specialist Strength</span><br>
+            <span class="bonus">• -1 Self-Spell Mana Cost</span><br>
+            <span class="bonus">• +35% Hospital Effectiveness</span><br>
+            <span class="bonus">• Immune to Plague</span>
+        `;
+        persUnique = "(Passive) - When casting self-spells, Clerics have a 50% chance to double their duration.";
+    }
+	// === HERETIC ===
+    else if (pers === "Heretic") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +15% Thievery Effectiveness (TPA)</span><br>
+            <span class="bonus">• +15% Wizard Effectiveness (WPA)</span><br>
+            <span class="bonus">• -50% Thief Losses</span><br>
+            <span class="bonus">• +20% Sabotage Damage</span><br>
+            <span class="bonus">• +20% Spell Damage</span><br>
+            <span class="bonus">• +75% Guilds Effectiveness</span><br>            
+            <span class="bonus">• +15% Arcane Arts Science Effectiveness</span><br>
+            <span class="bonus">• Spells: Nightmares, Fools Gold, Mages Fury, Vermin</span>
+        `;
+        persUnique = "(Active) - After a failed offensive spell cast, the heretic recovers 1% Stealth.";
+    }
+	// === MYSTIC ===
+    else if (pers === "Mystic") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +125% Guild Effectiveness</span><br>
+            <span class="bonus">• +1 Mana Recovery per Tick</span><br>
+            <span class="bonus">• +25% Offensive Spell Duration</span><br>            
+            <span class="bonus">• +25% Channeling Science Effectiveness</span><br>
+            <span class="bonus">• Spells: Pitfalls, Meteor Showers, Chastity</span>
+        `;
+        persUnique = "(Passive) - While above 40% mana, spells gain +20% WPA.";
+    }
+	// === ROGUE ===
+    else if (pers === "Rogue") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +100% Thieves' Den Effectiveness</span><br>
+            <span class="bonus">• +1 Stealth Recovery per Tick</span><br>
+            <span class="bonus">• +20% Thievery Effectiveness (TPA)</span><br>
+            <span class="bonus">• +25% Crime Science Effectiveness</span><br>
+            <span class="bonus">• Access to all Thievery Ops</span>
+        `;
+        persUnique = "(Passive) - Rogue provinces may perform thievery operations while overpopulated.";
+    }
+	// === TACTICIAN ===
+    else if (pers === "Tactician") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• -15% Attack Time</span><br>
+			<span class="bonus">• +40% Specialist Credit Gains</span><br>
+            <span class="bonus">• +25% Draft Speed</span><br>
+            <span class="bonus">• -50% Ambush Losses</span><br>
+            <span class="bonus">• No Thieves Lost on Intel</span><br>
+            <span class="bonus">• +25% Siege Science Effectiveness</span><br>
+			<span class="bonus">• Spells: Clearsight</span>            
+        `;
+        persUnique = "(Passive) - Successful Attacks in War destroy resources as follows:<br>" +
+                            "<span class='pers-indent'>• 10% of Gold</span>" +
+                            "<span class='pers-indent'>• 25% of Runes</span>" +
+                            "<span class='pers-indent'>• 20% of Food</span>"
+    }
+	// === WARRIOR ===
+    else if (pers === "Warrior") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +15% Offensive Military Efficiency (OME)</span><br>
+            <span class="bonus">• +5 Mercenary & Prisoner Strength</span><br>
+            <span class="bonus">• -50% Mercenary Cost</span><br>
+            <span class="bonus">• Mercenaries and Prisoners may be sent at 1 for every 4 normal troops sent</span><br>
+            <span class="bonus">• +25% Tactics Science Effectiveness</span>
+        `;
+        persUnique = "(Passive) - Upon each successful attack, the attack destroys 1% of the targets total population.";
+    }
+	// === PALADIN ===
+    else if (pers === "Paladin") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +2 War Horse Strength (alters NW)</span><br>
+            <span class="bonus">• All lands hold and produces Horses (8 per acre)</span><br>
+			<span class="bonus">• +7.5% Defensive Military Efficiency (DME)</span><br>
+            <span class="bonus">• Immune to Plague</span><br>
+            <span class="bonus">• +25% Strategy Science Effectiveness</span><br>
+            <span class="bonus">• Spells: Divine Shield, Heroes' Inspiration, Illuminate Shadows, Wrath</span>			
+        `;
+        persUnique = "(Passive) - Successful Attacks in War or Hostile apply a mini effect:<br>" +
+                            "<span class='pers-indent'>• Temporarily suppresses 15% of target's science effectiveness for 6–8 ticks</span>" +
+                            "<span class='pers-indent'>• Temporarily reduces Book Generation by 20% for 6-8 ticks</span>"
+    }
+	// === NECROMANCER ===
+    else if (pers === "Necromancer") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +35% Wizard Effectiveness (WPA)</span><br>
+            <span class="bonus">• +5% Offensive Military Efficiency (OME)</span><br>
+            <span class="bonus">• -50% Rune Cost (Excludes Ritual)</span><br>			
+            <span class="bonus">• +25% Channeling Science Effectiveness</span><br>
+            <span class="bonus">• Spells: Animate Dead, Mind Focus, Soul Blight, Guile, Nightmare</span>
+        `;
+        persUnique = "(Passive) - Successful offensive instant spells also inflict necrotic fallout on the target province: kills 1% of target peasants per successful instant spell.";
+    }
+	// === GENERAL ===
+    else if (pers === "General") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +1 General</span><br>            
+            <span class="bonus">• -20% Military Train Time & Train Cost</span><br>
+            <span class="bonus">• Can Train 1 Elite for every 2 Specialist Credits</span><br>
+			<span class="bonus">• +15% Military Science Efficiency</span><br>
+			<span class="bonus">• Spells: Mist, Wrath</span>
+        `;
+        persUnique = "(Passive) - Attacks inflict +15% enemy military casualties when two or more generals are sent.";
+    }
+	// === WAR HERO ===
+    else if (pers === "War Hero") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +15% Honor Gains</span><br>
+            <span class="bonus">• +70% Honor Effects</span><br>
+            <span class="bonus">• +2 Offensive Specialist Strength (Affects NW)</span><br>
+            <span class="bonus">• +25% Siege Science Efficiency</span><br>
+            <span class="bonus">• Spells: Quick Feet, Righteous Aggressor, Heroic Inspiration</span>
+        `;
+        persUnique = "(Passive) - Successful Massacres kill +7% additional peons and kill an additional 2.5% thieves and wizards.";
+    }
+	
+    document.getElementById('persBonusBox').innerHTML = persHtml;
+    document.getElementById('persUniqueText').innerHTML = persUnique;
+
+    // Show personality unique only if it exists
+    document.getElementById('persUniqueLine').style.display = persUnique ? "block" : "none";
+}
+
+  document.getElementById('race').addEventListener('change', updateBonuses);
+  document.getElementById('race').addEventListener('change', buildMilitaryTable);
+</script>
+
+<script>
+// ==== CALULCATE MILITARY ====
+function calculateMilitary() {
+    const ome = parseFloat(document.getElementById('ome').value) || 0;
+    const dme = parseFloat(document.getElementById('dme').value) || 0;
+
+    console.log("OME:", ome);
+    console.log("DME:", dme);
+}
+
+// ==== BUILD MILITARY TABLE (Stable version) ====
+function buildMilitaryTable() {
+    const race = document.getElementById('race').value;
+    const tableBody = document.querySelector('#militaryTable tbody');
+    tableBody.innerHTML = '';
+
+    const units = {
+        Avian:     { off: "Griffin 12/0",       def: "Harpies 0/10",    elite: "Drakes 16/3",          specCost: 350, eliteCost: 750 },
+        "Dark Elf":{ off: "Night Rangers 15/0", def: "Druids 0/11",     elite: "Drows 4/12",           specCost: 350, eliteCost: 750 },
+        Dwarf:     { off: "Warriors 10/0",      def: "Axemen 0/10",    elite: "Berserkers 15/5",       specCost: 350, eliteCost: 800 },
+        Elf:       { off: "Rangers 10/0",       def: "Archers 0/13",   elite: "Elf Lords 15/4",        specCost: 350, eliteCost: 750 },
+        Faery:     { off: "Magicians 10/0",     def: "Druids 0/10",    elite: "Beastmasters 4/16",     specCost: 350, eliteCost: 1000 },
+        Halfling:  { off: "Strongarms 10/0",    def: "Slingers 0/10",  elite: "Brutes 6/12",           specCost: 350, eliteCost: 700 },
+        Human:     { off: "Swordsmen 12/0",     def: "Archers 0/10",   elite: "Knights 16/3",          specCost: 350, eliteCost: 750 },
+        Orc:       { off: "Goblins 13/0",       def: "Trolls 0/10",    elite: "Ogres 18/2",            specCost: 350, eliteCost: 800 },
+        Undead:    { off: "Skeletons 11/0",     def: "Zombies 0/10",   elite: "Ghouls 17/4",           specCost: 350, eliteCost: 800 },
+        Gnome:     { off: "Quick Blades 11/0",  def: "Pikemen 0/10",   elite: "Golems 14/4",           specCost: 350, eliteCost: 900 }
+    }[race];
+
+    if (!units) return;
+
+    const addRow = (name, curId, trainId, baseCost, isThief = false) => {
+        let finalCost = baseCost;
+
+        // Thief logic stays unchanged
+        if (isThief) {
+            finalCost = getThiefCostWithPersonality();
+        } else {
+            // GENERAL applies to ALL military units (except thieves)
+            finalCost = getUnitTrainingCost(baseCost);
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${name}</td>
+            <td><input type="text" class="number-input mil-input" id="${curId}" value="0"></td>
+            <td><input type="text" class="number-input mil-input" id="${trainId}" value="0"></td>
+            <td>$${finalCost.toLocaleString()}</td>
+        `;
+        tableBody.appendChild(row);
+
+        const expandRow = document.createElement('tr');
+        expandRow.classList.add('unit-expand');
+        expandRow.id = curId + 'Expand';
+        const cleanName = name.replace(/\s\d+\/\d+$/, '');
+
+        expandRow.innerHTML = `
+            <td colspan="4">
+                Train <span class="train-amount">0</span> ${cleanName}
+                | Cost: <span class="train-cost">$0</span>
+            </td>
+        `;
+        tableBody.appendChild(expandRow);
+
+        // Restore saved values
+        const savedData = JSON.parse(localStorage.getItem('utopiaPlanner') || '{}');
+        const curInput = row.querySelector(`#${curId}`);
+        const trainInput = row.querySelector(`#${trainId}`);
+        curInput.value = savedData[curId] || 0;
+        trainInput.value = savedData[trainId] || 0;
+
+        formatHandler.call(curInput);
+        formatHandler.call(trainInput);
+
+        const recalculateAll = () => {
+            saveMilitaryInputs();
+            updateTargetRatios();
+            calculateOffNeeded();
+            calculateDefNeeded();
+            calculateEliteNeeded();
+            calculateTPA();
+            updateAllTrainingCosts();
+        };
+
+        curInput.addEventListener('input', recalculateAll);
+        trainInput.addEventListener('input', recalculateAll);
+    };
+
+    // === WAR HERO OSPEC BONUS ===
+    function getOffSpecBonus() {
+        const pers = document.getElementById('pers')?.value;
+        if (pers === "War Hero") {
+            return 2;
+        }
+        return 0;
+    }
+
+    // Add units
+    addRow(
+        (() => {
+            const bonus = getOffSpecBonus();
+            const base = units.off;
+
+            // show visual +2 only if War Hero is active
+            if (bonus > 0) {
+                return base.replace(/(\d+)(\/\d+)/, (match, atk, def) => {
+                    return `${parseInt(atk) + bonus}${def}`;
+                });
+            }
+
+            return base;
+        })(),
+        'curOff',
+        'trainOff',
+        units.specCost
+    );
+
+    addRow(units.def,   'curDef',   'trainDef',   units.specCost);
+    addRow(units.elite, 'curElite', 'trainElite', units.eliteCost);
+    addRow("Thieves",   'curThief', 'trainThief', 500, true);   // true = use personality discount
+
+    applyNumberFormatting();
+
+    // Force refresh after table is rebuilt
+    setTimeout(() => {
+        updateTargetRatios();
+        updateExpandRows();
+        calculateOffNeeded();
+        calculateDefNeeded();
+        calculateEliteNeeded();
+        calculateTPA();
+    }, 40);
+
+    // Extra safety listeners for Elites (so "Train X" updates when you type in Owned/Training)
+    const curEliteInput = document.getElementById('curElite');
+    const trainEliteInput = document.getElementById('trainElite');
+    if (curEliteInput) curEliteInput.addEventListener('input', calculateEliteNeeded);
+    if (trainEliteInput) trainEliteInput.addEventListener('input', calculateEliteNeeded);
+}
+
+function triggerMilitaryCalculations(id) {
+    if (id.includes('Off')) calculateOffNeeded();
+    if (id.includes('Def')) calculateDefNeeded();
+    if (id.includes('Elite')) calculateEliteNeeded();
+    if (id.includes('Thief')) calculateTPA();
+}
+
+// ==== UPDATE MODTARGETS (OSPA, DSPA, TPA) ====
+function updateTargetRatios() {
+    const acres = parseInt(document.getElementById('acres').value) || 0;
+    if (acres <= 0) return;
+
+    const totalOff = getNumber('curOff') + getNumber('trainOff');
+    const totalDef = getNumber('curDef') + getNumber('trainDef');
+    const totalThief = getNumber('curThief') + getNumber('trainThief');
+
+    document.getElementById('mod1').textContent = (totalOff / acres).toFixed(2);
+    document.getElementById('mod2').textContent = (totalDef / acres).toFixed(2);
+    document.getElementById('mod4').textContent = (totalThief / acres).toFixed(2);
+}
+
+// === Get Ospec Strength ===
+function getOspecStrength(race) {
+    const baseValues = {
+        Avian: 12,
+        "Dark Elf": 15,
+        Dwarf: 10,
+        Elf: 10,
+        Faery: 10,
+        Halfling: 10,
+        Human: 12,
+        Orc: 13,
+        Undead: 11,
+        Gnome: 11
+    };
+
+    const base = baseValues[race] || 10;
+
+    const pers = document.getElementById('pers')?.value;
+    const warHeroBonus = (pers === "War Hero") ? 2 : 0; // EDIT: War Hero +2 Ospec
+
+    return base + warHeroBonus;
+}
+
+// === CALCULATE OSPA ===
+function calculateOffNeeded() {
+    const acres = parseInt(document.getElementById('acres').value) || 0;
+    const targetOSPA = parseFloat(document.getElementById('raw1').value) || 0;
+    const ome = parseFloat(document.getElementById('ome').value) || 100;
+
+    const ownedOff = getNumber('curOff');
+    const trainingOff = getNumber('trainOff');
+    const total = ownedOff + trainingOff;
+
+    const race = document.getElementById('race').value;
+
+    // === FINAL OSPEC STRENGTH (includes War Hero) ===
+    const offValue = getOspecStrength(race);
+
+    // Safety check
+    const safeOffValue = offValue > 0 ? offValue : 10;
+
+    // === TARGET CALCULATION ===
+    const pointsPerAcre = acres * targetOSPA;
+    const totalOffPointsTarget = pointsPerAcre * 10;
+
+    const adjusted = totalOffPointsTarget / (ome / 100);
+
+    const totalSpecsNeeded = Math.round(adjusted / safeOffValue);
+
+    const needToTrain = totalSpecsNeeded - total;
+
+    // === UI UPDATE ===
+    const expandRow = document.getElementById('curOffExpand');
+
+    if (expandRow) {
+        const trainAmountEl = expandRow.querySelector('.train-amount');
+        const trainCostEl = expandRow.querySelector('.train-cost');
+
+        if (trainAmountEl) {
+            trainAmountEl.textContent =
+                Math.max(0, needToTrain).toLocaleString();
+        }
+
+        if (trainCostEl) {
+            trainCostEl.textContent =
+                '$' + (Math.max(0, needToTrain) * 350).toLocaleString();
+        }
+    }
+}
+
+// ==== CALCULATE DSPA ====
+function calculateDefNeeded() {
+    const acres = parseInt(document.getElementById('acres').value) || 0;
+    const targetDSPA = parseFloat(document.getElementById('raw2').value) || 0;
+    const dme = parseFloat(document.getElementById('dme').value) || 100;
+
+    const ownedDef = getNumber('curDef');
+    const trainingDef = getNumber('trainDef');
+    const total = ownedDef + trainingDef;
+
+    const race = document.getElementById('race').value;
+    const defValues = { Avian:10, "Dark Elf":11, Dwarf:10, Elf:13, Faery:10, Halfling:10, Human:10, Orc:10, Undead:10, Gnome:10 };
+    const defValue = defValues[race] || 10;
+
+    const pointsPerAcre = acres * targetDSPA;
+    const totalDefPointsTarget = pointsPerAcre * 10;
+    const adjusted = totalDefPointsTarget / (dme / 100);
+    const totalSpecsNeeded = Math.round(adjusted / defValue);
+
+    const needToTrain = totalSpecsNeeded - total;
+
+    const expandRow = document.getElementById('curDefExpand');
+    if (expandRow) {
+        expandRow.querySelector('.train-amount').textContent = Math.max(0, needToTrain).toLocaleString();
+        expandRow.querySelector('.train-cost').textContent = '$' + (Math.max(0, needToTrain) * getUnitTrainingCost(350)).toLocaleString();
+    }
+}
+
+// ==== CALCULATE ESPA ====
+function calculateEliteNeeded() {
+    console.log("%c=== ELITE CALC RUNNING ===", "color: lime; font-weight: bold");
+
+    const acres = parseInt(document.getElementById('acres').value) || 0;
+    const rawTarget = parseFloat(document.getElementById('raw3').value) || 0;
+
+    let mode = "offense";
+    const checked = document.querySelector('input[name="eliteMode"]:checked');
+    if (checked) mode = checked.value;
+
+    const omeVal = parseFloat(document.getElementById('ome')?.value);
+    const dmeVal = parseFloat(document.getElementById('dme')?.value);
+
+    const efficiency = mode === "offense"
+        ? (isNaN(omeVal) ? 100 : omeVal)
+        : (isNaN(dmeVal) ? 100 : dmeVal);
+
+    const owned = getNumber('curElite');
+    const training = getNumber('trainElite');
+    const total = owned + training;
+
+    const race = document.getElementById('race').value.trim();
+
+    // === FULL RACE LIST - RELIABLE LOOKUP ===
+    const eliteStrength = {
+        "Avian":     { off: 16, def: 3 },
+        "Dark Elf":  { off: 4,  def: 12 },
+        "Dwarf":     { off: 15, def: 5 },
+        "Elf":       { off: 15, def: 4 },
+        "Faery":     { off: 4,  def: 16 },
+        "Halfling":  { off: 6, def: 12 },
+        "Human":     { off: 16, def: 3 },
+        "Orc":       { off: 18, def: 2 },
+        "Undead":    { off: 17, def: 4 },
+        "Gnome":     { off: 14, def: 4 }
+    };
+
+    const modeKey = (mode === "offense") ? "off" : "def";
+    const strengthPerElite = eliteStrength[race] ? eliteStrength[race][modeKey] || 10 : 10;
+
+    console.log(`Race="${race}" | Mode=${mode} | Strength/Elite=${strengthPerElite}`);
+
+    const eliteCosts = {
+        "Avian": 750, "Dark Elf": 750, "Dwarf": 800, "Elf": 750,
+        "Faery": 1000, "Halfling": 700, "Human": 750, "Orc": 800,
+        "Undead": 800, "Gnome": 900
+    };
+    const costPerUnit = eliteCosts[race] || 900;
+
+    // === CORRECT MATH (same as OSPA/DSPA) ===
+    const totalStrengthNeeded = (acres * rawTarget * 10) / (efficiency / 100);
+    const totalElitesNeeded = Math.round(totalStrengthNeeded / strengthPerElite);
+    const needToTrain = Math.max(0, totalElitesNeeded - total);
+
+    // Update "Train X" line
+    const expandRow = document.getElementById('curEliteExpand');
+    if (expandRow) {
+        const amountEl = expandRow.querySelector('.train-amount');
+        const costEl   = expandRow.querySelector('.train-cost');
+        if (amountEl) amountEl.textContent = needToTrain.toLocaleString();
+        if (costEl)   costEl.textContent   = '$' + (needToTrain * costPerUnit).toLocaleString();
+    }
+
+    // Update mod target
+    const modEl = document.getElementById('mod3');
+    if (modEl) modEl.textContent = acres > 0 ? (total / acres).toFixed(2) : "0.00";
+
+    console.log(`Need to train = ${needToTrain}`);
+    console.log("%c=== ELITE CALC END ===", "color: lime; font-weight: bold");
+}
+
+// ==== ELITE MODE SAVE / LOAD ====
+function setupEliteMode() {
+    const save = () => {
+        const selected = document.querySelector('input[name="eliteMode"]:checked')?.value || 'offense';
+        localStorage.setItem('eliteMode', selected);
+    };
+
+    const load = () => {
+        const saved = localStorage.getItem('eliteMode') || 'offense';
+        const id = saved === 'offense' ? 'eliteOffense' : 'eliteDefense';
+        const radio = document.getElementById(id);
+        if (radio) radio.checked = true;
+    };
+
+    document.querySelectorAll('input[name="eliteMode"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            save();
+            calculateEliteNeeded();
+        });
+    });
+
+    load();
+}
+
+// ==== CALCULATE TPA ====
+function calculateTPA() {
+    const acres = parseInt(document.getElementById('acres').value) || 0;
+    const owned = getNumber('curThief');
+    const training = getNumber('trainThief');
+    const total = owned + training;
+
+    const modEl = document.getElementById('mod4');
+    if (modEl) modEl.textContent = acres > 0 ? (total / acres).toFixed(2) : "0.00";
+
+    const rawTarget = parseFloat(document.getElementById('raw4').value) || 0;
+    const targetThieves = Math.ceil(rawTarget * acres);
+    const needToTrain = Math.max(0, targetThieves - total);
+
+    const thiefCost = getThiefCostWithPersonality();
+
+    const expandRow = document.getElementById('curThiefExpand');
+    if (expandRow) {
+        expandRow.querySelector('.train-amount').textContent = needToTrain.toLocaleString();
+        expandRow.querySelector('.train-cost').textContent = '$' + (needToTrain * thiefCost).toLocaleString();
+    }
+}
+
+// ==== UPDATE TRAIN AMOUNTS + COSTS (Only for non-calculated units) ====
+function updateAllTrainingCosts() {
+}
+
+function applyNumberFormatting() {
+    document.querySelectorAll('#militaryTable .number-input').forEach(input => {
+
+        input.removeEventListener('input', formatHandler);
+        input.removeEventListener('focus', focusHandler);
+        input.removeEventListener('blur', blurHandler);
+
+        input.addEventListener('input', formatHandler);
+        input.addEventListener('focus', focusHandler);
+        input.addEventListener('blur', blurHandler);
+    });
+}
+
+function formatHandler(e) {
+    let raw = this.value.replace(/,/g, '');
+    if (raw === '' || isNaN(raw)) return;
+
+    let cursorPos = this.selectionStart;
+    let oldLength = this.value.length;
+
+    this.value = Number(raw).toLocaleString();
+
+    let newLength = this.value.length;
+    this.selectionEnd = cursorPos + (newLength - oldLength);
+}
+
+function focusHandler() {
+    this.value = this.value.replace(/,/g, '');
+}
+
+function blurHandler() {
+    let raw = this.value.replace(/,/g, '');
+    if (!isNaN(raw) && raw !== '') {
+        this.value = Number(raw).toLocaleString();
+    }
+}
+
+function getNumber(id) {
+    const val = document.getElementById(id).value.replace(/,/g, '');
+    return parseInt(val) || 0;
+}
+
+function saveMilitaryInputs() {
+    const saved = JSON.parse(localStorage.getItem('utopiaPlanner') || '{}');
+
+    // Save all inputs from the military table (Owned + Training)
+    document.querySelectorAll('#militaryTable input').forEach(input => {
+        let value = input.value.replace(/,/g, '');
+        saved[input.id] = value;
+    });
+
+    // Save the Raw Target inputs (raw1, raw2, raw3, raw4)
+    for (let i = 1; i <= 4; i++) {
+        const rawInput = document.getElementById('raw' + i);
+        if (rawInput) {
+            saved['raw' + i] = rawInput.value;
+        }
+    }
+
+    localStorage.setItem('utopiaPlanner', JSON.stringify(saved));
+}
+
+// ==== Expand Military Rows ====
+function updateExpandRows() {
+    const pairs = [
+        { raw: 'raw1', mod: 'mod1', expand: 'curOffExpand', spacer: 'spacer1' },
+        { raw: 'raw2', mod: 'mod2', expand: 'curDefExpand', spacer: 'spacer2' },
+        { raw: 'raw3', mod: 'mod3', expand: 'curEliteExpand', spacer: 'spacer3' },
+        { raw: 'raw4', mod: 'mod4', expand: 'curThiefExpand', spacer: 'spacer4' }
+    ];
+
+    pairs.forEach(p => {
+        const rawVal = document.getElementById(p.raw).value;
+        const modVal = document.getElementById(p.mod).value;
+        const expandRow = document.getElementById(p.expand);
+        const spacerRow = document.getElementById(p.spacer);
+
+        if (!expandRow || !spacerRow) return;
+
+        if (parseFloat(rawVal) > 0 || parseFloat(modVal) > 0) {
+            expandRow.style.display = 'table-row';
+            spacerRow.style.display = 'table-row';
+        } else {
+            expandRow.style.display = 'none';
+            spacerRow.style.display = 'none';
+        }
+    });
+
+    updateAllTrainingCosts();
+    calculateTPA();
+}
+
+// ==== UTOPIA CALENDAR ====
+const utopiaMonths = [
+    "January", "February", "March",
+    "April", "May", "June", "July"
+];
+
+let currentYear = 0;
+let currentMonth = 0;
+let selectedDay = 1;
+
+// === RENDER CALENDAR ===
+function renderUtopiaCalendar() {
+    const grid = document.getElementById('utopiaGrid');
+    const monthEl = document.getElementById('calendarMonth');
+    const yearEl = document.getElementById('calendarYear');
+
+    if (!grid || !monthEl || !yearEl) return;
+
+    monthEl.textContent = utopiaMonths[currentMonth];
+    yearEl.textContent = `YR${currentYear}`;
+
+    grid.innerHTML = '';
+
+    for (let d = 1; d <= 24; d++) {
+        const day = document.createElement('div');
+        day.className = 'utopia-day';
+        day.textContent = d;
+
+        if (d === selectedDay) {
+            day.classList.add('selected');
+        }
+
+        day.addEventListener('click', () => {
+            selectedDay = d;
+            renderUtopiaCalendar();
+            calculateDates();
+            savePlannerData();
+        });
+
+        grid.appendChild(day);
+    }
+}
+
+// === DATE CALCULATOR ===
+function calculateDates() {
+    const trainingDays = parseInt(
+        document.getElementById('trainingPeriod')?.value || 0
+    );
+
+    const draftDays = parseInt(
+        document.getElementById('draftPeriod')?.value || 0
+    );
+
+    function subtractDays(year, month, day, days) {
+        let totalDays = (month * 24) + day - days;
+
+        while (totalDays <= 0) {
+            totalDays += 168;
+            year--;
+            if (year < 0) year = 12;
+        }
+
+        return {
+            year,
+            month: Math.floor((totalDays - 1) / 24),
+            day: ((totalDays - 1) % 24) + 1
+        };
+    }
+
+    const trainDate = subtractDays(
+        currentYear,
+        currentMonth,
+        selectedDay,
+        trainingDays
+    );
+
+    const draftDate = subtractDays(
+        trainDate.year,
+        trainDate.month,
+        trainDate.day,
+        draftDays
+    );
+
+    document.getElementById('trainByDate').textContent =
+        `YR${trainDate.year} ${utopiaMonths[trainDate.month]} ${trainDate.day}`;
+
+    document.getElementById('draftByDate').textContent =
+        `YR${draftDate.year} ${utopiaMonths[draftDate.month]} ${draftDate.day}`;
+}
+
+// === BUILD YEAR PICKER ===
+function buildYearPicker() {
+    const picker = document.getElementById('yearPicker');
+    picker.innerHTML = '';
+
+    for (let y = 0; y <= 12; y++) {
+        const div = document.createElement('div');
+        div.textContent = `YR${y}`;
+
+        if (y === currentYear) {
+            div.classList.add('active-year');
+        }
+
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            currentYear = y;
+            picker.classList.remove('active');
+
+            renderUtopiaCalendar();
+            calculateDates();
+            savePlannerData();
+        });
+
+        picker.appendChild(div);
+    }
+}
+
+// === BUILD MONTH PICKER ===
+function buildMonthPicker() {
+    const picker = document.getElementById('monthPicker');
+    picker.innerHTML = '';
+
+    utopiaMonths.forEach((month, i) => {
+        const div = document.createElement('div');
+        div.textContent = month;
+
+        if (i === currentMonth) {
+            div.classList.add('active-year');
+        }
+
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            currentMonth = i;
+            picker.classList.remove('active');
+
+            renderUtopiaCalendar();
+            calculateDates();
+            savePlannerData();
+        });
+
+        picker.appendChild(div);
+    });
+}
+
+// ==== SAVE ALL PLANNER DATA ====
+function savePlannerData() {
+    const saved = JSON.parse(localStorage.getItem('utopiaPlanner') || '{}');
+
+    saved.race = document.getElementById('race').value;
+    saved.pers = document.getElementById('pers').value;
+    saved.acres = document.getElementById('acres').value;
+    saved.title = document.getElementById('title').value;
+    saved.ome = document.getElementById('ome')?.value;
+    saved.dme = document.getElementById('dme')?.value;
+
+    saved.homes = document.getElementById('homesPercent')?.value || 0;
+
+    saved.calendar = {
+        year: currentYear,
+        month: currentMonth,
+        day: selectedDay,
+        training: document.getElementById('trainingPeriod')?.value || 0,
+        draft: document.getElementById('draftPeriod')?.value || 0
+    };
+
+    // ==== SAVE RAW TARGETS ====
+    for (let i = 1; i <= 4; i++) {
+        const rawInput = document.getElementById('raw' + i);
+        if (rawInput) {
+            saved['raw' + i] = rawInput.value;
+        }
+    }
+
+    // ==== SAVE MILITARY INPUTS ====
+    saved.military = {};
+    document.querySelectorAll('#militaryTable input').forEach(input => {
+        saved.military[input.id] = input.value;
+    });
+
+    localStorage.setItem('utopiaPlanner', JSON.stringify(saved));
+}
+
+// Save whenever any field changes
+['race', 'pers', 'acres', 'title', 'ome', 'dme', 'homesPercent', 'trainingPeriod', 'draftPeriod'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        // Use 'input' for live updates on Acres and OME
+        const eventType = (id === 'acres' || id === 'ome') ? 'input' : 'change';
+
+        el.addEventListener('change', () => {
+            savePlannerData();
+
+            if (id === 'race' || id === 'pers') {
+                updateBonuses();
+                buildMilitaryTable();
+
+                setTimeout(() => {
+                    updateExpandRows();
+                    calculateTPA();
+                    updateTargetRatios();
+                    calculateTotalPopulation();
+                }, 0);
+            }
+
+            if (id === 'acres' || id === 'ome' || id === 'dme') {
+                calculateOffNeeded();
+                calculateDefNeeded();
+                calculateEliteNeeded();
+                calculateTPA();
+                updateTargetRatios();
+                updateExpandRows();
+            }
+        });
+    }
+});
+
+// OME and DME listeners
+['ome', 'dme'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('input', () => {
+            calculateOffNeeded();
+            calculateDefNeeded();
+            calculateEliteNeeded();
+            calculateTPA();
+            updateTargetRatios();
+            updateExpandRows();
+        });
+    }
+});
+
+// Strong DME listener - this is what was missing for live "Train X" updates
+const dmeInput = document.getElementById('dme');
+if (dmeInput) {
+    dmeInput.addEventListener('input', () => {
+        calculateDefNeeded();
+        calculateEliteNeeded();
+        updateTargetRatios();
+        updateExpandRows();
+    });
+}
+
+// ==== LOAD SAVED DATA ====
+function loadPlannerData() {
+    const saved = localStorage.getItem('utopiaPlanner');
+    if (!saved) return;
+
+    try {
+        const data = JSON.parse(saved);
+
+        if (data.race) document.getElementById('race').value = data.race;
+        if (data.pers) document.getElementById('pers').value = data.pers;
+        if (data.acres) document.getElementById('acres').value = data.acres;
+        if (data.title) document.getElementById('title').value = data.title;
+        if (data.ome) document.getElementById('ome').value = data.ome;
+        if (data.dme) document.getElementById('dme').value = data.dme;
+
+        // Load Raw Target values
+        for (let i = 1; i <= 4; i++) {
+            const rawInput = document.getElementById('raw' + i);
+            if (rawInput && data['raw' + i] !== undefined) {
+                rawInput.value = data['raw' + i];
+            }
+        }
+
+        // ✅ LOAD HOMES
+        if (data.homes !== undefined) {
+            document.getElementById('homesPercent').value = data.homes;
+        }
+
+        // ✅ LOAD CALENDAR
+        if (data.calendar) {
+            currentYear = data.calendar.year ?? 0;
+            currentMonth = data.calendar.month ?? 0;
+            selectedDay = data.calendar.day ?? 1;
+
+            document.getElementById('trainingPeriod').value = data.calendar.training || 0;
+            document.getElementById('draftPeriod').value = data.calendar.draft || 0;
+        }
+
+        // === LOAD MILITARY INPUTS ===
+        if (data.military) {
+            Object.keys(data.military).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = data.military[id];
+            });
+        }
+
+    } catch (e) {
+        console.warn('Failed to load planner data:', e);
+    }
+}
+
+// ModTarget Table Toggle + Save State
+function toggleTargets() {
+    const box = document.querySelector(".raw-mod-box");
+    const content = document.getElementById("targetsContent");
+    const toggle = document.getElementById("targetsToggle");
+
+    const isCollapsed = box.classList.toggle("collapsed");
+
+    if (isCollapsed) {
+        content.style.display = "none";
+        toggle.innerHTML = "▶";
+        toggle.style.left = "490px";
+    } else {
+        content.style.display = "block";
+        toggle.innerHTML = "◀";
+        toggle.style.left = "740px";
+    }
+
+    // Save state
+    localStorage.setItem("rawModTargetsCollapsed", isCollapsed);
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+
+  const boxes = [
+    "raceBonusBox",
+    "racePenaltyBox",
+    "persBonusBox",
+    "uniquesBox"
+  ];
+
+  // Disable transitions on load
+  boxes.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("no-transition");
+  });
+
+  // Restore individual collapsed states
+  boxes.forEach(id => {
+    const savedState = localStorage.getItem(id + "_collapsed");
+    if (savedState === "true") {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("collapsed");
+    }
+  });
+
+  // Re-enable transitions after layout loads
+  setTimeout(() => {
+    boxes.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("no-transition");
+    });
+  }, 50);
+
+  // Minimize radio buttons
+  document.querySelectorAll('input[name="minimize"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      applyMinimizeSetting(this.value);
+    });
+  });
+
+  // Load saved minimize setting
+  const savedMinimize = localStorage.getItem("minimizeSetting");
+  if (savedMinimize) {
+    const radio = document.querySelector(`input[name="minimize"][value="${savedMinimize}"]`);
+    if (radio) radio.checked = true;
+    applyMinimizeSetting(savedMinimize);
+  }
+
+});
+</script>
+<script>
+window.addEventListener('load', () => {
+
+    try {
+
+        // === LOAD + BUILD CORE ===
+        if (typeof loadPlannerData === "function") loadPlannerData();
+        if (typeof buildMilitaryTable === "function") buildMilitaryTable();
+
+        if (typeof updateBonuses === "function") updateBonuses();
+
+        if (typeof savePlannerData === "function") savePlannerData();
+
+        if (typeof setupEliteMode === "function") setupEliteMode();
+
+        // === RESTORE UI STATE ===
+        const isCollapsed = localStorage.getItem("rawModTargetsCollapsed");
+        const box = document.querySelector(".raw-mod-box");
+        const content = document.getElementById("targetsContent");
+        const toggle = document.getElementById("targetsToggle");
+
+        if (box && content && toggle) {
+            if (isCollapsed === "true") {
+                box.classList.add("collapsed");
+                content.style.display = "none";
+                toggle.innerHTML = "▶";
+                toggle.style.left = "490px";
+            } else {
+                box.classList.remove("collapsed");
+                content.style.display = "block";
+                toggle.innerHTML = "◀";
+                toggle.style.left = "740px";
+            }
+        }
+
+        // === CALCULATIONS ===
+        setTimeout(() => {
+            if (typeof updateHousingScienceDisplay === "function") updateHousingScienceDisplay();
+            if (typeof calculateTotalArmy === "function") calculateTotalArmy();
+            if (typeof calculateTotalPopulation === "function") calculateTotalPopulation();
+
+            if (typeof calculateTPA === "function") calculateTPA();
+            if (typeof calculateOffNeeded === "function") calculateOffNeeded();
+            if (typeof calculateDefNeeded === "function") calculateDefNeeded();
+            if (typeof updateExpandRows === "function") updateExpandRows();
+            if (typeof updateAllTrainingCosts === "function") updateAllTrainingCosts();
+            if (typeof calculateEliteNeeded === "function") calculateEliteNeeded();
+        }, 250);
+
+
+        // === CALENDAR INIT ===
+        if (typeof renderUtopiaCalendar === "function") renderUtopiaCalendar();
+        if (typeof calculateDates === "function") calculateDates();
+
+        // === CALENDAR EVENTS (SAFE) ===
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const yearEl = document.getElementById('calendarYear');
+        const monthEl = document.getElementById('calendarMonth');
+        const yearPicker = document.getElementById('yearPicker');
+        const monthPicker = document.getElementById('monthPicker');
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 6;
+                    currentYear--;
+                    if (currentYear < 0) currentYear = 12;
+                }
+
+                renderUtopiaCalendar();
+                calculateDates();
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                currentMonth++;
+                if (currentMonth > 6) {
+                    currentMonth = 0;
+                    currentYear++;
+                    if (currentYear > 12) currentYear = 0;
+                }
+
+                renderUtopiaCalendar();
+                calculateDates();
+            });
+        }
+
+        if (yearEl && yearPicker && monthPicker) {
+            yearEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                buildYearPicker();
+                yearPicker.classList.toggle('active');
+                monthPicker.classList.remove('active');
+            });
+        }
+
+        if (monthEl && yearPicker && monthPicker) {
+            monthEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                buildMonthPicker();
+                monthPicker.classList.toggle('active');
+                yearPicker.classList.remove('active');
+            });
+        }
+
+        document.addEventListener('click', () => {
+            if (yearPicker) yearPicker.classList.remove('active');
+            if (monthPicker) monthPicker.classList.remove('active');
+        });
+
+        const trainingEl = document.getElementById('trainingPeriod');
+        const draftEl = document.getElementById('draftPeriod');
+
+        if (trainingEl) trainingEl.addEventListener('input', calculateDates);
+        if (draftEl) draftEl.addEventListener('input', calculateDates);
+
+        // === POPULATION LISTENERS ===
+        ['race', 'title'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            el.addEventListener('change', calculateTotalPopulation);
+            el.addEventListener('input', calculateTotalPopulation);
+        });
+
+    } catch (e) {
+        console.error("Planner crashed:", e);
+    }
+
+});
+</script>
+</body>
+</html>
+
+<!-- BUG FIXES
+1. Fix training input for thieves, not populating after parsing
+2. Update training cost when General selected
+3. Update offensive value when war hero selected
+-->
