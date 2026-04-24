@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Utopia Parser</title>
+
+  <style>
+    :root {
+      --bg: #32373b;
+      --text: #e0e0e0;
+      --text-muted: #a0a0a0;
+      --surface: #3a3f44;
+      --surface-hover: #43484e;
+      --border: #4a5057;
+      --accent: #4fc3f7;
+      --accent-dark: #3aa0d8;
+      --success: #4ade80;
+      --danger: #ff6b6b;
+      --warning: #ff9f43;
+      --gold: #d4af37;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box; /* ensures no padding/margin surprises */
+        width: 100%;
+        min-height: 100vh;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: auto;
+    }
+
+    /* Main content wrapper – this is what you'll position */
+    .planner-container {
+      padding-top: 10px;
+      padding-right: 40px;
+      padding-bottom: 40px;
+      padding-left: 60px;     /* Moves everything left or right */
+      max-width: none;
+      margin: 0;
+      transition: margin-left 0.3s ease;
+    }
+
+    /* Header section – easy to move up/down/left/right */
+    .header-section {
+    margin-left: 0px;
+    }
+
+    h1 {
+      color: var(--text);
+      margin: 0 0 8px 0;
+      font-size: 2.2rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+.settings-btn {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--bg);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+
+  transition: all 0.2s ease;
+}
+
+.settings-btn:hover {
+  background: var(--surface-hover);
+  transform: rotate(20deg);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.2);
+}
+
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 275px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.4);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 10000;
+}
+
+.settings-panel.open {
+  transform: translateX(0);
+}
+
+.settings-content {
+  padding: 20px;
+  font-size: 0.85rem;
+}
+
+.settings-header {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-group.saved-summaries {
+    margin-top: 100px;       /* reduce vertical spacing */
+    padding-top: 2px;      /* remove extra top padding */
+}
+
+/* Tighten spacing under Saved Summaries title */
+.settings-group.saved-summaries .settings-header {
+    margin-bottom: 2px;  /* default might be bigger */
+}
+
+/* Tighten spacing between title and input */
+.settings-group.saved-summaries .save-container {
+    margin-top: 2px;     /* reduces gap */
+}
+
+.settings-option {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip
+}
+
+.settings-option input {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.settings-option.indent {
+  margin-left: 20px;
+}
+
+#resetDefaultsBtn {
+  width: calc(100% - 40px); /* leave 20px padding on each side */
+  margin: 20px;
+  padding: 10px 0;
+  background-color: var(--text);  /* dark gray, consistent with panel borders */
+  color: #2c2c2c;             /* text color matches theme */
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;             /* horizontally center text */
+  display: block;                 /* ensures text-align works */
+  line-height: 1.2; 
+  transition: all 0.2s ease;
+}
+
+#resetDefaultsBtn:hover {
+  background-color: #a1a4a7;  /* slightly lighter gray on hover */
+}
+
+/* LEFT PANEL BUTTON STYLE */
+.left-panel-btn {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10%;
+  border: 1px solid var(--bg);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  transition: all 0.2s ease;
+}
+
+.left-panel-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
+}
+
+/* LEFT PANEL STYLE */
+.left-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 150px;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 10px;
+  z-index: 10000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+/* When open */
+.left-panel.open {
+  transform: translateX(0);
+}
+
+.left-panel.open ~ .planner-container {
+  margin-left: 120px; /* same as panel width */
+}
+
+.nav-btn {
+  width: 100%;
+  padding: 5px 0;
+  background-color: var(--text);   /* same as reset button */
+  color: #2c2c2c;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.nav-btn:first-child {
+  margin-top: 60px;
+}
+
+/* Hover effect with blue ring */
+.nav-btn:hover {
+    box-shadow: 
+    0 0 0 2px var(--accent), 
+    0 0 8px rgba(79, 195, 247, 0.2); /* your accent color */
+}
+
+/* Active (selected page) */
+.nav-btn.active {
+  background-color: var(--text);   /* same gray as others */
+  color: #2c2c2c;
+
+  box-shadow: 
+    0 0 0 2px var(--accent), 
+    0 0 8px rgba(79, 195, 247, 0.6); /* same as hover glow */
+}
+
+/* Parser Paste Container */
+.parser-paste-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+  width: 50%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Textarea inside parser box */
+.parser-paste-box textarea {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  font-family: Consolas, monospace;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* Button row */
+.parser-button-row {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+/* Buttons */
+.parser-button-row button {
+  background: var(--text);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Parser Button - Offensive Hover (Blue) */
+.btn-offense:hover {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Parser Button - Defensive Hover (Red) */
+.btn-defense:hover {
+  box-shadow: 0 0 0 2px #e05a5a;
+}
+
+/* Parser Output/Results Container */
+.parser-results-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+  width: 50%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Parser Output/Results Header */
+.parser-results-header {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+/* Parser Results/Output textarea */
+.parser-results-box textarea {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  font-family: Consolas, monospace;
+  font-size: 14px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+#output {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  font-family: Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;           /* crucial for preserving newlines and <br> */
+  word-wrap: break-word;
+  color: var(--text);
+  min-height: 120px;
+}
+
+.details {
+  display: none;
+  margin: 8px 0 12px 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  background: rgba(79, 195, 247, 0.08);   /* subtle blue tint */
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.prov-line {
+  display: block;
+  margin: 3px 0;
+  color: #a0d0ff;
+  padding-left: 4px;
+}
+
+.expand-link {
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 13px;
+  user-select: none;
+}
+
+.expand-link:hover {
+  text-decoration: underline;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.save-container {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin: 6px 0;
+}
+
+#kingdomTag {
+    flex: 1;
+    height: 24px;
+    padding: 4px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+/* When user clicks the input */
+#kingdomTag:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.2);
+}
+
+#saveSummaryBtn {
+    height: 24px;
+    padding: 0 10px;
+    background: var(--text);
+    color: black;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+#saveSummaryBtn:hover {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+.saved-kingdoms {
+    max-height: 180px;
+    overflow-y: auto;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;   /* centers buttons */
+    gap: 6px;              /* spacing between buttons */
+    padding: 4px 0;
+}
+
+.saved-kingdoms button.active-summary {
+    box-shadow: 0 0 0 2px rgb(150, 46, 163);
+    border-left: 4px solid rgb(150, 46, 163);
+    color: black
+}
+
+.saved-kingdoms button {
+    height: 24px;
+    padding: 0 28px 0 10px;
+    background: var(--text);
+    color: black;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    width: 100%;
+    max-width: 180px;
+    min-width: 150px;
+    position: relative;
+    text-align: left;
+}
+
+.saved-kingdoms button:hover {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+.saved-row {
+    display: flex;
+    justify-content: center;
+    margin: 4px 0;
+}
+
+.delete-inside {
+    position: absolute;
+    right: 8px;
+    top: 55%;
+    transform: translateY(-50%);
+    color: #e74c3c;
+    font-weight: bold;
+    font-size: 17px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.delete-inside:hover {
+    color: #ff6b5a;
+}
+
+.saved-kingdoms button:has(.delete-inside:hover) {
+    box-shadow: none;
+}
+
+.saved-note {
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 4px;
+    width: 100%;
+}
+  </style>
+</head>
+<body>
+<!-- Last saved timestamp - bottom right -->
+  <div id="lastSaved" 
+       style="position: fixed; 
+              bottom: 16px; 
+              right: 24px; 
+              font-size: 0.8rem; 
+              color: var(--text-muted); 
+              padding: 6px 12px; 
+              border-radius: 6px; 
+              z-index: 9999; 
+              pointer-events: none;
+              backdrop-filter: blur(4px);">
+      Last Edited: <span id="fileDate">--</span>
+  </div>
+
+  <script>
+    // Show the file's actual last-modified date/time
+    const dateSpan = document.getElementById('fileDate');
+    if (document.lastModified && document.lastModified !== "01/01/1970 00:00:00") {
+      const d = new Date(document.lastModified);
+      dateSpan.textContent = d.toLocaleString('en-CA', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
+    } else {
+      dateSpan.textContent = "Unknown";
+    }
+  </script>
+
+<div class="left-panel">
+  <button class="nav-btn">Planner</button>
+  <button class="nav-btn">Sciences</button>
+  <button class="nav-btn active">Parser</button>
+  <button class="nav-btn" data-page="buildings">Buildings</button>
+</div>
+
+<button id="leftPanelBtn" class="left-panel-btn">☰</button>
+
+<script>
+  const leftBtn = document.getElementById('leftPanelBtn');
+  const leftPanel = document.querySelector('.left-panel');
+
+  // Load saved state on page load
+  if (localStorage.getItem('leftPanelOpen') === 'true') {
+    leftPanel.classList.add('open');
+  }
+
+  // Toggle and save state
+  leftBtn.addEventListener('click', () => {
+    leftPanel.classList.toggle('open');
+
+    const isOpen = leftPanel.classList.contains('open');
+    localStorage.setItem('leftPanelOpen', isOpen);
+  });
+</script>
+
+<script>
+  // Get the Planner button
+  const plannerBtn = document.querySelector('.left-panel .nav-btn:nth-child(1)');
+
+  // Navigate to Planner page
+  plannerBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Planner.html'; // EDIT: if file name is different
+  });
+
+  // Get the Sciences button
+  const sciencesBtn = document.querySelector('.left-panel .nav-btn:nth-child(2)');
+
+  // Navigate to Sciences page
+  sciencesBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Sciences.html'; // EDIT: if file name is different
+  });
+
+  // Get the Parser button
+  const parserBtn = document.querySelector('.left-panel .nav-btn:nth-child(3)');
+
+  // Navigate to Parser page
+  parserBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Parser.html'; // EDIT: if file name is different
+  });
+
+  // Get the Buildings button
+  const buildingsBtn = document.querySelector('.left-panel .nav-btn:nth-child(4)');
+
+  // Navigate to the Buildings page
+  buildingsBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Buildings.html'; // EDIT: if file name is different
+  });
+</script>
+
+<!-- Main content wrapper -->
+  <div class="planner-container">
+
+<!-- Settings Button -->
+<button id="settingsBtn" class="settings-btn" title="Settings">
+  ⚙
+</button>
+
+<!-- Settings Panel -->
+<div id="settingsPanel" class="settings-panel">
+
+  <div class="settings-content">
+    
+    <div class="settings-header">Settings</div>
+
+    <div class="settings-group">
+        <div class="settings-header">Display Options</div>
+    </div>
+
+    <div class="settings-group saved-summaries">
+        <div class="settings-header">Saved Summaries</div>
+
+        <div class="save-container">
+            <input id="kingdomTag" type="text" placeholder="Ex// 3:10">
+            <button id="saveSummaryBtn">Save</button>
+        </div>
+
+        <div id="savedKingdoms" class="saved-kingdoms"></div>
+
+        <div class="saved-note">
+            Saved summaries (click to load)
+        </div>
+    </div>
+
+  </div>
+
+  <div class="settings-footer">
+      <button id="resetDefaultsBtn" class="settings-option">
+          Clear Saved Summaries
+      </button>
+  </div>
+
+</div>
+
+<script>
+  // ==== SETTINGS PANEL TOGGLE ====
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsPanel = document.getElementById('settingsPanel');
+
+  // Toggle panel when button is clicked
+  settingsBtn.addEventListener('click', () => {
+    settingsPanel.classList.toggle('open');
+  });
+
+  // Close panel when clicking outside of it
+  document.addEventListener('click', (e) => {
+    const target = e.target;
+    if (settingsPanel.classList.contains('open') && 
+        target !== settingsPanel && 
+        !settingsPanel.contains(target) && 
+        target !== settingsBtn) {
+      settingsPanel.classList.remove('open');
+    }
+  });
+</script>
+
+<!-- Header/Title -->
+<div class="header-section">
+    <h1>Utopia T/M War Parser</h1>
+
+<!-- Input Text Field --> 
+<div class="parser-paste-box">
+    <textarea id="input" rows="14" placeholder="Paste Province News and/or Logs Here..."></textarea>
+    
+    <!-- Parser Buttons (Offensive/Defensive) -->
+    <div class="parser-button-row">
+      <button id="parseOffenseBtn" class="btn-offense">Parse Offensive Summary</button>
+      <button id="parseDefenseBtn" class="btn-defense">Parse Defensive Summary</button>
+    </div>
+</div>
+
+<!-- Parser Output Field -->
+<div class="parser-results-box">
+    <div class="parser-results-header">War Summary</div>
+    <div id="output">Summary will appear here...</div>
+</div>
+
+<script>
+// BEST OF BOTH WORLDS: v1.3.7's rock-solid province extractor
+function getTargetProvince(line) {
+    let match;
+
+    // 1. Try specific patterns first (keep your originals + add spell-specific ones)
+    match = line.match(/lands of ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/skies of ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/guilds of ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/over ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/of them[.,]?\s+([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/to and from ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/lands of our enemies.*?lands of ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/gluttony of ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/womenfolk of ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/drought will reign over the lands of ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/vow of chastity for \d+ days!\s*\(([^()]+?)\s*\(\d+:\d+\)\)/i) ||
+            line.match(/soldiers to turn greedy for \d+ days\.\s*\(([^()]+?)\s*\(\d+:\d+\)\)/i) ||
+			line.match(/Lightning strikes the Towers in ([^()]+?)\s*\(\d+:\d+\)/i);
+
+    if (match && match[1]) {
+        let prov = match[1].trim();
+
+        // Aggressive cleanup (expanded list)
+        prov = prov.replace(/\b(the|and|but|with|from|for|to|in|on|at|of|is|was|were|has|have|our|enemies|illuminated|exposed|thieves|that|walk|through|lands|gluttony|vow|chastity|drought|womenfolk|men|people|guilds|skies|over|increased|reign|taken|rock|haunt|scour|ravaged|much to the chagrin of their|a|an)\b/gi, ' ').trim();
+        prov = prov.replace(/\s+/g, ' ').trim();
+
+        if (prov.length > 2) {
+            const kingdom = line.match(/\(\d+:\d+\)/)[0];
+            return prov + " " + kingdom;
+        }
+    }
+
+    // 2. Ultimate fallback: smarter extraction of province just before the kingdom tag
+    const kingdomMatch = line.match(/\(\d+:\d+\)/);
+    if (!kingdomMatch) return "Unknown";
+
+    const before = line.substring(0, kingdomMatch.index).trim();
+
+    // Try to find province-like name right before the kingdom
+    let fallback = before.match(/([A-Za-z][\w\s'&.-]{2,})\s*$/i);  // last word group
+
+    if (fallback && fallback[1]) {
+        let prov = fallback[1].trim();
+
+        // Extra cleanup for fallback cases
+        prov = prov.replace(/\b(the|and|but|with|from|for|to|in|on|at|of|is|was|were|has|have|our|enemies|gluttony|vow|chastity|drought|womenfolk|men|people|a|an|the)\b/gi, ' ').trim();
+        prov = prov.replace(/^\s*(of|the|in|a|an)\s+/gi, '').trim();
+        prov = prov.replace(/\s+(of|the|in|a|an)\s*$/gi, '').trim();
+        prov = prov.replace(/\s+/g, ' ').trim();
+
+        if (prov.length > 2) {
+            return prov + " " + kingdomMatch[0];
+        }
+    }
+
+    return "Unknown";
+}
+
+const c = {fireball:0,fbP:0,
+			nightmare:0,nmM:0,
+			tornado:0,torA:0,
+			meteor:0,meteorDays:0,
+			landlust:0,llAcres:0,
+			kidnap:0,kdP:0,
+			bribeGen:0,
+			bribeThieves:0,
+			saboWiz:0,saboWizDays:0,
+			nightstrike:0,nsT:0,
+			arson:0,arsA:0,
+			riots:0,riotDays:0,
+			abolish:0,abolishPct:0,
+			pitfalls:0,pitDays:0,
+			propaganda:0, propThievesSent:0,
+			propWizards:0, propOpsWizards:0,
+			propSoldiers:0, propOpsSoldiers:0,
+			propThieves:0, propOpsThieves:0,
+			propSpecs:0, propOpsSpecs:0,
+			propElites:0, propOpsElites:0,
+			exposeThieves:0,exposeDays:0,
+			explosions:0,explosionDays:0,
+			vaultRob:0,goldStolen:0,
+			granRob:0,foodStolen:0,
+			towerRob:0,runesStolen:0,
+			spellAttempts:0,spellSuccess:0,
+			thiefAttempts:0,thiefSuccess:0,
+			aidOutG:0,aidOutB:0,aidOutR:0, aidOutS:0,
+			aidInG:0,aidInB:0,aidInR:0,aidInS:0,
+			dragG:0,dragB:0,dragT:0,dragDmg:0,
+			gluttony:0,gluttonyDays:0,
+			chastity:0,chastityDays:0,
+			droughts:0,droughtsDays:0,
+			greed:0,greedDays:0,
+			stealHorses:0,horsesGained:0,
+			freePrisoners:0,prisonersFreed:0,
+			lightningStrike:0,lightningRunesIncinerated:0,
+			
+			// DEFENSIVE
+			meteorDefCasts:0,meteorDefDays:0,
+			meteorDefPeasantsKilled:0,
+			meteorDefSoldiersKilled:0,
+			meteorDefTroopsKilled:0,
+			chastityDefCasts:0,chastityDefDays:0,
+			exposeThievesDefCasts:0,exposeThievesDefDays:0,
+			gluttonyDefCasts:0,gluttonyDefDays:0,
+			attacksSuffered:0,
+			acresLost:0,
+			soldiersLost:0,
+			troopsLost:0,
+			riotsDefCasts:0,riotsDefDays:0,
+			greedDefCasts:0,greedDefDays:0,
+			pitfallsDefCasts:0,pitfallsDefDays:0,
+			towerRobDefCount:0,runesStolenFromUs:0,
+			vaultRobDefCount:0,goldStolenFromUs:0,
+			thiefAttemptsOnUs:0,thiefFailsOnUs:0,
+			sorceryAttemptsOnUs:0,sorceryFailsOnUs:0,
+			fireballDefCasts:0,fireballDefPeasantsKilled:0};
+
+const hits = {fireball:[],
+				nightmare:[],
+				tornado:[],
+				landlust:[],
+				kidnap:[],
+				bribeGen:[],
+				bribeThieves:[],
+				meteor:[],
+				saboWiz:[],
+				nightstrike:[],
+				arson:[],
+				abolish:[],
+				pitfalls:[],
+				exposeThieves:[],
+				explosions:[],
+				propaganda:[],
+				riots:[],
+				gluttony:[],
+				chastity:[],
+				droughts:[],
+				greed:[],
+				stealHorses:[],
+				freePrisoners:[],
+				lightningStrike:[],
+				vault:[],
+				granary:[],
+				tower:[]};
+
+const perTarget = {fireball:new Map(),
+					nightmare:new Map(),
+					tornado:new Map(),
+					meteor:new Map(),
+					landlust:new Map(),
+					abolish:new Map(),
+					pitfalls:new Map(),
+					propaganda:new Map(),
+					exposeThieves:new Map(),
+					explosions:new Map(),
+					kidnap:new Map(),
+					bribeGen:new Map(),
+					bribeThieves:new Map(),
+					saboWiz:new Map(),
+					nightstrike:new Map(),
+					arson:new Map(),
+					riots:new Map(),
+					gluttony:new Map(),
+					chastity:new Map(),
+					droughts:new Map(),
+					stealHorses:new Map(),
+					greed:new Map(),
+					freePrisoners:new Map(),
+					lightningStrike:new Map(),
+					vault:new Map(),
+					granary:new Map(),
+					tower:new Map()};
+
+function parseLog(mode = 'offensive') {
+    const text = document.getElementById('input').value.trim();
+    if (!text) return alert("Paste your log!");
+
+    document.getElementById('output').innerHTML = ''; // clear previous content
+
+    // Reset
+    Object.keys(c).forEach(k => c[k] = 0);
+    Object.keys(hits).forEach(k => hits[k] = []);
+    Object.keys(perTarget).forEach(k => perTarget[k].clear());
+
+    text.split('\n').forEach(origLine => {
+        const line = origLine.toLowerCase().trim();
+        if (!line) return;
+
+        const target = getTargetProvince(origLine);
+
+        // Failures
+        if (line.includes("spell fails") || line.includes("fizzles")) {
+			// Check if the trimmed original line ends with (Province (X:Y))
+			const trimmed = origLine.trim();
+			const hasTargetProvince = /\(\s*[^()]+\s*\(\d+:\d+\)\s*\)$/i.test(trimmed);
+
+			if (hasTargetProvince) {
+				c.spellAttempts++;
+			}
+		}
+        if (line.includes("foiled") || line.includes("caught") || (line.includes("lost") && line.includes("thieves"))) c.thiefAttempts++;
+
+        // Successful spells
+        if (/spell succeeds/i.test(line) && !/reflected/i.test(line)) {
+			// Check if the trimmed original line ends with (Province (X:Y))
+			const trimmed = origLine.trim();
+			const hasTargetProvince = /\(\s*[^()]+\s*\(\d+:\d+\)\s*\)$/i.test(trimmed);
+
+			if (hasTargetProvince) {
+				c.spellAttempts++;
+				c.spellSuccess++;
+			}
+		}
+
+		// DEFENSIVE: ATTACKS SUFFERED
+		if (line.includes("came through and ravaged our lands") || 
+		    line.includes("forces from") && line.includes("captured") && line.includes("acres") && 
+		    (line.includes("lost") || line.includes("killed"))) {
+			
+			c.attacksSuffered++;
+
+			// Acres lost (captured by enemy)
+			const acresMatch = origLine.match(/captured\s+(\d[\d,]*)\s+acres/i);
+			if (acresMatch) {
+				const acres = parseInt(acresMatch[1].replace(/,/g, ''), 10);
+				c.acresLost += acres;
+			}
+
+			// Soldiers lost
+			const soldiersMatch = origLine.match(/lost\s+(\d[\d,]*)\s+soldiers/i);
+			if (soldiersMatch) {
+				const soldiers = parseInt(soldiersMatch[1].replace(/,/g, ''), 10);
+				c.soldiersLost += soldiers;
+			}
+
+			// Troops/specialists lost (everything after soldiers, before "in this battle")
+			// This catches Archers, Knights, etc. — sum all numbers that look like troop losses
+			let extraTroops = 0;
+			const troopNumbers = origLine.matchAll(/(\d[\d,]*)\s+(?!soldiers)(?!peasants)([A-Za-z\s]+?)(?:,| and |!|$)/gi);
+			for (const m of troopNumbers) {
+				extraTroops += parseInt(m[1].replace(/,/g, ''), 10);
+			}
+			c.troopsLost += extraTroops;
+		}
+		
+		// DEFENSIVE: FAILED INCOMING SABOTAGE OPS
+		if (line.includes("we have found thieves") && 
+		    (line.includes("causing trouble within our lands") || line.includes("causing trouble within our lands!"))) {
+			
+			c.thiefAttemptsOnUs++;
+			c.thiefFailsOnUs++;
+		}
+		
+		// DEFENSIVE: FAILED INCOMING SORCERY OPS
+		if (line.includes("our mages noticed a possible spell attempt") && 
+		    line.includes("causing trouble on our lands")) {
+			
+			c.sorceryAttemptsOnUs++;
+			c.sorceryFailsOnUs++;
+		}
+
+		// 1. ABOLISH RITUAL
+		if (/infest the guilds/i.test(line) && /ritual is now.*% destroyed/i.test(line)) {
+            c.spellAttempts++; c.spellSuccess++; c.abolish++;
+            
+            let abolishTarget = target;
+            const guildsMatch = origLine.match(/guilds of ([^()]+?)\s*\(\d+:\d+\)/i);
+            if (guildsMatch) {
+                const prov = guildsMatch[1].trim();
+                const kingdom = origLine.match(/\(\d+:\d+\)/)[0];
+                abolishTarget = prov + " " + kingdom;
+            }
+
+            if (!perTarget.abolish.has(abolishTarget)) perTarget.abolish.set(abolishTarget,{c:0,t:0});
+            perTarget.abolish.get(abolishTarget).c++;
+
+            const v = 2;  // Each cast destroys 2%
+            c.abolishPct += v;
+            hits.abolish.push(v);
+            perTarget.abolish.get(abolishTarget).t += v;
+        }
+		
+		// 2. AMNESIA
+		// 3. BLIZZARD
+		
+		// 4. CHASTITY
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /vow of chastity for \d+ days/i.test(line)) {
+			c.spellAttempts++;
+			c.spellSuccess++;
+			c.chastity++;
+
+			if (!perTarget.chastity.has(target)) {
+				perTarget.chastity.set(target, {c:0, t:0});
+			}
+			const e = perTarget.chastity.get(target);
+			e.c++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.chastityDays += days;
+				hits.chastity.push(days);
+				e.t += days;
+			}
+		}
+		
+		// DEFENSIVE CHASTITY
+		if (line.includes("womenfolk's vow of chastity") && line.includes("for") && line.includes("days")) {
+			c.chastityDefCasts++;
+			c.sorceryAttemptsOnUs++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.chastityDefDays += days;
+			}
+		}
+		
+		// 5. DROUGHTS
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /drought will reign over the lands of/i.test(line)) {
+			c.spellAttempts++;
+			c.spellSuccess++;
+			c.droughts++;
+
+			if (!perTarget.droughts.has(target)) {
+				perTarget.droughts.set(target, {c:0, t:0});
+			}
+			const e = perTarget.droughts.get(target);
+			e.c++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.droughtsDays += days;
+				hits.droughts.push(days);
+				e.t += days;
+			}
+		}
+		
+		// 6. EXPLOSIONS
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /explosions will rock/i.test(line)) {
+            c.spellAttempts++; c.spellSuccess++; c.explosions++;
+
+            if (!perTarget.explosions.has(target)) perTarget.explosions.set(target,{c:0,t:0});
+            perTarget.explosions.get(target).c++;
+
+            const m = origLine.match(/for (\d+) days/i);
+            if (m) {
+                const v = parseInt(m[1],10);
+                c.explosionDays += v;
+                hits.explosions.push(v);
+                perTarget.explosions.get(target).t += v;
+            }
+        }
+		
+		// 7. EXPOSE THIEVES
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /exposed the thieves that walk through the lands/i.test(line)) {
+            c.spellAttempts++;
+            c.spellSuccess++;
+            c.exposeThieves++;
+
+            if (!perTarget.exposeThieves.has(target)) perTarget.exposeThieves.set(target,{c:0,t:0});
+            perTarget.exposeThieves.get(target).c++;
+
+            const m = origLine.match(/for (\d+) days/i);
+            if (m) {
+                const v = parseInt(m[1],10);
+                c.exposeDays += v;
+                hits.exposeThieves.push(v);
+                perTarget.exposeThieves.get(target).t += v;
+            }
+        }
+		
+		// DEFENSIVE EXPOSE THIEVES
+		if (line.includes("thieves have been exposed by magic") && line.includes("for") && line.includes("days")) {
+			c.exposeThievesDefCasts++;
+			c.sorceryAttemptsOnUs++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.exposeThievesDefDays += days;
+			}
+		}
+		
+		// 8. FIREBALL
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /fireball/i.test(line)) {
+			const m = origLine.match(/(\d[\d,]*)\s+peasants/);
+			if (m) { 
+				const v = parseInt(m[1].replace(/,/g,''),10); 
+				c.fireball++; 
+				c.fbP += v; 
+				hits.fireball.push(v);
+				if (!perTarget.fireball.has(target)) perTarget.fireball.set(target,{c:0,t:0});
+				const e = perTarget.fireball.get(target); 
+				e.c++; 
+				e.t += v; 
+			}
+		}
+
+		// DEFENSIVE FIREBALLS
+		if (line.includes("massive fireball crashed into our lands") && line.includes("killed")) {
+			c.fireballDefCasts++;
+			c.sorceryAttemptsOnUs++;
+
+			// Peasants killed
+			const peasantsMatch = origLine.match(/killed\s+(\d[\d,]*)\s+peasants/i);
+			if (peasantsMatch) {
+				const peasants = parseInt(peasantsMatch[1].replace(/,/g, ''), 10);
+				c.fireballDefPeasantsKilled += peasants;
+			}
+		}		
+		
+		// 9. FOOL'S GOLD
+		
+		// 10. GLUTTONY
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /gluttony of.*has increased for \d+ days/i.test(line)) {
+			c.spellAttempts++;
+			c.spellSuccess++;
+			c.gluttony++;
+
+			if (!perTarget.gluttony.has(target)) {
+				perTarget.gluttony.set(target, {c:0, t:0});
+			}
+			const e = perTarget.gluttony.get(target);
+			e.c++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.gluttonyDays += days;
+				hits.gluttony.push(days);
+				e.t += days;
+			}
+		}
+		
+		// DEFENSIVE GLUTTONY
+		if (line.includes("fit of gluttony has descended upon our people") && line.includes("for") && line.includes("days")) {
+			c.gluttonyDefCasts++;
+			c.sorceryAttemptsOnUs++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.gluttonyDefDays += days;
+			}
+		}
+		
+		// 11. GREED
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /turn greedy for \d+ days/i.test(line)) {
+			c.spellAttempts++;
+			c.spellSuccess++;
+			c.greed++;
+
+			if (!perTarget.greed.has(target)) {
+				perTarget.greed.set(target, {c:0, t:0});
+			}
+			const e = perTarget.greed.get(target);
+			e.c++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.greedDays += days;
+				hits.greed.push(days);
+				e.t += days;
+			}
+		}
+		
+		// DEFENSIVE: GREED
+		if (line.includes("enemies have convinced our soldiers") && 
+		    line.includes("demand more money") && line.includes("for") && line.includes("days")) {
+			
+			c.greedDefCasts++;
+			c.sorceryAttemptsOnUs++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.greedDefDays += days;
+			}
+		}
+				
+		// 12. LIGHTNING STRIKE
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /lightning strikes the Towers/i.test(line)) {
+			c.spellAttempts++;
+			c.spellSuccess++;
+			c.lightningStrike++;
+
+			if (!perTarget.lightningStrike.has(target)) {
+				perTarget.lightningStrike.set(target, {c:0, t:0});
+			}
+			const e = perTarget.lightningStrike.get(target);
+			e.c++;
+
+			const m = origLine.match(/incinerates\s+([\d,]+)\s+runes/i);
+			if (m) {
+				const runes = parseInt(m[1].replace(/,/g, ''), 10);
+				c.lightningRunesIncinerated += runes;
+				hits.lightningStrike.push(runes);
+				e.t += runes;
+			}
+		}
+		
+		// 13. LAND LUST
+        if (/land lust/i.test(line) && /succeeds/i.test(line)) {
+            c.spellAttempts++; c.spellSuccess++; c.landlust++;
+            if (!perTarget.landlust.has(target)) perTarget.landlust.set(target,{c:0,t:0});
+            perTarget.landlust.get(target).c++;
+            const m = origLine.match(/given us another ([\d,]+) acres/i);
+            if (m) { const v = parseInt(m[1].replace(/,/g,''),10); c.llAcres += v; hits.landlust.push(v); perTarget.landlust.get(target).t += v; }
+        }
+		
+		// 14. MAGIC WARD
+		
+		// 15. METEOR SHOWERS
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /meteors will rain/i.test(line)) {
+			c.spellAttempts++;
+			c.spellSuccess++;
+			c.meteor++;
+
+			if (!perTarget.meteor.has(target)) perTarget.meteor.set(target, {c:0, t:0});
+			perTarget.meteor.get(target).c++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.meteorDays += days;
+				hits.meteor.push(days);
+				perTarget.meteor.get(target).t += days;
+			}
+		}
+		
+		// DEFENSIVE: METEOR SHOWERS
+		if (line.includes("meteors rain across our lands") && line.includes("not expected to stop for")) {
+			c.meteorDefCasts++;
+			c.sorceryAttemptsOnUs++;
+
+			const daysMatch = origLine.match(/for (\d+) days/i);
+			if (daysMatch) {
+				const days = parseInt(daysMatch[1], 10);
+				c.meteorDefDays += days;
+			}
+		}
+		
+		// DEFENSIVE: Meteor damage ticks (peasants + troops killed each tick)
+        if (line.includes("meteors rain across the lands") && line.includes("kill")) {
+            // Peasants
+            const peasantsMatch = origLine.match(/kill\s+(\d[\d,]*)\s+peasants/i);
+            if (peasantsMatch) {
+                const peasants = parseInt(peasantsMatch[1].replace(/,/g, ''), 10);
+                c.meteorDefPeasantsKilled += peasants;
+            }
+
+            // Soldiers (explicit "soldiers" count)
+            const soldiersMatch = origLine.match(/(\d[\d,]*)\s+soldiers/i);
+            if (soldiersMatch) {
+                const soldiers = parseInt(soldiersMatch[1].replace(/,/g, ''), 10);
+                c.meteorDefSoldiersKilled += soldiers;
+            }
+
+            // All other troops (Archers, Knights, Spearmen, etc.) — sum all numbers after soldiers
+            let extraTroops = 0;
+            const troopNumbers = origLine.matchAll(/(\d[\d,]*)\s+(?!peasants)(?!soldiers)([A-Za-z\s]+?)(?:,| and |!|$)/gi);
+            for (const m of troopNumbers) {
+                extraTroops += parseInt(m[1].replace(/,/g, ''), 10);
+            }
+            c.meteorDefTroopsKilled += extraTroops;
+        }
+		
+		// 16. MYSTIC VORTEX
+		
+		// 17. NIGHTMARES
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /nightmare/i.test(line)) {
+			const m = origLine.match(/(\d[\d,]*)\s+of the (men|troops)/);
+			if (m) { 
+				const v = parseInt(m[1].replace(/,/g,''),10); 
+				c.nightmare++; 
+				c.nmM += v; 
+				hits.nightmare.push(v);
+				if (!perTarget.nightmare.has(target)) perTarget.nightmare.set(target,{c:0,t:0});
+				const e = perTarget.nightmare.get(target); 
+				e.c++; 
+				e.t += v; 
+			}
+		}		
+		
+		// 18. Nightfall
+		
+		// 19. PITFALLS
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /pitfalls will haunt/i.test(line)) {
+            c.spellAttempts++; c.spellSuccess++; c.pitfalls++;
+
+            if (!perTarget.pitfalls.has(target)) perTarget.pitfalls.set(target,{c:0,t:0});
+            perTarget.pitfalls.get(target).c++;
+
+            const m = origLine.match(/for (\d+) days/i);
+            if (m) {
+                const v = parseInt(m[1],10);
+                c.pitDays += v;
+                hits.pitfalls.push(v);
+                perTarget.pitfalls.get(target).t += v;
+            }
+        }
+		
+		// DEFENSIVE: PITFALLS
+		if (line.includes("pitfalls are haunting our lands") && 
+		    line.includes("for") && line.includes("days") && line.includes("increased defensive losses")) {
+			
+			c.pitfallsDefCasts++;
+			c.sorceryAttemptsOnUs++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.pitfallsDefDays += days;
+			}
+		}
+		
+		// 20. STORMS
+		
+		// 21. TORNADOES
+		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /tornado/i.test(line)) {
+			const m = origLine.match(/waste to\s+(\d[\d,]*)\s+acres/i);
+			if (m) { 
+				const v = parseInt(m[1].replace(/,/g,''),10); 
+				c.tornado++; 
+				c.torA += v; 
+				hits.tornado.push(v);
+				if (!perTarget.tornado.has(target)) perTarget.tornado.set(target,{c:0,t:0});
+				const e = perTarget.tornado.get(target); 
+				e.c++; 
+				e.t += v; 
+			}
+		}
+		
+		// 22. VERMIN
+
+		// ***SABOTAGE OPERATIONS***
+		
+        // 1. ARSON
+        if (/early indications.+success/i.test(line) && /arson|burn|torch/i.test(line)) {
+            c.thiefAttempts++; c.thiefSuccess++; c.arson++;
+            if (!perTarget.arson.has(target)) perTarget.arson.set(target,{c:0,t:0});
+            perTarget.arson.get(target).c++;
+
+            const m = origLine.match(/(?:torch(?:ed|ing)?|burned down)\s+(\d[\d,]*)\s+acres/i);
+            if (m) {
+                const v = parseInt(m[1].replace(/,/g,''),10);
+                c.arsA += v;
+                hits.arson.push(v);
+                perTarget.arson.get(target).t += v;
+            }
+        }
+		
+		// 2. ASSASSINATE WIZARDS
+		
+		// 3. BRIBE GENERALS
+		if (/early indications.+success/i.test(line) && /bribed an enemy general/i.test(line)) {
+			c.thiefAttempts++;
+			c.thiefSuccess++;
+			c.bribeGen++;
+
+			if (!perTarget.bribeGen.has(target)) perTarget.bribeGen.set(target, {c:0});
+			perTarget.bribeGen.get(target).c++;
+		}
+
+		// 4. BRIBE THIEVES
+		if (/early indications.+success/i.test(line) && 
+		    line.includes("bribed members of our enemies' guild")) {
+			
+			c.thiefAttempts++;
+			c.thiefSuccess++;
+			c.bribeThieves++;
+
+			if (!perTarget.bribeThieves.has(target)) {
+				perTarget.bribeThieves.set(target, {c:0});
+			}
+			const e = perTarget.bribeThieves.get(target);
+			e.c++;
+		}
+		
+		// 5. DESTABILIZE GUILDS
+		
+		// 6. FREE PRISONERS
+		if (/early indications.+success/i.test(line) && 
+		    line.includes("freed") && line.includes("prisoners from enemy dungeons")) {
+			
+			c.thiefAttempts++;
+			c.thiefSuccess++;
+			c.freePrisoners++;
+
+			if (!perTarget.freePrisoners.has(target)) {
+				perTarget.freePrisoners.set(target, {c:0, t:0});
+			}
+			const e = perTarget.freePrisoners.get(target);
+			e.c++;
+
+			// Prisoners freed
+			const freedMatch = origLine.match(/freed\s+(\d[\d,]*)\s+prisoners/i);
+			if (freedMatch) {
+				const prisoners = parseInt(freedMatch[1].replace(/,/g, ''), 10);
+				c.prisonersFreed += prisoners;
+				hits.freePrisoners.push(prisoners);
+				e.t += prisoners;
+			}
+		}
+		
+		// 7. GREATER ARSON
+		
+		// 8. INCITE RIOTS
+        if ((line.includes("incite riots") || line.includes("caused rioting")) && /success|caused/i.test(line)) {
+            c.thiefAttempts++; c.thiefSuccess++; c.riots++;
+            let days = 7;
+            const dm = origLine.match(/(?:last|lasting|for)\s+(\d+)\s+days/i);
+            if (dm) days = parseInt(dm[1],10);
+            c.riotDays += days; hits.riots.push(days);
+            if (!perTarget.riots.has(target)) perTarget.riots.set(target,{c:0,t:0});
+            const e = perTarget.riots.get(target); e.c++; e.t += days;
+        }
+		
+		// DEFENSIVE: INCITE RIOTS
+		if (line.includes("rioting has started amongst our people") && 
+		    line.includes("tax collection") && line.includes("hampered for") && line.includes("days")) {
+			
+			c.riotsDefCasts++;
+			c.thiefAttemptsOnUs++;
+
+			const m = origLine.match(/for (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.riotsDefDays += days;
+			}
+		}
+		
+		// 9. KIDNAPS
+        if (/kidnapped many people/i.test(line)) {
+            c.thiefAttempts++; c.thiefSuccess++;
+            const m = origLine.match(/return with\s+(\d[\d,]*)\s+of them/i);
+            if (m) { const v = parseInt(m[1].replace(/,/g,''),10); c.kidnap++; c.kdP += v; hits.kidnap.push(v);
+                if (!perTarget.kidnap.has(target)) perTarget.kidnap.set(target,{c:0,t:0});
+                const e = perTarget.kidnap.get(target); e.c++; e.t += v; }
+        }
+		
+		// 10. NIGHT STRIKE
+        if (/early indications.+success/i.test(line) && /assassinated/i.test(line)) {
+            c.thiefAttempts++; c.thiefSuccess++; c.nightstrike++;
+            if (!perTarget.nightstrike.has(target)) perTarget.nightstrike.set(target,{c:0,t:0});
+            perTarget.nightstrike.get(target).c++;
+
+            const m = origLine.match(/assassinated\s+(\d[\d,]*)\s+enemy\s+(?:troops?|soldiers?|men)/i);
+            if (m) {
+                const v = parseInt(m[1].replace(/,/g,''),10);
+                c.nsT += v;
+                hits.nightstrike.push(v);
+                perTarget.nightstrike.get(target).t += v;
+            }
+        }		
+		
+		// 11. PROPAGANDA
+		if (/early indications.+success/i.test(line) && /converted.*(from the enemy|of the enemy).*to our (guild|army)/i.test(line)) {
+			c.thiefAttempts++;
+			c.thiefSuccess++;
+			c.propaganda++;
+
+			if (!perTarget.propaganda.has(target)) perTarget.propaganda.set(target, {c:0, t:0});
+			perTarget.propaganda.get(target).c++;
+
+			// Capture thieves sent (always at the end: ", sent 1234)")
+			const sentMatch = origLine.match(/sent\s+(\d[\d,]*)\)$/i);
+			if (sentMatch) {
+				const thievesSent = parseInt(sentMatch[1].replace(/,/g,''), 10);
+				c.propThievesSent += thievesSent;
+				hits.propaganda.push(thievesSent);
+				perTarget.propaganda.get(target).t += thievesSent;
+			}
+
+			// Now detect what was converted
+			const lower = origLine.toLowerCase();
+			let convertedThisOp = false;
+
+			if (lower.includes("wizards")) {
+				const m = origLine.match(/converted\s+(\d[\d,]*)\s+wizards/i);
+				if (m) {
+					c.propWizards += parseInt(m[1].replace(/,/g,''), 10);
+					c.propOpsWizards++;
+					convertedThisOp = true;
+				}
+			}
+			else if (lower.includes("soldiers")) {
+				const m = origLine.match(/converted\s+(\d[\d,]*)\s+soldiers/i);
+				if (m) {
+					c.propSoldiers += parseInt(m[1].replace(/,/g,''), 10);
+					c.propOpsSoldiers++;
+					convertedThisOp = true;
+				}
+			}
+			else if (lower.includes("thieves")) {
+				const m = origLine.match(/converted\s+(\d[\d,]*)\s+thieves/i);
+				if (m) {
+					c.propThieves += parseInt(m[1].replace(/,/g,''), 10);
+					c.propOpsThieves++;
+					convertedThisOp = true;
+				}
+			}
+			else if (lower.includes("specialist") || lower.includes("specialists")) {
+				const m = origLine.match(/converted\s+(\d[\d,]*)/i);
+				if (m) {
+					c.propSpecs += parseInt(m[1].replace(/,/g,''), 10);
+					c.propOpsSpecs++;
+					convertedThisOp = true;
+				}
+			}
+			else if (lower.includes("from the enemy to our army")) {
+				const m = origLine.match(/converted\s+(\d[\d,]*)/i);
+				if (m) {
+					c.propElites += parseInt(m[1].replace(/,/g,''), 10);
+					c.propOpsElites++;
+					convertedThisOp = true;
+				}
+			}
+		}		
+		
+        // 12, 13, 14. ROBBERY OPS
+        if ((line.includes("returned with") || line.includes("steal")) && (line.includes("gold") || line.includes("bushel") || line.includes("rune"))) {
+            c.thiefAttempts++; c.thiefSuccess++;
+			// GOLD
+            const gold = origLine.match(/([\d,]+)\s*(?:gold|gc)/i);
+            if (gold) { const v = parseInt(gold[1].replace(/,/g,''),10); c.vaultRob++; c.goldStolen += v; hits.vault.push(v);
+                if (!perTarget.vault.has(target)) perTarget.vault.set(target,{c:0,t:0}); perTarget.vault.get(target).c++; perTarget.vault.get(target).t += v; }
+			// FOOD
+            const food = origLine.match(/([\d,]+)\s*bushels?/i);
+            if (food) { const v = parseInt(food[1].replace(/,/g,''),10); c.granRob++; c.foodStolen += v; hits.granary.push(v);
+                if (!perTarget.granary.has(target)) perTarget.granary.set(target,{c:0,t:0}); perTarget.granary.get(target).c++; perTarget.granary.get(target).t += v; }
+			// RUNES
+            const runes = origLine.match(/([\d,]+)\s*runes?/i);
+            if (runes) { const v = parseInt(runes[1].replace(/,/g,''),10); c.towerRob++; c.runesStolen += v; hits.tower.push(v);
+                if (!perTarget.tower.has(target)) perTarget.tower.set(target,{c:0,t:0}); perTarget.tower.get(target).c++; perTarget.tower.get(target).t += v; }
+        }		
+		
+		// DEFENSIVE: RUNES STOLEN
+		if (line.includes("runes of our runes were stolen")) {
+			c.towerRobDefCount++;
+			c.thiefAttemptsOnUs++;
+
+			const m = origLine.match(/(\d[\d,]*)\s+runes/i);
+			if (m) {
+				const runes = parseInt(m[1].replace(/,/g, ''), 10);
+				c.runesStolenFromUs += runes;
+			}
+		}
+		
+		// DEFENSIVE: GOLD STOLEN
+		if (line.includes("gold coins were stolen from our coffers") || 
+		    line.includes("gold coins were stolen from our vault")) {
+			
+			c.vaultRobDefCount++;
+			c.thiefAttemptsOnUs++;
+
+			const m = origLine.match(/(\d[\d,]*)\s+gold coins/i);
+			if (m) {
+				const gold = parseInt(m[1].replace(/,/g, ''), 10);
+				c.goldStolenFromUs += gold;
+			}
+		}
+		
+		// 15. SABOTAGE WIZARDS
+		if (/early indications.+success/i.test(line) && /disrupted the enemy wizards' ability to regain their mana/i.test(line)) {
+			c.thiefAttempts++;
+			c.thiefSuccess++;
+			c.saboWiz++;
+
+			if (!perTarget.saboWiz.has(target)) perTarget.saboWiz.set(target, {c:0, t:0});
+			perTarget.saboWiz.get(target).c++;
+
+			const m = origLine.match(/last\s+(\d+)\s+days/i) || origLine.match(/expected to last (\d+) days/i);
+			if (m) {
+				const days = parseInt(m[1], 10);
+				c.saboWizDays += days;
+				hits.saboWiz.push(days);
+				perTarget.saboWiz.get(target).t += days;
+			}
+		}
+		
+		// 16. STEAL WAR HORSES
+		if (/early indications.+success/i.test(line) && line.includes("steal war horses") || 
+		    line.includes("release") && line.includes("horses but could only bring back")) {
+			
+			c.thiefAttempts++;
+			c.thiefSuccess++;
+			c.stealHorses++;
+
+			if (!perTarget.stealHorses.has(target)) {
+				perTarget.stealHorses.set(target, {c: 0, t: 0});
+			}
+			const e = perTarget.stealHorses.get(target);
+			e.c++;
+
+			// Horses brought back (net gain)
+			const broughtMatch = origLine.match(/bring back\s+(\d[\d,]*)/i);
+			if (broughtMatch) {
+				const horses = parseInt(broughtMatch[1].replace(/,/g, ''), 10);
+				c.horsesGained += horses;
+				hits.stealHorses.push(horses);
+				e.t += horses;
+			}
+		}
+
+        // AID IN & OUT & DRAGON
+        if (!/dragon/i.test(line)) {
+            ["gold coins","runes","bushels","soldiers","troops","men"].forEach(r => {
+                let m = origLine.match(new RegExp(`we have sent ([\\d,]+) ${r}`, 'i'));
+                if (m) { let v = parseInt(m[1].replace(/,/g,''),10);
+                    if (/gold/.test(r)) c.aidOutG += v;
+                    if (/rune/.test(r)) c.aidOutR += v;
+                    if (/bushel/.test(r)) c.aidOutB += v;
+                    if (/soldier|troop|men/.test(r)) c.aidOutS += v;
+                }
+                m = origLine.match(new RegExp(`received .* ([\\d,]+) ${r}`, 'i'));
+                if (m) { let v = parseInt(m[1].replace(/,/g,''),10);
+                    if (/gold/.test(r)) c.aidInG += v;
+                    if (/rune/.test(r)) c.aidInR += v;
+                    if (/bushel/.test(r)) c.aidInB += v;
+                    if (/soldier|troop|men/.test(r)) c.aidInS += v;
+                }
+            });
+        }
+
+        const dg = origLine.match(/donated.*?([\d,]+)\s+(?:gold|gc)/i); if(dg) c.dragG += parseInt(dg[1].replace(/,/g,''),10);
+        const db = origLine.match(/donated.*?([\d,]+)\s+bushels?/i); if(db) c.dragB += parseInt(db[1].replace(/,/g,''),10);
+        const dt = origLine.match(/send out ([\d,]+) troops/i); if(dt) c.dragT += parseInt(dt[1].replace(/,/g,''),10);
+        const dd = origLine.match(/weakened.*?by.*?([\d,]+)/i); if(dd) c.dragDmg += parseInt(dd[1].replace(/,/g,''),10);
+    });
+
+    // Output code — same as v1.3.8 but with clean spacing
+    const details = (op, name, unit = "") => {
+		if (c[op] === 0) return "";
+
+		// For ops that track a total value (.t), show high/low + (value)
+		// For ops that only track count (.c), just show count per province
+		const hasTotal = !!hits[op]?.length; // if hits array has entries, we have .t values
+
+		const list = Array.from(perTarget[op])
+			.map(([p, d]) => ({ prov: p, c: d.c, t: d.t ?? 0 })) // fallback to 0 if no .t
+			.sort((a, b) => (b.t || b.c) - (a.t || a.c));       // sort by t if exists, else by c
+
+		let s = "";
+
+		if (hasTotal) {
+			const high = Math.max(...hits[op]);
+			const low  = Math.min(...hits[op]);
+			s += `Single Highest ${name}: ${high.toLocaleString()}${unit}\n`;
+			s += `Single Lowest ${name}: ${low.toLocaleString()}${unit}\n`;
+		}
+
+		s += `Provinces Targeted:\n`;
+		list.forEach((e, i) => {
+			const val = e.t > 0 ? e.t.toLocaleString() : e.c;
+			const label = e.t > 0 ? val + unit : val;
+			s += `<span class="prov-line">${i+1}. ${e.prov} - ${label}</span>`;
+		});
+
+		return s;
+	};
+
+	const abolishDetails = () => {
+        if (c.abolish === 0) return "";
+        const list = Array.from(perTarget.abolish).map(([p,d])=>({prov:p,c:d.c,t:d.t})).sort((a,b)=>b.t-a.t);
+        let s = `Provinces Targeted:\n`;
+        list.forEach((e,i)=> s += `<span class="prov-line">${i+1}. ${e.prov} - ${e.c} (${e.t.toLocaleString()}%)</span>`);
+        return s;
+    };
+
+	// Output building - different based on mode
+    let out = '';
+
+    if (mode === 'offensive') {
+        out += `<span class="title">Offensive T/M War Summary</span>\n${"=".repeat(35)}\n\n`;
+
+        // Your EXISTING sorcery output (copy-paste your current sorcery block here)
+        if (c.spellSuccess) {
+            out += `<span class="bold underline">Sorcery Ops (${c.spellSuccess}/${c.spellAttempts} - ${c.spellAttempts ? Math.round(c.spellSuccess/c.spellAttempts*100) : 0}%):</span>\n`;
+            if (c.fireball) out += `Fireballs: ${c.fireball} - Peasants Killed: ${c.fbP.toLocaleString()} (Avg: ${Math.round(c.fbP/c.fireball)})\n<div class="details">${details("fireball","Fireball")}</div>`;
+            if (c.nightmare) out += `Nightmares: ${c.nightmare} - Troops Affected: ${c.nmM.toLocaleString()} (Avg: ${Math.round(c.nmM/c.nightmare)})\n<div class="details">${details("nightmare","Nightmare")}</div>`;
+            if (c.tornado) out += `Tornadoes: ${c.tornado} - Acres Destroyed: ${c.torA.toLocaleString()} (Avg: ${Math.round(c.torA/c.tornado)})\n<div class="details">${details("tornado","Tornado"," acres")}</div>`;
+            if (c.abolish) out += `Abolish Ritual: ${c.abolish} - Destroyed: ${c.abolishPct}%\n<div class="details">${abolishDetails()}</div>`;
+            if (c.pitfalls) out += `Pitfalls: ${c.pitfalls} - Total Days: ${c.pitDays} (Avg: ${Math.round(c.pitDays / c.pitfalls)} days)\n<div class="details">${details("pitfalls","Pitfall"," days")}</div>`;
+            if (c.meteor) out += `Meteor Showers: ${c.meteor} - Total Days: ${c.meteorDays} (Avg: ${c.meteor ? Math.round(c.meteorDays / c.meteor) : 0} days)\n<div class="details">${details("meteor","Meteor Showers"," days")}</div>`;
+            if (c.exposeThieves) out += `Expose Thieves: ${c.exposeThieves} - Total Days: ${c.exposeDays} (Avg: ${Math.round(c.exposeDays / c.exposeThieves)} days)\n<div class="details">${details("exposeThieves","Expose Thieves"," days")}</div>`;
+            if (c.gluttony) out += `Gluttony: ${c.gluttony} - Total Days: ${c.gluttonyDays} (Avg: ${c.gluttony ? Math.round(c.gluttonyDays / c.gluttony) : 0} days)\n<div class="details">${details("gluttony","Gluttony"," days")}</div>`;
+			      if (c.chastity) out += `Chastity: ${c.chastity} - Total Days: ${c.chastityDays} (Avg: ${c.chastity ? Math.round(c.chastityDays / c.chastity) : 0} days)\n<div class="details">${details("chastity","Chastity"," days")}</div>`;
+			      if (c.droughts) out += `Droughts: ${c.droughts} - Total Days: ${c.droughtsDays} (Avg: ${c.droughts ? Math.round(c.droughtsDays / c.droughts) : 0} days)\n<div class="details">${details("droughts","Droughts"," days")}</div>`;
+			      if (c.greed) out += `Greed: ${c.greed} - Total Days: ${c.greedDays} (Avg: ${c.greed ? Math.round(c.greedDays / c.greed) : 0})\n<div class="details">${details("greed","Greed"," days")}</div>`;
+			      if (c.lightningStrike) out += `Lightning Strikes: ${c.lightningStrike} - Runes Incinerated: ${c.lightningRunesIncinerated.toLocaleString()} (Avg: ${c.lightningStrike ? Math.round(c.lightningRunesIncinerated / c.lightningStrike).toLocaleString() : 0})\n<div class="details">${details("lightningStrike","Lightning Strike"," runes")}</div>`;
+			      if (c.explosions) out += `Explosions: ${c.explosions} - Total Days: ${c.explosionDays} (Avg: ${Math.round(c.explosionDays / c.explosions)} days)\n<div class="details">${details("explosions","Explosion"," days")}</div>`;
+            if (c.landlust) out += `Land Lust: ${c.landlust} - Acres Gained: ${c.llAcres.toLocaleString()} (Avg: ${Math.round(c.llAcres/c.landlust)})\n<div class="details">${details("landlust","Land Lust"," acres")}</div>`;
+            out += `\n`;
+        }
+
+        // Your EXISTING thief/sabotage output (copy-paste your current block here)
+        if (c.thiefSuccess) {
+            out += `<span class="bold underline">Sabotage & Robbery Ops (${c.thiefSuccess}/${c.thiefAttempts} - ${c.thiefAttempts ? Math.round(c.thiefSuccess/c.thiefAttempts*100) : 0}%):</span>\n`;
+            if (c.kidnap) out += `Kidnaps: ${c.kidnap} - Peasants Kidnapped: ${c.kdP.toLocaleString()} (Avg: ${Math.round(c.kdP/c.kidnap)})\n<div class="details">${details("kidnap","Kidnap")}</div>`;
+            if (c.nightstrike) out += `Night Strikes: ${c.nightstrike} - Troops Killed: ${c.nsT.toLocaleString()} (Avg: ${Math.round(c.nsT/c.nightstrike)})\n<div class="details">${details("nightstrike","Night Strike")}</div>`;
+            if (c.arson) out += `Arson: ${c.arson} - Acres Burned: ${c.arsA.toLocaleString()} (Avg: ${Math.round(c.arsA/c.arson)})\n<div class="details">${details("arson","Arson"," acres")}</div>`;
+            if (c.bribeGen) out += `Bribe Generals: ${c.bribeGen}\n<div class="details">${details("bribeGen","Bribe Generals")}</div>`;
+            if (c.bribeThieves) out += `Bribe Thieves: ${c.bribeThieves}\n<div class="details">${details("bribeThieves","Bribe Thieves")}</div>`;
+			      if (c.saboWiz) out += `Sabotage Wizards: ${c.saboWiz} - Total Days: ${c.saboWizDays} (Avg: ${c.saboWiz ? Math.round(c.saboWizDays / c.saboWiz) : 0} days)\n<div class="details">${details("saboWiz","Sabotage Wizards"," days")}</div>`;
+            if (c.riots) out += `Riots: ${c.riots} - Total Days: ${c.riotDays} (Avg: ${Math.round(c.riotDays/c.riots)})\n<div class="details">${details("riots","Riot"," days")}</div>`;
+            if (c.freePrisoners) out += `Free Prisoners: ${c.freePrisoners} - Prisoners Freed: ${c.prisonersFreed.toLocaleString()} (Avg: ${c.freePrisoners ? Math.round(c.prisonersFreed / c.freePrisoners) : 0})\n<div class="details">${details("freePrisoners","Free Prisoners"," prisoners")}</div>`;
+			      if (c.stealHorses) out += `Steal War Horses: ${c.stealHorses} - Horses Gained: ${c.horsesGained.toLocaleString()} (Avg: ${c.stealHorses ? Math.round(c.horsesGained / c.stealHorses) : 0})\n<div class="details">${details("stealHorses","Steal War Horses"," horses")}</div>`;
+			      if (c.propaganda) {
+                const totalConverted = c.propWizards + c.propSoldiers + c.propThieves + c.propSpecs + c.propElites;
+                out += `Propaganda: ${c.propaganda} - Total converted troops: ${totalConverted.toLocaleString()}\n`;
+                out += `  └─ Wizards: ${c.propWizards.toLocaleString()} (${c.propOpsWizards} ops)\n`;
+                out += `  └─ Soldiers: ${c.propSoldiers.toLocaleString()} (${c.propOpsSoldiers} ops)\n`;
+                out += `  └─ Thieves: ${c.propThieves.toLocaleString()} (${c.propOpsThieves} ops)\n`;
+                out += `  └─ Specialists: ${c.propSpecs.toLocaleString()} (${c.propOpsSpecs} ops)\n`;
+                out += `  └─ Elites: ${c.propElites.toLocaleString()} (${c.propOpsElites} ops)\n`;
+                out += `<div class="details">${details("propaganda","Propaganda"," thieves sent")}</div>`;
+            }
+            if (c.vaultRob) out += `Vaults Robbed: ${c.vaultRob} - Gold Stolen: ${c.goldStolen.toLocaleString()} gc (Avg: ${Math.round(c.goldStolen/c.vaultRob).toLocaleString()})\n<div class="details">${details("vault","Vault Rob"," gc")}</div>`;
+            if (c.granRob) out += `Granaries Robbed: ${c.granRob} - Food Stolen: ${c.foodStolen.toLocaleString()} bushels (Avg: ${Math.round(c.foodStolen/c.granRob).toLocaleString()})\n<div class="details">${details("granary","Granary Rob"," bushels")}</div>`;
+            if (c.towerRob) out += `Towers Robbed: ${c.towerRob} - Runes Stolen: ${c.runesStolen.toLocaleString()} runes (Avg: ${Math.round(c.runesStolen/c.towerRob).toLocaleString()})\n<div class="details">${details("tower","Tower Rob"," runes")}</div>`;
+            out += `\n`;
+        }
+
+        // Aid & Dragon (same for both modes, or skip for defensive if you prefer)
+        if (c.aidOutG+c.aidInG+c.aidOutR+c.aidInR+c.aidOutS+c.aidInS+c.aidOutB+c.aidInB) {
+            out += `<span class="bold underline">Aid Summary:</span>\n`;
+            const net = (o,i) => o - i;
+            const color = v => v > 0 ? '#4ade80' : (v < 0 ? '#f87171' : '#e0e0e0');
+            const sign = v => v > 0 ? '+' : '';
+            if(c.aidOutG||c.aidInG) out += `Gold: Out ${c.aidOutG.toLocaleString()} | In ${c.aidInG.toLocaleString()} | Net <span class="bold" style="color:${color(net(c.aidOutG,c.aidInG))}">${sign(net(c.aidOutG,c.aidInG))}${net(c.aidOutG,c.aidInG).toLocaleString()}</span> gc\n`;
+            if(c.aidOutR||c.aidInR) out += `Runes: Out ${c.aidOutR.toLocaleString()} | In ${c.aidInR.toLocaleString()} | Net <span class="bold" style="color:${color(net(c.aidOutR,c.aidInR))}">${sign(net(c.aidOutR,c.aidInR))}${net(c.aidOutR,c.aidInR).toLocaleString()}</span> runes\n`;
+            if(c.aidOutS||c.aidInS) out += `Soldiers: Out ${c.aidOutS.toLocaleString()} | In ${c.aidInS.toLocaleString()} | Net <span class="bold" style="color:${color(net(c.aidOutS,c.aidInS))}">${sign(net(c.aidOutS,c.aidInS))}${net(c.aidOutS,c.aidInS).toLocaleString()}</span> sols\n`;
+            if(c.aidOutB||c.aidInB) out += `Food: Out ${c.aidOutB.toLocaleString()} | In ${c.aidInB.toLocaleString()} | Net <span class="bold" style="color:${color(net(c.aidOutB,c.aidInB))}">${sign(net(c.aidOutB,c.aidInB))}${net(c.aidOutB,c.aidInB).toLocaleString()}</span> bu\n`;
+            out += `\n`;
+        }
+
+        if (c.dragG || c.dragB || c.dragT || c.dragDmg) {
+            out += `<span class="bold underline">Dragon Contributions:</span>\n`;
+            if(c.dragG) out += `Gold Donated: ${c.dragG.toLocaleString()} gc\n`;
+            if(c.dragB) out += `Food Donated: ${c.dragB.toLocaleString()} bushels\n`;
+            if(c.dragT || c.dragDmg) out += `Troops Sent: ${c.dragT.toLocaleString()} - Damage Dealt: ${c.dragDmg.toLocaleString()} hp\n`;
+        }
+} else if (mode === 'defensive') {
+    out += `<span class="title">Defensive Province Summary</span>\n${"=".repeat(35)}\n\n`;
+
+    // Incoming Attacks
+    if (c.attacksSuffered > 0 || c.acresLost > 0 || c.soldiersLost > 0 || c.troopsLost > 0) {
+        hasAnyDefensiveSorcery = true;
+
+        out += `<span class="bold underline">Attacks Suffered:</span>\n`;
+        out += `Attacks Suffered: ${c.attacksSuffered} - Total Acres lost: ${c.acresLost.toLocaleString()} `;
+        if (c.attacksSuffered > 0) {
+            out += `(Avg: ${Math.round(c.acresLost / c.attacksSuffered)})`;
+        }
+        out += `\n`;
+
+        out += `<div class="details">`;
+        if (c.soldiersLost > 0) {
+            out += ` - Soldiers Lost: ${c.soldiersLost.toLocaleString()}`;
+            if (c.attacksSuffered > 0) out += ` (Avg: ${Math.round(c.soldiersLost / c.attacksSuffered)})`;
+            out += `\n`;
+        }
+        if (c.troopsLost > 0) {
+            out += ` - Troops Lost: ${c.troopsLost.toLocaleString()}`;
+            if (c.attacksSuffered > 0) out += ` (Avg: ${Math.round(c.troopsLost / c.attacksSuffered)})`;
+            out += `\n`;
+        }
+        if (c.soldiersLost === 0 && c.troopsLost === 0) {
+            out += ` - No troop losses recorded in these battles\n`;
+        }
+        out += `</div>`;
+    }
+	
+out += `\n`;
+	
+	// NEW: Incoming Sorcery Ops (flipped to enemy success %)
+    if (c.sorceryAttemptsOnUs > 0) {
+        hasAnyDefensiveEvent = true;
+
+        const successes = c.sorceryAttemptsOnUs - c.sorceryFailsOnUs;
+        const successPct = c.sorceryAttemptsOnUs > 0 
+            ? Math.round((successes / c.sorceryAttemptsOnUs) * 100) 
+            : 0;
+
+        out += `<span class="bold underline">Sorcery Ops (${successes}/${c.sorceryAttemptsOnUs} - ${successPct}%):</span>\n`;
+  
+    }
+	
+	// Meteor Showers
+    if (c.meteorDefCasts > 0 || c.meteorDefPeasantsKilled > 0 || c.meteorDefSoldiersKilled > 0 || c.meteorDefTroopsKilled > 0) {
+        out += `Meteor Showers: ${c.meteorDefCasts} - Total Days: ${c.meteorDefDays.toLocaleString()} (Avg: ${c.meteorDefCasts ? Math.round(c.meteorDefDays / c.meteorDefCasts) : 0})\n`;
+        out += `<div class="details">`;
+
+        if (c.meteorDefPeasantsKilled > 0 || c.meteorDefSoldiersKilled > 0 || c.meteorDefTroopsKilled > 0) {
+            if (c.meteorDefPeasantsKilled > 0) {
+                out += ` - Peasants killed: ${c.meteorDefPeasantsKilled.toLocaleString()}\n`;
+            }
+            if (c.meteorDefSoldiersKilled > 0) {
+                out += ` - Soldiers killed: ${c.meteorDefSoldiersKilled.toLocaleString()}\n`;
+            }
+            if (c.meteorDefTroopsKilled > 0) {
+                out += ` - Troops killed: ${c.meteorDefTroopsKilled.toLocaleString()}\n`;
+            }
+        } else {
+            out += ` - No damage from meteor ticks recorded\n`;
+        }
+
+        out += `</div>`;
+    } else {
+        out += `(No incoming meteor shower activity detected)\n`;
+    }
+
+	// Fireball
+    if (c.fireballDefCasts > 0 || c.fireballDefPeasantsKilled > 0) {
+        hasAnyDefensiveSorcery = true;
+        out += `Fireballs: ${c.fireballDefCasts} - Peasants Killed: ${c.fireballDefPeasantsKilled.toLocaleString()}`;
+        if (c.fireballDefCasts > 0) {
+            out += ` (Avg: ${Math.round(c.fireballDefPeasantsKilled / c.fireballDefCasts).toLocaleString()})`;
+        }
+        out += `\n`;
+    }
+
+	// Chastity
+    if (c.chastityDefCasts > 0 || c.chastityDefDays > 0) {
+        hasAnyDefensiveSorcery = true;
+        out += `Chastity: ${c.chastityDefCasts} - Total Days: ${c.chastityDefDays.toLocaleString()}`;
+        if (c.chastityDefCasts > 0) {
+            out += ` (Avg: ${Math.round(c.chastityDefDays / c.chastityDefCasts)})`;
+        }
+        out += `\n`;
+    }
+	
+	// Gluttony
+    if (c.gluttonyDefCasts > 0 || c.gluttonyDefDays > 0) {
+        hasAnyDefensiveSorcery = true;
+        out += `Gluttony: ${c.gluttonyDefCasts} - Total Days: ${c.gluttonyDefDays.toLocaleString()}`;
+        if (c.gluttonyDefCasts > 0) {
+            out += ` (Avg: ${Math.round(c.gluttonyDefDays / c.gluttonyDefCasts)})`;
+        }
+        out += `\n`;
+    }
+	
+	// Greed
+	if (c.greedDefCasts > 0 || c.greedDefDays > 0) {
+		hasAnyDefensiveSorcery = true;
+		out += `Greed: ${c.greedDefCasts} - Total Days: ${c.greedDefDays.toLocaleString()}`;
+		if (c.greedDefCasts > 0) {
+			out += ` (Avg: ${Math.round(c.greedDefDays / c.greedDefCasts)})`;
+		}
+		out += `\n`;
+	}
+	
+	// Pitfalls
+	if (c.pitfallsDefCasts > 0 || c.pitfallsDefDays > 0) {
+		hasAnyDefensiveSorcery = true;
+		out += `Pitfalls: ${c.pitfallsDefCasts} - Total Days: ${c.pitfallsDefDays.toLocaleString()}`;
+		if (c.pitfallsDefCasts > 0) {
+			out += ` (Avg: ${Math.round(c.pitfallsDefDays / c.pitfallsDefCasts)})`;
+		}
+		out += `\n`;
+	}
+	
+	// Expose Thieves
+    if (c.exposeThievesDefCasts > 0 || c.exposeThievesDefDays > 0) {
+        hasAnyDefensiveSorcery = true;
+        out += `Expose Thieves: ${c.exposeThievesDefCasts} - Total Days: ${c.exposeThievesDefDays.toLocaleString()}`;
+        if (c.exposeThievesDefCasts > 0) {
+            out += ` (Avg: ${Math.round(c.exposeThievesDefDays / c.exposeThievesDefCasts)})`;
+        }
+        out += `\n`;
+    }
+	
+out += `\n`;
+	
+	// Sabotage Ops
+    if (c.thiefAttemptsOnUs > 0) {
+        hasAnyDefensiveEvent = true;
+
+        // Calculate successes = total attempts - fails
+        const successes = c.thiefAttemptsOnUs - c.thiefFailsOnUs;
+        
+        // Enemy success percentage
+        const successPct = c.thiefAttemptsOnUs > 0 
+            ? Math.round((successes / c.thiefAttemptsOnUs) * 100) 
+            : 0;
+
+        // Display: successes / total - % enemy success
+        out += `<span class="bold underline">Sabotage Ops (${successes}/${c.thiefAttemptsOnUs} - ${successPct}%):</span>\n`;
+  
+    }
+	
+	// Incite Riots
+    if (c.riotsDefCasts > 0 || c.riotsDefDays > 0) {
+        hasAnyDefensiveSorcery = true;
+        out += `Incite Riots: ${c.riotsDefCasts} - Total Days: ${c.riotsDefDays.toLocaleString()}`;
+        if (c.riotsDefCasts > 0) {
+            out += ` (Avg: ${Math.round(c.riotsDefDays / c.riotsDefCasts)})`;
+        }
+        out += `\n`;
+    }
+	
+	// Gold Stolen
+    if (c.vaultRobDefCount > 0 || c.goldStolenFromUs > 0) {
+        out += `Vaults Robbed: ${c.vaultRobDefCount} - Gold Stolen: ${c.goldStolenFromUs.toLocaleString()} gc`;
+        if (c.vaultRobDefCount > 0) {
+            out += ` (Avg: ${Math.round(c.goldStolenFromUs / c.vaultRobDefCount).toLocaleString()})`;
+        }
+        out += `\n`;
+    }
+		
+	// Runes Stolen
+    if (c.towerRobDefCount > 0 || c.runesStolenFromUs > 0) {
+        hasAnyDefensiveEvent = true;
+
+        out += `Towers Robbed: ${c.towerRobDefCount} - Runes Stolen: ${c.runesStolenFromUs.toLocaleString()} Runes`;
+        if (c.towerRobDefCount > 0) {
+            out += ` (Avg: ${Math.round(c.runesStolenFromUs / c.towerRobDefCount).toLocaleString()})`;
+        }
+        out += `\n`;
+    }
+
+    // Fallback if absolutely nothing
+    if (!hasAnyDefensiveSorcery && c.attacksSuffered === 0) {
+        out += `(No defensive events detected in this log)\n`;
+    }
+
+    out += `\n`;
+}
+
+    // Common footer for both mode
+    out += `
+    <div style="text-align: right; margin: 16px 0 8px 0;">
+      <span class="expand-link" onclick="toggleAllDetails(this)">Expand for more details</span>
+    </div>`;
+
+    document.getElementById('output').innerHTML = out;
+
+    // Collapse all details by default
+    document.querySelectorAll('#output .details').forEach(d => d.style.display = 'none');
+}
+
+function toggleAllDetails(link) {
+  const details = document.querySelectorAll('#output .details');
+  const isCollapsed = Array.from(details).every(d => d.style.display !== 'block');
+
+  details.forEach(d => {
+    d.style.display = isCollapsed ? 'block' : 'none';
+  });
+
+  link.textContent = isCollapsed ? 'Collapse details' : 'Expand for more details';
+}
+
+function toggleDetails(link) {
+    const details = document.querySelectorAll('.details');
+    let expanded = false;
+
+    details.forEach(d => {
+        if (d.style.display === 'block') expanded = true;
+    });
+
+    details.forEach(d => {
+        d.style.display = expanded ? 'none' : 'block';
+    });
+
+    link.innerHTML = expanded ? 'Expand for More Details' : 'Collapse Details';
+}
+
+function copyOutput() {
+    navigator.clipboard.writeText(document.getElementById('output').textContent);
+    alert("Copied!");
+}
+function goToPage(page) {
+    window.location.href = page;
+}
+
+// Saved summaries storage (kingdomTag → summary HTML)
+let savedSummaries = JSON.parse(localStorage.getItem('utopiaParserSummaries')) || {};
+
+// Render saved kingdom buttons
+function renderSavedKingdoms() {
+    const container = document.getElementById('savedKingdoms');
+    container.innerHTML = '';
+
+    Object.keys(savedSummaries).sort().forEach(tag => {
+        const row = document.createElement('div');
+        row.className = 'saved-row';
+
+        const btn = document.createElement('button');
+        btn.dataset.tag = tag;
+        btn.innerHTML = `${tag} War Summary <span class="delete-inside">×</span>`;
+    
+        btn.onclick = (e) => {
+            // If delete button clicked
+            if (e.target.classList.contains('delete-inside')) {
+            e.stopPropagation();
+
+                if (confirm(`Delete saved summary for ${tag}?`)) {
+                    delete savedSummaries[tag];
+                    localStorage.setItem('utopiaParserSummaries', JSON.stringify(savedSummaries));
+                    renderSavedKingdoms();
+                }
+                return;
+            }
+
+            // Otherwise load summary
+            document.getElementById('output').innerHTML = savedSummaries[tag];
+
+            document.querySelectorAll('.details').forEach(d => d.style.display = 'none');
+            updateExpandLink();
+
+            document.querySelectorAll('.saved-kingdoms button').forEach(b => {
+                b.classList.remove('active-summary');
+            });
+            btn.classList.add('active-summary');
+        };
+
+        row.appendChild(btn);
+        container.appendChild(row);
+    });
+
+    // If none saved
+    if (Object.keys(savedSummaries).length === 0) {
+        container.innerHTML = '<span style="color:#888;">No saved summaries yet</span>';
+    }
+}
+
+// Update expand link text after loading saved content
+function updateExpandLink() {
+    const link = document.querySelector('.expand-link');
+    if (link) {
+        const anyVisible = document.querySelector('.details[style*="block"]');
+        link.innerHTML = anyVisible ? 'Collapse Details' : 'Expand for More Details';
+    }
+}
+
+// Save current summary
+document.getElementById('saveSummaryBtn').onclick = () => {
+    const tagInput = document.getElementById('kingdomTag');
+    let tag = tagInput.value.trim().toUpperCase();
+
+    // Basic validation: expect format like 1:1, 10:20, etc.
+    if (!/^\d+:\d+$/.test(tag)) {
+        alert("Please enter a valid kingdom tag (e.g. 3:10)");
+        return;
+    }
+
+    const currentSummary = document.getElementById('output').innerHTML;
+    if (!currentSummary || currentSummary.includes("Summary will appear here")) {
+        alert("Generate a summary first!");
+        return;
+    }
+
+    savedSummaries[tag] = currentSummary;
+    localStorage.setItem('utopiaParserSummaries', JSON.stringify(savedSummaries));
+
+    tagInput.value = ''; // clear input
+    renderSavedKingdoms();
+    alert(`Saved summary for ${tag}`);
+};
+
+// Load saved summaries on page load
+window.addEventListener('load', () => {
+    renderSavedKingdoms();
+});
+
+// Clear Saved Summaries Button
+document.getElementById('resetDefaultsBtn').onclick = () => {
+    // Clear saved summaries
+    localStorage.removeItem('utopiaParserSummaries');
+    savedSummaries = {};
+    renderSavedKingdoms();
+
+    alert("Settings reset and saved summaries cleared.");
+};
+
+</script>
+
+
+
+
+
+<script>
+document.getElementById("parseOffenseBtn").addEventListener("click", function() {
+    parseLog("offensive");
+});
+
+document.getElementById("parseDefenseBtn").addEventListener("click", function() {
+    parseLog("defensive");
+});
+</script>
+
+</body>
+</html>
+
+<!--
+
+OFFENSIVE SPELLS
+
+1. Abolish Ritual -
+2. Amnesia -
+3. Blizzard -
+4. Chastity – “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. Much to the chagrin of their men, the womenfolk of Dummy (1:1) have taken a vow of chastity for 8 days! (Dummy (1:1))”
+5. Droughts - “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. A drought will reign over the lands of Dummy (1:1) for 9 days! (Dummy (1:1))”
+6. Explosions - Your wizards gather 1,000 runes and begin casting, and the spell succeeds. Explosions will rock aid shipments to and from Dummy (1:1) for 12 days! (Dummy (1:1))
+7. Expose Thieves - “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. Our mages have illuminated the lands of our enemies and exposed the thieves that walk through the lands of Dummy (1:1) for 5 days. (Dummy (1:1))”
+8. Fireball – “Your wizards begin casting, and the spell succeeds. A fireball burns through the skies of Dummy (1:1) 1,213 peasants were killed in the destruction! (Dummy (1:1))”
+9. Fool's Gold -
+10. Gluttony - “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. The gluttony of Dummy (1:1) has increased for 10 days. (Dummy (1:1))”
+11. Greed - “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. Our mages have caused our enemy's soldiers to turn greedy for 8 days. (Dummy (1:1))”
+12. Lightning Strike – “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. Lightning strikes the Towers in Dummy (1:1) and incinerates 10,000 runes! (Dummy (1:1))”
+13. Land Lust – “Your wizards begin casting, and the spell succeeds. Our Land Lust over Summy (1:1) has given us another 10 acres of land! (Dummy (1:1))”
+14. Magic Ward
+15. Meteor Showers – “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. Meteors will rain across the lands of Dummy (1:1) for 9 days. (Dummy (1:1))”
+16. Mystic Vortex - “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. A magic vortex overcomes the province of Dummy (1:1), negating 2 active spells (Animate Dead and Minor Protection). (Dummy (1:1))”
+17. Nightmares – “Your wizards begin casting, and the spell succeeds. During the night, 100 of the men in the armies and thieves' guilds of Dummy (1:1) had nightmares. Some were forced into rehabilitation, but the soldiers simply quit the army! (Dummy (1:1))”
+18. Nightfall -
+19. Pitfalls - “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. Pitfalls will haunt the lands of Dummy (1:1) for 7 days. They will suffer increased defensive losses during battle. (Dummy (1:1))”
+20. Storms - “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. Storms will ravage Dummy (1:1) for 8 days! (Dummy (1:1))”
+21. Tornadoes – “Your wizards gather 1,000 runes and begin casting, and the spell succeeds. Tornadoes scour the lands of Dummy (1:1), laying waste to 15 acres of buildings. (Dummy (1:1))”
+22. Vermin -
+
+SABOTAGE OPERATIONS
+
+1. Arson -
+2. Assassinate Wizards -
+3. Bribe Generals - "Early indications show that our operation was a success. Our thieves have bribed an enemy general! (Dummy (1:1), sent 1000)
+4. Bribe Thieves - "Early indications show that our operation was a success. Our thieves have bribed members of our enemies' guild! (Dummy (1:1), sent 1000)"
+5. Destabilize Guilds -
+6. Free Prisoners - "Early indications show that our operation was a success. Our thieves freed 100 prisoners from enemy dungeons. (Dummy (1:1), sent 1000)"
+7. Greater Arson -
+8. Incite Riots - "Early indications show that our operation was a success. Our thieves have caused rioting. It is expected to last 14 days. (Dummy (1:1), sent 1500)"
+9. Kidnapping - "Early indications show that our operation was a success. Our thieves kidnapped many people, but only were able to return with 100 of them. (Dummy (1:1), sent 1000)"
+10. Night Strike - "Early indications show that our operation was a success. Our thieves assassinated 100 enemy troops. (Dummy (1:1), sent 1000)
+11. Propaganda - "Early indications show that our operation was a success. We have converted 20 Ogres (thieves, wizards, soldiers, of the enemy's specialist troops to our army) from the enemy to our army. (Dummy (1:1), sent 1000)
+12. Rob the Granaries -
+13. Rob the Towers - "Early indications show that our operation was a success. Our thieves were able to steal 10,000 runes. (Dummy (1:1), sent 1000)
+14. Rob the Vaults - "Early indications show that our operation was a success. Our thieves have returned with 10,000 gold coins. (Dummy (1:1), sent 1000)
+15. Sabotage Wizards -
+16. Steal War Horses - "Early indications show that our operation was a success. Our thieves were able to release 1,000 horses but could only bring back 500 of them. (Dummy (1:1), sent 3000)"
+-->
