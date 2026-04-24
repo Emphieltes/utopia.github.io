@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Utopia Buildings</title>
+
+  <style>
+    :root {
+      --bg: #32373b;
+      --text: #e0e0e0;
+      --text-muted: #a0a0a0;
+      --surface: #3a3f44;
+      --surface-hover: #43484e;
+      --border: #4a5057;
+      --accent: #4fc3f7;
+      --accent-dark: #3aa0d8;
+      --success: #4ade80;
+      --danger: #ff6b6b;
+      --warning: #ff9f43;
+      --gold: #d4af37;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box; /* ensures no padding/margin surprises */
+        width: 100%;
+        min-height: 100vh;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: auto;
+    }
+
+    /* Main Content */
+    .planner-container {
+      padding-top: 10px;     /* Moves everything ↑ or ↓ */
+      padding-right: 40px;
+      padding-bottom: 40px;
+      padding-left: 60px;    /* Moves everything ← or →  right */
+      max-width: none;
+      margin: 0;
+      transition: margin-left 0.3s ease;
+    }
+
+    /* Header/Title Section */
+    .header-section {
+    margin-left: 0px;
+    }
+
+    h1 {
+      color: var(--text);
+      margin: 0 0 8px 0;
+      font-size: 2.2rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+/* Settings Button */
+.settings-btn {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--bg);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+
+  transition: all 0.2s ease;
+}
+
+/* Settings Button Hover Effect*/
+.settings-btn:hover {
+  background: var(--surface-hover);
+  transform: rotate(20deg);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.2);
+}
+
+/* Settings Panel */
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 275px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.4);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 10000;
+}
+
+/* Settings Panel Open */
+.settings-panel.open {
+  transform: translateX(0);
+}
+
+/* Settings Panel Content */
+.settings-content {
+  padding: 20px;
+  font-size: 0.85rem;
+}
+
+/* Settings Panel Header/Title */
+.settings-header {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+/* Reset to Defaults Button (In Settings Panel)*/
+#resetDefaultsBtn {
+  width: calc(100% - 40px);
+  margin: 20px;
+  padding: 10px 0;
+  background-color: var(--text);  
+  color: #2c2c2c;             
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;             
+  display: block;                 
+  line-height: 1.2; 
+  transition: all 0.2s ease;
+}
+
+/* Reset to Defaults Button (Hover Effect)*/
+#resetDefaultsBtn:hover {
+  background-color: #a1a4a7;
+}
+
+/* Left Panel Button */
+.left-panel-btn {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10%;
+  border: 1px solid var(--bg);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  transition: all 0.2s ease;
+}
+
+/* Left Panel Button Hover Effect */
+.left-panel-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
+}
+
+/* Left Panel */
+.left-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 150px;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 10px;
+  z-index: 10000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+/* Left Panel Open */
+.left-panel.open {
+  transform: translateX(0);
+}
+
+.left-panel.open ~ .planner-container {
+  margin-left: 120px; /* same as panel width */
+}
+
+/* Left Panel Inner Button Settings */
+.nav-btn {
+  width: 100%;
+  padding: 5px 0;
+  background-color: var(--text);
+  color: #2c2c2c;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.nav-btn:first-child {
+  margin-top: 60px;
+}
+
+/* Left Panel Inner Button (Hover Effect) */
+.nav-btn:hover {
+    box-shadow: 
+    0 0 0 2px var(--accent), 
+    0 0 8px rgba(79, 195, 247, 0.2); /* your accent color */
+}
+
+/* Left Panel Inner Button - Active (selected page) */
+.nav-btn.active {
+  background-color: var(--text);
+  color: #2c2c2c;
+
+  box-shadow: 
+    0 0 0 2px var(--accent), 
+    0 0 8px rgba(79, 195, 247, 0.6); /* same as hover glow */
+}
+
+/* Buildigns container */
+.build-container {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0;
+    background: #2f343a;
+    padding: 15px 20px;
+    border-radius: 10px;
+    border: 1px solid #4a5057;
+}
+
+.build-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(2, auto);
+    grid-auto-columns: max-content;
+    gap: 8px 16px;
+}
+
+.build-item {
+    display: grid;
+    grid-template-columns: auto 50px;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.build-item input {
+    width: 50px;
+    padding: 4px;
+    background: #1f2327;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.build-item label {  
+  text-align: right;
+}
+
+.total-box {
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+	
+  </style>
+</head>
+<body>
+<!-- Last saved timestamp - bottom right -->
+  <div id="lastSaved" 
+       style="position: fixed; 
+              bottom: 16px; 
+              right: 24px; 
+              font-size: 0.8rem; 
+              color: var(--text-muted); 
+              padding: 6px 12px; 
+              border-radius: 6px; 
+              z-index: 9999; 
+              pointer-events: none;
+              backdrop-filter: blur(4px);">
+      Last Edited: <span id="fileDate">--</span>
+  </div>
+
+  <script>
+    // Show the file's actual last-modified date/time
+    const dateSpan = document.getElementById('fileDate');
+    if (document.lastModified && document.lastModified !== "01/01/1970 00:00:00") {
+      const d = new Date(document.lastModified);
+      dateSpan.textContent = d.toLocaleString('en-CA', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
+    } else {
+      dateSpan.textContent = "Unknown";
+    }
+  </script>
+
+<!-- Left Panel Buttons -->
+<div class="left-panel">
+  <button class="nav-btn" data-page="planner">Planner</button>
+  <button class="nav-btn" data-page="sciences">Sciences</button>
+  <button class="nav-btn" data-page="parser">Parser</button>
+  <button class="nav-btn" data-page="buildings">Buildings</button>
+</div>
+
+<button id="leftPanelBtn" class="left-panel-btn">☰</button>
+
+<script>
+  const leftBtn = document.getElementById('leftPanelBtn');
+  const leftPanel = document.querySelector('.left-panel');
+
+  // Load saved state on page load
+  if (localStorage.getItem('leftPanelOpen') === 'true') {
+    leftPanel.classList.add('open');
+  }
+
+  // Toggle and save state
+  leftBtn.addEventListener('click', () => {
+    leftPanel.classList.toggle('open');
+
+    const isOpen = leftPanel.classList.contains('open');
+    localStorage.setItem('leftPanelOpen', isOpen);
+  });
+</script>
+
+<script>
+  const navButtons = document.querySelectorAll('.nav-btn');
+  const currentPage = window.location.pathname.toLowerCase();
+
+  navButtons.forEach(btn => {
+    const page = btn.dataset.page;
+
+    if (currentPage.includes(page)) {
+      btn.classList.add('active');
+    }
+  });
+</script>
+
+<script>
+  // Get the Planner button
+  const plannerBtn = document.querySelector('.left-panel .nav-btn:nth-child(1)');
+
+  // Navigate to Planner page
+  plannerBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Planner.html'; // EDIT: if file name is different
+  });
+
+  // Get the Sciences button
+  const sciencesBtn = document.querySelector('.left-panel .nav-btn:nth-child(2)');
+
+  // Navigate to Sciences page
+  sciencesBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Sciences.html'; // EDIT: if file name is different
+  });
+
+  // Get the Parser button
+  const parserBtn = document.querySelector('.left-panel .nav-btn:nth-child(3)');
+
+  // Navigate to Parser page
+  parserBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Parser.html'; // EDIT: if file name is different
+  });
+
+  // Get the Buildings button
+  const buildingsBtn = document.querySelector('.left-panel .nav-btn:nth-child(4)');
+
+  // Navigate to the Buildings page
+  buildingsBtn.addEventListener('click', () => {
+    window.location.href = 'Utopia Buildings.html'; // EDIT: if file name is different
+  });
+</script>
+
+<!-- Main content wrapper -->
+  <div class="planner-container">
+    
+<!-- Settings Button -->
+<button id="settingsBtn" class="settings-btn" title="Settings">
+  ⚙
+</button>
+
+<!-- Settings Panel -->
+<div id="settingsPanel" class="settings-panel">
+  <div class="settings-content">
+    <div class="settings-header">Settings</div>
+    
+		<div class="settings-group">
+			<div class="settings-header">Display Options</div>      
+	</div>
+  </div>
+    <button id="resetDefaultsBtn" class="settings-option" style="margin-top: 20px;">
+    Reset to Defaults
+    </button>
+</div>
+
+
+<script>
+// ==== SETTINGS PANEL TOGGLE (CLEAN) ====
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+
+// Toggle settings panel
+settingsBtn.addEventListener('click', (e) => {
+  settingsPanel.classList.toggle('open');
+  e.stopPropagation();
+});
+
+// Close panel when clicking outside
+document.addEventListener('click', (e) => {
+  if (settingsPanel.classList.contains('open')) {
+    const clickedOutside =
+      e.target !== settingsPanel &&
+      !settingsPanel.contains(e.target) &&
+      e.target !== settingsBtn;
+
+    if (clickedOutside) {
+      settingsPanel.classList.remove('open');
+    }
+  }
+});
+</script>
+
+<!-- HEADER -->
+<div class="header-section">
+    <h1>Utopia Buildings MOC Calculator</h1>
+</div>
+
+<div class="build-container">
+
+    <div id="buildGrid" class="build-grid"></div>
+
+    <div class="total-box">
+        Total: <span id="buildTotal">0</span>%
+    </div>
+</div>
+
+<script>
+// === BUILDING ORDER (EXACTLY HOW YOU WANT IT) ===
+const buildings = [
+    "Homes", "Hospitals",
+    "Farms", "Guilds",
+    "Mills", "Towers",
+    "Banks", "Thieves' Dens",
+    "Training Grounds", "Watch Towers",
+    "Armouries", "Universities",
+    "Barracks", "Libraries",
+    "Forts", "Stables",
+    "Castles", "Dungeons"
+];
+
+// === BUILD GRID ===
+function buildBuildingGrid() {
+    const grid = document.getElementById('buildGrid');
+    grid.innerHTML = '';
+
+    buildings.forEach((name, i) => {
+        const item = document.createElement('div');
+        item.className = 'build-item';
+
+        item.innerHTML = `
+            <label>${name}:</label>
+            <input type="number" min="0" max="100" id="b${i}" value="0">
+        `;
+
+        grid.appendChild(item);
+    });
+
+    attachListeners();
+}
+
+// === CALCULATE TOTAL ===
+function calculateBuildTotal() {
+    let total = 0;
+
+    buildings.forEach((_, i) => {
+        const val = parseFloat(document.getElementById(`b${i}`).value) || 0;
+        total += val;
+    });
+
+    const totalEl = document.getElementById('buildTotal');
+
+    const remaining = 100 - total;
+    totalEl.textContent = `${total.toFixed(0)}% (Remaining: ${remaining.toFixed(0)}%)`;
+
+    // Color feedback
+    if (total === 100) {
+        totalEl.style.color = '#4ade80';
+    } else if (total > 100) {
+        totalEl.style.color = '#ff6b6b';
+    } else {
+        totalEl.style.color = '#ff9f43';
+    }
+}
+
+// === LISTENERS ===
+function attachListeners() {
+    buildings.forEach((_, i) => {
+        const input = document.getElementById(`b${i}`);
+
+        input.addEventListener('input', () => {
+            calculateBuildTotal();
+            saveBuildings();
+        });
+    });
+}
+
+// === RESET BUILD ===
+function resetBuildings() {
+    // Clear inputs
+    buildings.forEach((_, i) => {
+        const input = document.getElementById(`b${i}`);
+        input.value = 0;
+    });
+
+    // Clear saved data
+    localStorage.removeItem('utopiaBuildings');
+
+    // Recalculate total
+    calculateBuildTotal();
+}
+
+// === SAVE BUILD ===
+function saveBuildings() {
+    const data = {};
+
+    buildings.forEach((_, i) => {
+        const input = document.getElementById(`b${i}`);
+        data[i] = input.value;
+    });
+
+    localStorage.setItem('utopiaBuildings', JSON.stringify(data));
+}
+
+// === LOAD BUILD ===
+function loadBuildings() {
+    const data = JSON.parse(localStorage.getItem('utopiaBuildings'));
+
+    if (!data) return;
+
+    buildings.forEach((_, i) => {
+        const input = document.getElementById(`b${i}`);
+        if (data[i] !== undefined) {
+            input.value = data[i];
+        }
+    });
+}
+
+// INIT
+window.addEventListener('load', () => {
+    buildBuildingGrid();
+    loadBuildings();
+    calculateBuildTotal();
+
+    // RESET BUTTON HOOK (ADD HERE)
+    document.getElementById('resetDefaultsBtn')
+        .addEventListener('click', resetBuildings);
+});
+</script>
+
+</body>
+</html>
