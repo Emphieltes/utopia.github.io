@@ -824,9 +824,12 @@ const c = {fireball:0,fbP:0,
 			acresLost:0,
 			soldiersLost:0,
 			troopsLost:0,
+            desertions:0,desertTotalMen:0,desertSoldiers:0,desertElites:0,desertOffSpecs:0,desertDefSpecs:0,desertThieves:0,
 			riotsDefCasts:0,riotsDefDays:0,
 			greedDefCasts:0,greedDefDays:0,
 			pitfallsDefCasts:0,pitfallsDefDays:0,
+            nightstrikeDefCasts:0,nightstrikeDefKilled:0,
+            kidnapDefCasts:0,kidnapDefPeasants:0,
 			towerRobDefCount:0,runesStolenFromUs:0,
 			vaultRobDefCount:0,goldStolenFromUs:0,
 			thiefAttemptsOnUs:0,thiefFailsOnUs:0,
@@ -1459,6 +1462,20 @@ function parseLog(mode = 'offensive') {
                 if (!perTarget.kidnap.has(target)) perTarget.kidnap.set(target,{c:0,t:0});
                 const e = perTarget.kidnap.get(target); e.c++; e.t += v; }
         }
+
+        // DEFENSIVE: KIDNAPS
+		if (line.includes("peasants were kidnapped") || 
+		    line.includes("were kidnapped from our lands")) {
+			
+			c.kidnapDefCasts++;
+			c.thiefAttemptsOnUs++;
+
+			const m = origLine.match(/(\d[\d,]*)\s+peasants were kidnapped/i);
+			if (m) {
+				const peasants = parseInt(m[1].replace(/,/g, ''), 10);
+				c.kidnapDefPeasants += peasants;
+			}
+		}
 		
 		// 10. NIGHT STRIKE
         if (/early indications.+success/i.test(line) && /assassinated/i.test(line)) {
@@ -1473,7 +1490,22 @@ function parseLog(mode = 'offensive') {
                 hits.nightstrike.push(v);
                 perTarget.nightstrike.get(target).t += v;
             }
-        }		
+        }
+        
+        // DEFENSIVE: NIGHT STRIKES
+		if (line.includes("of our troops were found dead today") || 
+		    line.includes("of our soldiers were found dead today") || 
+		    line.includes("of our men were found dead today")) {
+			
+			c.nightstrikeDefCasts++;
+			c.thiefAttemptsOnUs++;
+
+			const m = origLine.match(/(\d[\d,]*)\s+of our (troops|soldiers|men)/i);
+			if (m) {
+				const killed = parseInt(m[1].replace(/,/g, ''), 10);
+				c.nightstrikeDefKilled += killed;
+			}
+		}
 		
 		// 11. PROPAGANDA
 		if (/early indications.+success/i.test(line) && /converted.*(from the enemy|of the enemy).*to our (guild|army)/i.test(line)) {
@@ -1622,6 +1654,28 @@ function parseLog(mode = 'offensive') {
 				hits.stealHorses.push(horses);
 				e.t += horses;
 			}
+		}
+
+        // DEFENSIVE: Military Desertions (Overpopulation)
+		if (line.includes("deserted our military due to housing shortages") || 
+		    line.includes("men deserted our military")) {
+			
+			c.desertions++;
+
+			// Extract numbers
+			const totalMatch   = origLine.match(/(\d[\d,]*)\s+men deserted/i);
+			const soldiersMatch = origLine.match(/(\d[\d,]*)\s+soldiers/i);
+			const elitesMatch   = origLine.match(/(\d[\d,]*)\s+elites/i);
+			const offSpecMatch  = origLine.match(/(\d[\d,]*)\s+offensive specialists/i);
+			const defSpecMatch  = origLine.match(/(\d[\d,]*)\s+defensive specialists/i);
+			const thievesMatch  = origLine.match(/(\d[\d,]*)\s+thieves/i);
+
+			if (totalMatch)   c.desertTotalMen += parseInt(totalMatch[1].replace(/,/g,''), 10);
+			if (soldiersMatch) c.desertSoldiers += parseInt(soldiersMatch[1].replace(/,/g,''), 10);
+			if (elitesMatch)   c.desertElites   += parseInt(elitesMatch[1].replace(/,/g,''), 10);
+			if (offSpecMatch)  c.desertOffSpecs += parseInt(offSpecMatch[1].replace(/,/g,''), 10);
+			if (defSpecMatch)  c.desertDefSpecs += parseInt(defSpecMatch[1].replace(/,/g,''), 10);
+			if (thievesMatch)  c.desertThieves  += parseInt(thievesMatch[1].replace(/,/g,''), 10);
 		}
 
         // AID IN & OUT & DRAGON
@@ -1794,6 +1848,21 @@ function parseLog(mode = 'offensive') {
     }
 	
 out += `\n`;
+
+    // Military Desertions (Overpopulation)
+    if (c.desertions > 0) {
+        out += `<span class="bold underline">Military Desertions:</span>\n`;
+        out += `Total Ticks: ${c.desertions}\n`;
+        out += `Total Army: ${c.desertTotalMen.toLocaleString()}\n`;
+        
+        if (c.desertSoldiers > 0) out += ` - Soldiers: ${c.desertSoldiers.toLocaleString()}\n`;
+        if (c.desertElites > 0)   out += ` - Elites: ${c.desertElites.toLocaleString()}\n`;
+        if (c.desertOffSpecs > 0) out += ` - Offensive Specialists: ${c.desertOffSpecs.toLocaleString()}\n`;
+        if (c.desertDefSpecs > 0) out += ` - Defensive Specialists: ${c.desertDefSpecs.toLocaleString()}\n`;
+        if (c.desertThieves > 0)  out += ` - Thieves: ${c.desertThieves.toLocaleString()}\n`;
+        
+        out += `\n`;
+    }
 	
 	// NEW: Incoming Sorcery Ops (flipped to enemy success %)
     if (c.sorceryAttemptsOnUs > 0) {
@@ -1917,6 +1986,26 @@ out += `\n`;
         out += `Incite Riots: ${c.riotsDefCasts} - Total Days: ${c.riotsDefDays.toLocaleString()}`;
         if (c.riotsDefCasts > 0) {
             out += ` (Avg: ${Math.round(c.riotsDefDays / c.riotsDefCasts)})`;
+        }
+        out += `\n`;
+    }
+
+    // Night Strikes
+    if (c.nightstrikeDefCasts > 0 || c.nightstrikeDefKilled > 0) {
+        hasAnyDefensiveEvent = true;
+        out += `Night Strikes: ${c.nightstrikeDefCasts} - Troops Killed: ${c.nightstrikeDefKilled.toLocaleString()}`;
+        if (c.nightstrikeDefCasts > 0) {
+            out += ` (Avg: ${Math.round(c.nightstrikeDefKilled / c.nightstrikeDefCasts)})`;
+        }
+        out += `\n`;
+    }
+
+    // Kidnaps
+    if (c.kidnapDefCasts > 0 || c.kidnapDefPeasants > 0) {
+        hasAnyDefensiveEvent = true;
+        out += `Kidnaps: ${c.kidnapDefCasts} - Peasants Kidnapped: ${c.kidnapDefPeasants.toLocaleString()}`;
+        if (c.kidnapDefCasts > 0) {
+            out += ` (Avg: ${Math.round(c.kidnapDefPeasants / c.kidnapDefCasts)})`;
         }
         out += `\n`;
     }
