@@ -733,7 +733,11 @@ function getTargetProvince(line) {
             line.match(/drought will reign over the lands of ([^()]+?)\s*\(\d+:\d+\)/i) ||
             line.match(/vow of chastity for \d+ days!\s*\(([^()]+?)\s*\(\d+:\d+\)\)/i) ||
             line.match(/soldiers to turn greedy for \d+ days\.\s*\(([^()]+?)\s*\(\d+:\d+\)\)/i) ||
+            line.match(/Darkness consumes ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/Death's embrace takes hold of ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/Death's embrace takes hold ([^()]+?)\s*\(\d+:\d+\)/i) ||
 			line.match(/Lightning strikes the Towers in ([^()]+?)\s*\(\d+:\d+\)/i);
+            
 
     if (match && match[1]) {
         let prov = match[1].trim();
@@ -778,6 +782,7 @@ const c = {fireball:0,fbP:0,
 			nightmare:0,nmM:0,
 			tornado:0,torA:0,
 			meteor:0,meteorDays:0,
+            soulblight:0,soulblightPeasantsKilled:0,soulblightPeasantsGained:0,
 			landlust:0,llAcres:0,
 			kidnap:0,kdP:0,
 			bribeGen:0,
@@ -811,6 +816,14 @@ const c = {fireball:0,fbP:0,
 			stealHorses:0,horsesGained:0,
 			freePrisoners:0,prisonersFreed:0,
 			lightningStrike:0,lightningRunesIncinerated:0,
+
+            // OFFENSIVE ATTACKS
+			attacksMade:0,
+			acresTaken:0,
+			buildingsSurvived:0,
+			specCreditsGained:0,
+			peasantsGained:0,
+			enemyTroopsKilled:0,
 			
 			// DEFENSIVE
 			meteorDefCasts:0,meteorDefDays:0,
@@ -832,6 +845,7 @@ const c = {fireball:0,fbP:0,
             kidnapDefCasts:0,kidnapDefPeasants:0,
 			towerRobDefCount:0,runesStolenFromUs:0,
 			vaultRobDefCount:0,goldStolenFromUs:0,
+            granRobDefCount:0,foodStolenFromUs:0,
 			thiefAttemptsOnUs:0,thiefFailsOnUs:0,
 			sorceryAttemptsOnUs:0,sorceryFailsOnUs:0,
 			fireballDefCasts:0,fireballDefPeasantsKilled:0};
@@ -846,6 +860,7 @@ const hits = {fireball:[],
 				meteor:[],
 				saboWiz:[],
 				nightstrike:[],
+                soulblight:[],
 				arson:[],
 				abolish:[],
 				pitfalls:[],
@@ -873,6 +888,7 @@ const perTarget = {fireball:new Map(),
 					pitfalls:new Map(),
 					propaganda:new Map(),
 					exposeThieves:new Map(),
+                    soulblight:new Map(),
 					explosions:new Map(),
 					kidnap:new Map(),
 					bribeGen:new Map(),
@@ -980,6 +996,38 @@ function parseLog(mode = 'offensive') {
 			c.sorceryFailsOnUs++;
 		}
 
+        // OFFENSIVE ATTACKS - Victory
+		if (line.includes("your forces arrive at") && 
+		    line.includes("we have managed a victory")) {
+			
+			c.attacksMade++;
+
+			// Acres Taken
+			const acresMatch = origLine.match(/taken\s+(\d[\d,]*)\s+acres/i);
+			if (acresMatch) c.acresTaken += parseInt(acresMatch[1].replace(/,/g,''), 10);
+
+			// Buildings Survived
+			const buildingsMatch = origLine.match(/(\d[\d,]*)\s+acres? of buildings survived/i) ||
+			                       origLine.match(/(\d[\d,]*)\s+buildings? have survived/i);
+			if (buildingsMatch) c.buildingsSurvived += parseInt(buildingsMatch[1].replace(/,/g,''), 10);
+
+			// Specialist Training Credits
+			const creditsMatch = origLine.match(/gained\s+(\d[\d,]*)\s+specialist training credits/i);
+			if (creditsMatch) c.specCreditsGained += parseInt(creditsMatch[1].replace(/,/g,''), 10);
+
+			// Peasants Gained
+			const peasantsMatch = origLine.match(/(\d[\d,]*)\s+peasants settled/i);
+			if (peasantsMatch) c.peasantsGained += parseInt(peasantsMatch[1].replace(/,/g,''), 10);
+		}
+
+        // Enemy troops killed from attacks
+        if (/killed (about |approximately )?\d[\d,]* enemy troops/i.test(origLine)) {
+            const m = origLine.match(/killed (?:about |approximately )?(\d[\d,]*) enemy troops/i);
+            if (m) {
+                c.enemyTroopsKilled += parseInt(m[1].replace(/,/g,''), 10);
+            }
+        }
+
 		// 1. ABOLISH RITUAL
 		if (/infest the guilds/i.test(line) && /ritual is now.*% destroyed/i.test(line)) {
             c.spellAttempts++; c.spellSuccess++; c.abolish++;
@@ -1002,6 +1050,7 @@ function parseLog(mode = 'offensive') {
         }
 		
 		// 2. AMNESIA
+
 		// 3. BLIZZARD
 		
 		// 4. CHASTITY
@@ -1339,8 +1388,40 @@ function parseLog(mode = 'offensive') {
 		}
 		
 		// 20. STORMS
+
+        // SOUL BLIGHT - Supports both variants
+		if (/spell succeeds/i.test(line) && /soul blight|darkness consumes|death's embrace/i.test(line)) {
+			c.spellAttempts++;
+			c.spellSuccess++;
+			c.soulblight++;
+
+			if (!perTarget.soulblight.has(target)) 
+				perTarget.soulblight.set(target, {c:0, killed:0, gained:0});
+
+			const e = perTarget.soulblight.get(target);
+			e.c++;
+
+			// Peasants Killed - handles both "peasants fall" and "killing X peasants"
+			const killedMatch = origLine.match(/(?:and\s+|\b)killing?\s+(\d[\d,]*)\s+peasants/i) ||
+			                    origLine.match(/(\d[\d,]*)\s+peasants fall/i);
+			if (killedMatch) {
+				const v = parseInt(killedMatch[1].replace(/,/g,''), 10);
+				c.soulblightPeasantsKilled += v;
+				hits.soulblight.push(v);
+				e.killed += v;
+			}
+
+			// Peasants Gained (Undead Raised) - handles both versions
+			const gainedMatch = origLine.match(/raises an army of\s+(\d[\d,]*)/i) ||
+			                    origLine.match(/(\d[\d,]*)\s+of their spirits are bound/i);
+			if (gainedMatch) {
+				const u = parseInt(gainedMatch[1].replace(/,/g,''), 10);
+				c.soulblightPeasantsGained += u;
+				e.gained += u;
+			}
+		}
 		
-		// 21. TORNADOES
+		// 22. TORNADOES
 		if (/spell succeeds/i.test(line) && !/reflected/i.test(line) && /tornado/i.test(line)) {
 			const m = origLine.match(/waste to\s+(\d[\d,]*)\s+acres/i);
 			if (m) { 
@@ -1355,7 +1436,7 @@ function parseLog(mode = 'offensive') {
 			}
 		}
 		
-		// 22. VERMIN
+		// 23. VERMIN
 
 		// ***SABOTAGE OPERATIONS***
 		
@@ -1613,6 +1694,19 @@ function parseLog(mode = 'offensive') {
 				c.goldStolenFromUs += gold;
 			}
 		}
+
+        // DEFENSIVE: FOOD STOLEN
+        if (line.includes("bushels were stolen from our granaries")) {
+
+            c.granRobDefCount++;
+            c.thiefAttemptsOnUs++;
+
+            const m = origLine.match(/(\d[\d,]*)\s+bushels/i);
+            if (m) {
+                const food = parseInt(m[1].replace(/,/g, ''), 10);
+                c.foodStolenFromUs += food;
+            }
+        }
 		
 		// 15. SABOTAGE WIZARDS
 		if (/early indications.+success/i.test(line) && /disrupted the enemy wizards' ability to regain their mana/i.test(line)) {
@@ -1749,6 +1843,18 @@ function parseLog(mode = 'offensive') {
     if (mode === 'offensive') {
         out += `<span class="title">Offensive T/M War Summary</span>\n${"=".repeat(35)}\n\n`;
 
+        // Offensive Attacks
+        if (c.attacksMade > 0) {
+            out += `<span class="bold underline">Offensive Attacks:</span>\n`;
+            out += `Attacks Made: ${c.attacksMade}\n`;
+            out += `Acres Taken: ${c.acresTaken.toLocaleString()}\n`;
+            if (c.buildingsSurvived > 0) out += `Buildings Survived: ${c.buildingsSurvived.toLocaleString()}\n`;
+            if (c.specCreditsGained > 0) out += `Specialist Credits Gained: ${c.specCreditsGained.toLocaleString()}\n`;
+            if (c.peasantsGained > 0)    out += `Peasants Gained: ${c.peasantsGained.toLocaleString()}\n`;
+            if (c.enemyTroopsKilled > 0) out += `Enemy Troops Killed: ${c.enemyTroopsKilled.toLocaleString()}\n`;
+            out += `\n`;
+        }
+
         // Your EXISTING sorcery output (copy-paste your current sorcery block here)
         if (c.spellSuccess) {
             out += `<span class="bold underline">Sorcery Ops (${c.spellSuccess}/${c.spellAttempts} - ${c.spellAttempts ? Math.round(c.spellSuccess/c.spellAttempts*100) : 0}%):</span>\n`;
@@ -1757,14 +1863,21 @@ function parseLog(mode = 'offensive') {
             if (c.tornado) out += `Tornadoes: ${c.tornado} - Acres Destroyed: ${c.torA.toLocaleString()} (Avg: ${Math.round(c.torA/c.tornado)})\n<div class="details">${details("tornado","Tornado"," acres")}</div>`;
             if (c.abolish) out += `Abolish Ritual: ${c.abolish} - Destroyed: ${c.abolishPct}%\n<div class="details">${abolishDetails()}</div>`;
             if (c.pitfalls) out += `Pitfalls: ${c.pitfalls} - Total Days: ${c.pitDays} (Avg: ${Math.round(c.pitDays / c.pitfalls)} days)\n<div class="details">${details("pitfalls","Pitfall"," days")}</div>`;
+            if (c.soulblight) {
+                const avgKill = c.soulblight ? Math.round(c.soulblightPeasantsKilled / c.soulblight) : 0;
+                out += `Soul Blight: ${c.soulblight}\n`;
+                out += `  └─ Peasants Killed: ${c.soulblightPeasantsKilled.toLocaleString()} (Avg Kill: ${avgKill})\n`;
+                out += `  └─ Soldiers Gained: ${c.soulblightPeasantsGained.toLocaleString()}\n`;
+                out += `<div class="details">${details("soulblight","Soul Blight")}</div>`;
+            }
             if (c.meteor) out += `Meteor Showers: ${c.meteor} - Total Days: ${c.meteorDays} (Avg: ${c.meteor ? Math.round(c.meteorDays / c.meteor) : 0} days)\n<div class="details">${details("meteor","Meteor Showers"," days")}</div>`;
             if (c.exposeThieves) out += `Expose Thieves: ${c.exposeThieves} - Total Days: ${c.exposeDays} (Avg: ${Math.round(c.exposeDays / c.exposeThieves)} days)\n<div class="details">${details("exposeThieves","Expose Thieves"," days")}</div>`;
             if (c.gluttony) out += `Gluttony: ${c.gluttony} - Total Days: ${c.gluttonyDays} (Avg: ${c.gluttony ? Math.round(c.gluttonyDays / c.gluttony) : 0} days)\n<div class="details">${details("gluttony","Gluttony"," days")}</div>`;
-			      if (c.chastity) out += `Chastity: ${c.chastity} - Total Days: ${c.chastityDays} (Avg: ${c.chastity ? Math.round(c.chastityDays / c.chastity) : 0} days)\n<div class="details">${details("chastity","Chastity"," days")}</div>`;
-			      if (c.droughts) out += `Droughts: ${c.droughts} - Total Days: ${c.droughtsDays} (Avg: ${c.droughts ? Math.round(c.droughtsDays / c.droughts) : 0} days)\n<div class="details">${details("droughts","Droughts"," days")}</div>`;
-			      if (c.greed) out += `Greed: ${c.greed} - Total Days: ${c.greedDays} (Avg: ${c.greed ? Math.round(c.greedDays / c.greed) : 0})\n<div class="details">${details("greed","Greed"," days")}</div>`;
-			      if (c.lightningStrike) out += `Lightning Strikes: ${c.lightningStrike} - Runes Incinerated: ${c.lightningRunesIncinerated.toLocaleString()} (Avg: ${c.lightningStrike ? Math.round(c.lightningRunesIncinerated / c.lightningStrike).toLocaleString() : 0})\n<div class="details">${details("lightningStrike","Lightning Strike"," runes")}</div>`;
-			      if (c.explosions) out += `Explosions: ${c.explosions} - Total Days: ${c.explosionDays} (Avg: ${Math.round(c.explosionDays / c.explosions)} days)\n<div class="details">${details("explosions","Explosion"," days")}</div>`;
+			if (c.chastity) out += `Chastity: ${c.chastity} - Total Days: ${c.chastityDays} (Avg: ${c.chastity ? Math.round(c.chastityDays / c.chastity) : 0} days)\n<div class="details">${details("chastity","Chastity"," days")}</div>`;
+			if (c.droughts) out += `Droughts: ${c.droughts} - Total Days: ${c.droughtsDays} (Avg: ${c.droughts ? Math.round(c.droughtsDays / c.droughts) : 0} days)\n<div class="details">${details("droughts","Droughts"," days")}</div>`;
+			if (c.greed) out += `Greed: ${c.greed} - Total Days: ${c.greedDays} (Avg: ${c.greed ? Math.round(c.greedDays / c.greed) : 0})\n<div class="details">${details("greed","Greed"," days")}</div>`;
+			if (c.lightningStrike) out += `Lightning Strikes: ${c.lightningStrike} - Runes Incinerated: ${c.lightningRunesIncinerated.toLocaleString()} (Avg: ${c.lightningStrike ? Math.round(c.lightningRunesIncinerated / c.lightningStrike).toLocaleString() : 0})\n<div class="details">${details("lightningStrike","Lightning Strike"," runes")}</div>`;
+			if (c.explosions) out += `Explosions: ${c.explosions} - Total Days: ${c.explosionDays} (Avg: ${Math.round(c.explosionDays / c.explosions)} days)\n<div class="details">${details("explosions","Explosion"," days")}</div>`;
             if (c.landlust) out += `Land Lust: ${c.landlust} - Acres Gained: ${c.llAcres.toLocaleString()} (Avg: ${Math.round(c.llAcres/c.landlust)})\n<div class="details">${details("landlust","Land Lust"," acres")}</div>`;
             out += `\n`;
         }
@@ -1777,11 +1890,11 @@ function parseLog(mode = 'offensive') {
             if (c.arson) out += `Arson: ${c.arson} - Acres Burned: ${c.arsA.toLocaleString()} (Avg: ${Math.round(c.arsA/c.arson)})\n<div class="details">${details("arson","Arson"," acres")}</div>`;
             if (c.bribeGen) out += `Bribe Generals: ${c.bribeGen}\n<div class="details">${details("bribeGen","Bribe Generals")}</div>`;
             if (c.bribeThieves) out += `Bribe Thieves: ${c.bribeThieves}\n<div class="details">${details("bribeThieves","Bribe Thieves")}</div>`;
-			      if (c.saboWiz) out += `Sabotage Wizards: ${c.saboWiz} - Total Days: ${c.saboWizDays} (Avg: ${c.saboWiz ? Math.round(c.saboWizDays / c.saboWiz) : 0} days)\n<div class="details">${details("saboWiz","Sabotage Wizards"," days")}</div>`;
+			if (c.saboWiz) out += `Sabotage Wizards: ${c.saboWiz} - Total Days: ${c.saboWizDays} (Avg: ${c.saboWiz ? Math.round(c.saboWizDays / c.saboWiz) : 0} days)\n<div class="details">${details("saboWiz","Sabotage Wizards"," days")}</div>`;
             if (c.riots) out += `Riots: ${c.riots} - Total Days: ${c.riotDays} (Avg: ${Math.round(c.riotDays/c.riots)})\n<div class="details">${details("riots","Riot"," days")}</div>`;
             if (c.freePrisoners) out += `Free Prisoners: ${c.freePrisoners} - Prisoners Freed: ${c.prisonersFreed.toLocaleString()} (Avg: ${c.freePrisoners ? Math.round(c.prisonersFreed / c.freePrisoners) : 0})\n<div class="details">${details("freePrisoners","Free Prisoners"," prisoners")}</div>`;
-			      if (c.stealHorses) out += `Steal War Horses: ${c.stealHorses} - Horses Gained: ${c.horsesGained.toLocaleString()} (Avg: ${c.stealHorses ? Math.round(c.horsesGained / c.stealHorses) : 0})\n<div class="details">${details("stealHorses","Steal War Horses"," horses")}</div>`;
-			      if (c.propaganda) {
+			if (c.stealHorses) out += `Steal War Horses: ${c.stealHorses} - Horses Gained: ${c.horsesGained.toLocaleString()} (Avg: ${c.stealHorses ? Math.round(c.horsesGained / c.stealHorses) : 0})\n<div class="details">${details("stealHorses","Steal War Horses"," horses")}</div>`;
+			if (c.propaganda) {
                 const totalConverted = c.propWizards + c.propSoldiers + c.propThieves + c.propSpecs + c.propElites;
                 out += `Propaganda: ${c.propaganda} - Total converted troops: ${totalConverted.toLocaleString()}\n`;
                 out += `  └─ Wizards: ${c.propWizards.toLocaleString()} (${c.propOpsWizards} ops)\n`;
@@ -2012,6 +2125,8 @@ out += `\n`;
 	
 	// Gold Stolen
     if (c.vaultRobDefCount > 0 || c.goldStolenFromUs > 0) {
+        hasAnyDefensiveEvent = true;
+
         out += `Vaults Robbed: ${c.vaultRobDefCount} - Gold Stolen: ${c.goldStolenFromUs.toLocaleString()} gc`;
         if (c.vaultRobDefCount > 0) {
             out += ` (Avg: ${Math.round(c.goldStolenFromUs / c.vaultRobDefCount).toLocaleString()})`;
@@ -2026,6 +2141,17 @@ out += `\n`;
         out += `Towers Robbed: ${c.towerRobDefCount} - Runes Stolen: ${c.runesStolenFromUs.toLocaleString()} Runes`;
         if (c.towerRobDefCount > 0) {
             out += ` (Avg: ${Math.round(c.runesStolenFromUs / c.towerRobDefCount).toLocaleString()})`;
+        }
+        out += `\n`;
+    }
+
+    // Food Stolen
+    if (c.granRobDefCount > 0 || c.foodStolenFromUs > 0) {
+        hasAnyDefensiveEvent = true;
+
+        out += `Granaries Robbed: ${c.granRobDefCount} - Food Stolen: ${c.foodStolenFromUs.toLocaleString()} bushels`;
+        if (c.granRobDefCount > 0) {
+            out += ` (Avg: ${Math.round(c.foodStolenFromUs / c.granRobDefCount).toLocaleString()})`;
         }
         out += `\n`;
     }
