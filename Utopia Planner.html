@@ -3074,6 +3074,12 @@ function savePlannerData() {
         saved.military[input.id] = input.value;
     });
 
+    // ✅ Save Soldiers (NOT in military table)
+    const soldiersInput = document.getElementById('curSoldiers');
+    if (soldiersInput) {
+        saved.curSoldiers = soldiersInput.value.replace(/,/g, '');
+    }
+
     localStorage.setItem('utopiaPlanner', JSON.stringify(saved));
 }
 
@@ -3161,6 +3167,18 @@ function loadPlannerData() {
                 rawInput.value = data['raw' + i];
             }
         }
+
+        // ✅ Load Soldiers (NOT in military table)
+        if (data.curSoldiers !== undefined) {
+            const soldiersInput = document.getElementById('curSoldiers');
+            if (soldiersInput) {
+                soldiersInput.value = data.curSoldiers;
+            }
+        }
+
+        updateTotalSoldiers();
+        calculateTotalArmy();
+        calculateTotalPopulation();
 
         // ✅ LOAD HOMES
         if (data.homes !== undefined) {
