@@ -1067,6 +1067,19 @@ function setupInvestedFormatting() {
 
 const EXP = 8 / 17;
 const INV_EXP = 17 / 8;
+const SCIENCE_CALIBRATION = {
+  "Alchemy": 1.055,
+  "Tools": 1.042,
+  "Housing": 1.054,
+  "Production": 1.056,
+  "Bookkeeping": 1.095,
+  "Strategy": 1.081,
+  "Tactics": 1.081,
+  "Valor": 1.095,
+  "Crime": 1.072,
+  "Channeling": 1.087,
+  "Finesse": 1.095
+};
 
 // Libraries Bonus
 function SciBonusPct(libsPercent) {
@@ -1112,7 +1125,9 @@ function calculateRow(row) {
     const libs = parseFloat(document.getElementById('libraries-percent')?.value) || 0;
     const bonus = 1 + (SciBonusPct(libs) / 100);
 
-    const effective = factor * bonus;
+    const scienceName = row.dataset.science;
+    const calibration = SCIENCE_CALIBRATION[scienceName] || 1;
+    const effective = factor * bonus * calibration;
 
     // OUTPUT %
     let output = 0;
