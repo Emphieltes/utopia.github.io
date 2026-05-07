@@ -1067,19 +1067,7 @@ function setupInvestedFormatting() {
 
 const EXP = 8 / 17;
 const INV_EXP = 17 / 8;
-const SCIENCE_CALIBRATION = {
-  "Alchemy": 1.055,
-  "Tools": 1.042,
-  "Housing": 1.052,
-  "Production": 1.056,
-  "Bookkeeping": 1.095,
-  "Strategy": 1.073,
-  "Tactics": 1.073,
-  "Valor": 1.095,
-  "Crime": 1.072,
-  "Channeling": 1.087,
-  "Finesse": 1.108
-};
+const REAL_SCIENCE_PCTS = {};
 
 // Libraries Bonus
 function SciBonusPct(libsPercent) {
@@ -1126,21 +1114,42 @@ function calculateRow(row) {
     const bonus = 1 + (SciBonusPct(libs) / 100);
 
     const scienceName = row.dataset.science;
-    const calibration = SCIENCE_CALIBRATION[scienceName] || 1;
-    const effective = factor * bonus * calibration;
 
-    // OUTPUT %
+    // REAL parsed % from game
+    const realPct = REAL_SCIENCE_PCTS[scienceName];
+
     let output = 0;
-    if (invested > 0 && effective > 0) {
-        output = Math.pow(invested, EXP) * effective;
+    let k = 0;
+
+    // If REAL parsed value exists, ALWAYS use it
+    if (realPct !== undefined && realPct !== null) {
+
+        output = realPct;
+
+        // Only compute k if we have invested books
+        if (invested > 0) {
+            k = output / Math.pow(invested, EXP);
+        }
+
+    } else {
+
+        // fallback mode
+        const effective = factor * bonus;
+
+        if (invested > 0) {
+            output = Math.pow(invested, EXP) * effective;
+        }
+
+        k = effective;
     }
 
     outputCell.textContent = output ? output.toFixed(1) + '%' : '-';
 
     // BOOKS REQUIRED
     let targetBooks = 0;
-    if (target > 0 && effective > 0) {
-        targetBooks = Math.pow(target / effective, INV_EXP);
+
+    if (target > 0 && k > 0) {
+        targetBooks = Math.pow(target / k, INV_EXP);
     }
 
     let req = Math.round(targetBooks - invested);
@@ -1245,6 +1254,16 @@ function parseAndFillBooks() {
         const name = nameRaw.trim();
 
         let booksStr = parts[1].replace(/,/g, '');
+        let effectText = parts[2] || '';
+
+        // Extract first percentage found
+        const pctMatch = effectText.match(/-?\d+(\.\d+)?(?=%)/);
+
+        let realPct = null;
+
+        if (pctMatch) {
+            realPct = Math.abs(parseFloat(pctMatch[0]));
+        }
 
         if (!scienceMap[name]) return;
         if (isNaN(booksStr) || booksStr === '') return;
@@ -1255,8 +1274,13 @@ function parseAndFillBooks() {
         const input = row.querySelector('input[data-type="invested"]');
         if (!input) return;
 
-        // ✅ Apply formatted number
+        // Apply books
         input.value = Number(booksStr).toLocaleString('en-US');
+
+        // Store REAL game %
+        if (realPct !== null) {
+            REAL_SCIENCE_PCTS[name] = realPct;
+        }
 
         filled++;
     });
@@ -1399,7 +1423,8 @@ function saveData() {
 
     localStorage.setItem('utopia-sciences-data', JSON.stringify({
         rows: data,
-        libs: libs
+        libs: libs,
+        realPcts: REAL_SCIENCE_PCTS
     }));
 }
 
@@ -1410,6 +1435,10 @@ function loadData() {
 
     try {
         const data = JSON.parse(saved);
+
+        if (data.realPcts) {
+            Object.assign(REAL_SCIENCE_PCTS, data.realPcts);
+        }
 
         // Restore rows
         if (data.rows) {
@@ -1451,6 +1480,11 @@ function resetToDefaults() {
         if (invested) invested.value = 0;
         if (target)   target.value = 0;
     });
+
+    // ✅ Clear REAL parsed science percentages
+    for (const key in REAL_SCIENCE_PCTS) {
+        delete REAL_SCIENCE_PCTS[key];
+    }
 
     // Recalculate everything
     calculateAll();
