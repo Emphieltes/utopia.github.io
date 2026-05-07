@@ -1122,25 +1122,20 @@ function calculateRow(row) {
     let k = 0;
 
     // If REAL parsed value exists, ALWAYS use it
-    if (realPct !== undefined && realPct !== null) {
+    if (realPct != null) {
 
         output = realPct;
 
-        // Only compute k if we have invested books
-        if (invested > 0) {
-            k = output / Math.pow(invested, EXP);
-        }
+        // ALWAYS use theoretical scaling, NOT invested-derived k
+        k = factor * bonus;
 
     } else {
 
-        // fallback mode
-        const effective = factor * bonus;
+        k = factor * bonus;
 
         if (invested > 0) {
-            output = Math.pow(invested, EXP) * effective;
+            output = Math.pow(invested, EXP) * k;
         }
-
-        k = effective;
     }
 
     outputCell.textContent = output ? output.toFixed(1) + '%' : '-';
@@ -1148,7 +1143,7 @@ function calculateRow(row) {
     // BOOKS REQUIRED
     let targetBooks = 0;
 
-    if (target > 0 && k > 0) {
+    if (target > 0 && isFinite(k) && k > 0) {
         targetBooks = Math.pow(target / k, INV_EXP);
     }
 
@@ -1468,28 +1463,24 @@ function loadData() {
 // RESET TO DEFAULTS FUNCTION
 function resetToDefaults() {
 
-    // Reset Libraries
     const libsInput = document.getElementById('libraries-percent');
     if (libsInput) libsInput.value = 0;
 
-    // Reset all rows
     document.querySelectorAll('tbody tr').forEach(row => {
         const invested = row.querySelector('[data-type="invested"]');
         const target   = row.querySelector('[data-type="target"]');
 
         if (invested) invested.value = 0;
-        if (target)   target.value = 0;
+        if (target) target.value = 0;
     });
 
-    // ✅ Clear REAL parsed science percentages
+    // Clear parsed real values
     for (const key in REAL_SCIENCE_PCTS) {
         delete REAL_SCIENCE_PCTS[key];
     }
 
-    // Recalculate everything
     calculateAll();
 
-    // Save reset state
     if (typeof saveData === 'function') {
         saveData();
     }
