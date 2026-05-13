@@ -829,6 +829,7 @@ const c = {fireball:0,fbP:0,
 			specCreditsGained:0,
 			peasantsGained:0,
 			enemyTroopsKilled:0,
+            darkpactWizards:0,darkpactSoldiers:0,darkpactPeasants:0,
 			
 			// DEFENSIVE
 			meteorDefCasts:0,meteorDefDays:0,
@@ -1034,6 +1035,26 @@ function parseLog(mode = 'offensive') {
                 c.enemyTroopsKilled += parseInt(m[1].replace(/,/g,''), 10);
             }
         }
+
+        // DARK PACT (Necromancer passive after successful attacks)
+		if (line.includes("dark pact takes hold") || line.includes("reanimating")) {
+			const wizMatch = origLine.match(/reanimating\s+(\d[\d,]*)\s+wizards/i);
+			const solMatch = origLine.match(/(\d[\d,]*)\s+soldiers/i);
+			const peaMatch = origLine.match(/(\d[\d,]*)\s+peasants/i);
+
+			if (wizMatch) {
+				const v = parseInt(wizMatch[1].replace(/,/g,''), 10);
+				c.darkpactWizards += v;
+			}
+			if (solMatch) {
+				const v = parseInt(solMatch[1].replace(/,/g,''), 10);
+				c.darkpactSoldiers += v;
+			}
+			if (peaMatch) {
+				const v = parseInt(peaMatch[1].replace(/,/g,''), 10);
+				c.darkpactPeasants += v;
+			}
+		}
 
 		// 1. ABOLISH RITUAL
 		if (/infest the guilds/i.test(line) && /ritual is now.*% destroyed/i.test(line)) {
@@ -1860,13 +1881,45 @@ function parseLog(mode = 'offensive') {
 
         // Offensive Attacks
         if (c.attacksMade > 0) {
+            const avgAcres = Math.round(c.acresTaken / c.attacksMade);
+            const avgBuildings = c.buildingsSurvived > 0 ? Math.round(c.buildingsSurvived / c.attacksMade) : 0;
+            const avgSpec = c.specCreditsGained > 0 ? Math.round(c.specCreditsGained / c.attacksMade) : 0;
+            const avgPeasants = c.peasantsGained > 0 ? Math.round(c.peasantsGained / c.attacksMade) : 0;
+            const avgKilled = c.enemyTroopsKilled > 0 ? Math.round(c.enemyTroopsKilled / c.attacksMade) : 0;
+
             out += `<span class="bold underline">Offensive Attacks:</span>\n`;
             out += `Attacks Made: ${c.attacksMade}\n`;
-            out += `Acres Taken: ${c.acresTaken.toLocaleString()}\n`;
-            if (c.buildingsSurvived > 0) out += `Buildings Survived: ${c.buildingsSurvived.toLocaleString()}\n`;
-            if (c.specCreditsGained > 0) out += `Specialist Credits Gained: ${c.specCreditsGained.toLocaleString()}\n`;
-            if (c.peasantsGained > 0)    out += `Peasants Gained: ${c.peasantsGained.toLocaleString()}\n`;
-            if (c.enemyTroopsKilled > 0) out += `Enemy Troops Killed: ${c.enemyTroopsKilled.toLocaleString()}\n`;
+            out += `Acres Taken: ${c.acresTaken.toLocaleString()} (Avg: ${avgAcres})\n`;
+            
+            if (c.buildingsSurvived > 0) 
+                out += `Buildings Survived: ${c.buildingsSurvived.toLocaleString()} (Avg: ${avgBuildings})\n`;
+            
+            if (c.specCreditsGained > 0) 
+                out += `Specialist Credits Gained: ${c.specCreditsGained.toLocaleString()} (Avg: ${avgSpec})\n`;
+            
+            if (c.peasantsGained > 0)    
+                out += `Peasants Gained: ${c.peasantsGained.toLocaleString()} (Avg: ${avgPeasants})\n`;
+            
+            if (c.enemyTroopsKilled > 0) 
+                out += `Enemy Troops Killed: ${c.enemyTroopsKilled.toLocaleString()} (Avg: ${avgKilled})`;
+
+            // Dark Pact with Averages
+            if (c.darkpactWizards > 0 || c.darkpactSoldiers > 0 || c.darkpactPeasants > 0) {
+                out += `\n<span style="color:#fa55ef;">Unique (Passive) Dark Pact:</span>\n`;
+                
+                if (c.darkpactWizards > 0) {
+                    const avgWiz = Math.round(c.darkpactWizards / c.attacksMade);
+                    out += `  └─ Wizards: ${c.darkpactWizards.toLocaleString()} (Avg: ${avgWiz})\n`;
+                }
+                if (c.darkpactSoldiers > 0) {
+                    const avgSol = Math.round(c.darkpactSoldiers / c.attacksMade);
+                    out += `  └─ Soldiers: ${c.darkpactSoldiers.toLocaleString()} (Avg: ${avgSol})\n`;
+                }
+                if (c.darkpactPeasants > 0) {
+                    const avgPea = Math.round(c.darkpactPeasants / c.attacksMade);
+                    out += `  └─ Peasants: ${c.darkpactPeasants.toLocaleString()} (Avg: ${avgPea})\n`;
+                }
+            }
             out += `\n`;
         }
 
