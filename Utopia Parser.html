@@ -736,6 +736,11 @@ function getTargetProvince(line) {
             line.match(/Darkness consumes ([^()]+?)\s*\(\d+:\d+\)/i) ||
             line.match(/Death's embrace takes hold of ([^()]+?)\s*\(\d+:\d+\)/i) ||
             line.match(/Death's embrace takes hold ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/essence of death permeates ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/pall of death descends upon ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/Necromancer's curse sweeps through ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/dark cloud engulfs ([^()]+?)\s*\(\d+:\d+\)/i) ||
+            line.match(/air turns cold in ([^()]+?)\s*\(\d+:\d+\)/i) ||
 			line.match(/Lightning strikes the Towers in ([^()]+?)\s*\(\d+:\d+\)/i);
             
 
@@ -937,8 +942,10 @@ function parseLog(mode = 'offensive') {
 		}
         if (line.includes("foiled") || line.includes("caught") || (line.includes("lost") && line.includes("thieves"))) c.thiefAttempts++;
 
-        // Successful spells
-        if (/spell succeeds/i.test(line) && !/reflected/i.test(line)) {
+        // Successful spells (exclude Soul Blight so it doesn't double count)
+        if (/spell succeeds/i.test(line) && 
+            !/reflected/i.test(line) && 
+            !/(soul blight|darkness consumes|death's embrace|essence of death|pall of death|necromancer's curse|air turns cold|dark cloud engulfs)/i.test(line)) {
 			// Check if the trimmed original line ends with (Province (X:Y))
 			const trimmed = origLine.trim();
 			const hasTargetProvince = /\(\s*[^()]+\s*\(\d+:\d+\)\s*\)$/i.test(trimmed);
@@ -1389,8 +1396,10 @@ function parseLog(mode = 'offensive') {
 		
 		// 20. STORMS
 
-        // SOUL BLIGHT - Supports both variants
-		if (/spell succeeds/i.test(line) && /soul blight|darkness consumes|death's embrace/i.test(line)) {
+        // SOUL BLIGHT - All Versions (1-7) - Very broad trigger
+		if (/spell succeeds/i.test(line) && 
+		    /soul blight|darkness consumes|death's embrace|essence of death|pall of death|necromancer's curse|air turns cold|dark cloud|peasants.*?(fall|souls?|lives?|reaped|harvested|claiming|taking)|necromancer|undead legion/i.test(line)) {
+			
 			c.spellAttempts++;
 			c.spellSuccess++;
 			c.soulblight++;
@@ -1401,9 +1410,11 @@ function parseLog(mode = 'offensive') {
 			const e = perTarget.soulblight.get(target);
 			e.c++;
 
-			// Peasants Killed - handles both "peasants fall" and "killing X peasants"
-			const killedMatch = origLine.match(/(?:and\s+|\b)killing?\s+(\d[\d,]*)\s+peasants/i) ||
-			                    origLine.match(/(\d[\d,]*)\s+peasants fall/i);
+			// Peasants Killed - Very aggressive matching
+			const killedMatch = origLine.match(/(\d[\d,]*)\s+peasants?(?:\s+souls?)?\s*(?:fall|are reaped|are harvested|lives?|fall lifeless|souls are|claiming|taking|reaped|harvested)/i) ||
+			                    origLine.match(/(?:killing?|taking|claiming)\s+(\d[\d,]*)\s+peasants?/i) ||
+			                    origLine.match(/(\d[\d,]*)\s+peasants?\s+fall/i);
+
 			if (killedMatch) {
 				const v = parseInt(killedMatch[1].replace(/,/g,''), 10);
 				c.soulblightPeasantsKilled += v;
@@ -1411,14 +1422,18 @@ function parseLog(mode = 'offensive') {
 				e.killed += v;
 			}
 
-			// Peasants Gained (Undead Raised) - handles both versions
-			const gainedMatch = origLine.match(/raises an army of\s+(\d[\d,]*)/i) ||
-			                    origLine.match(/(\d[\d,]*)\s+of their spirits are bound/i);
+			// Peasants Gained (Undead)
+			const gainedMatch = origLine.match(/(\d[\d,]*)\s+(?:new soldiers|of the fallen|of their spirits|of the dead|now serve|commands|reinforced by|grows stronger with|raises an army of)/i) ||
+			                    origLine.match(/gains?\s+(\d[\d,]*)/i) ||
+			                    origLine.match(/raises an army of\s+(\d[\d,]*)/i);
+
 			if (gainedMatch) {
 				const u = parseInt(gainedMatch[1].replace(/,/g,''), 10);
 				c.soulblightPeasantsGained += u;
 				e.gained += u;
 			}
+
+            return;
 		}
 		
 		// 22. TORNADOES
@@ -1863,12 +1878,12 @@ function parseLog(mode = 'offensive') {
             if (c.tornado) out += `Tornadoes: ${c.tornado} - Acres Destroyed: ${c.torA.toLocaleString()} (Avg: ${Math.round(c.torA/c.tornado)})\n<div class="details">${details("tornado","Tornado"," acres")}</div>`;
             if (c.abolish) out += `Abolish Ritual: ${c.abolish} - Destroyed: ${c.abolishPct}%\n<div class="details">${abolishDetails()}</div>`;
             if (c.pitfalls) out += `Pitfalls: ${c.pitfalls} - Total Days: ${c.pitDays} (Avg: ${Math.round(c.pitDays / c.pitfalls)} days)\n<div class="details">${details("pitfalls","Pitfall"," days")}</div>`;
-            if (c.soulblight) {
-                const avgKill = c.soulblight ? Math.round(c.soulblightPeasantsKilled / c.soulblight) : 0;
+            if (c.soulblight > 0) {
+                const avgKill = Math.round(c.soulblightPeasantsKilled / c.soulblight);
+                const avgGained = Math.round(c.soulblightPeasantsGained / c.soulblight);
                 out += `Soul Blight: ${c.soulblight}\n`;
-                out += `  └─ Peasants Killed: ${c.soulblightPeasantsKilled.toLocaleString()} (Avg Kill: ${avgKill})\n`;
-                out += `  └─ Soldiers Gained: ${c.soulblightPeasantsGained.toLocaleString()}\n`;
-                out += `<div class="details">${details("soulblight","Soul Blight")}</div>`;
+                out += `  └─ Peasants Killed: ${c.soulblightPeasantsKilled.toLocaleString()} (Avg: ${avgKill})\n`;
+                out += `  └─ Soldiers Gained: ${c.soulblightPeasantsGained.toLocaleString()} (Avg: ${avgGained})\n`;
             }
             if (c.meteor) out += `Meteor Showers: ${c.meteor} - Total Days: ${c.meteorDays} (Avg: ${c.meteor ? Math.round(c.meteorDays / c.meteor) : 0} days)\n<div class="details">${details("meteor","Meteor Showers"," days")}</div>`;
             if (c.exposeThieves) out += `Expose Thieves: ${c.exposeThieves} - Total Days: ${c.exposeDays} (Avg: ${Math.round(c.exposeDays / c.exposeThieves)} days)\n<div class="details">${details("exposeThieves","Expose Thieves"," days")}</div>`;
