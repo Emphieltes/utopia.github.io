@@ -252,9 +252,9 @@
     0 0 8px rgba(79, 195, 247, 0.6); /* same as hover glow */
 }
 
-/* Buildigns container */
+/* Buildings container */
 .build-container {
-    width: fit-content;
+    width: 100%;
     max-width: 100%;
     margin: 0;
     background: #2f343a;
@@ -264,20 +264,29 @@
 }
 
 .build-grid {
-    display: grid;
+    width: fit-content;
+    display: flex;
     grid-auto-flow: column;
     grid-template-rows: repeat(2, auto);
     grid-auto-columns: max-content;
-    gap: 8px 16px;
+    gap: 4px;
 }
 
 .build-item {
-    display: grid;
-    grid-template-columns: auto 50px;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.build-top {
     gap: 6px;
-    font-size: 0.85rem;
+}
+
+.build-top label {
+    display: inline-block;
+    text-align: right;
     white-space: nowrap;
+    font-size: 0.85rem;
 }
 
 .build-item input {
@@ -290,15 +299,93 @@
     text-align: center;
 }
 
-.build-item label {  
-  text-align: right;
-}
-
 .total-box {
     margin-top: 10px;
     font-weight: bold;
     font-size: 1.1rem;
 }
+
+.be-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.be-container input {
+    width: 70px;
+    padding: 4px;
+    background: #1f2327;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.build-effects {
+    font-size: 0.62rem;
+    color: var(--accent);
+    line-height: 1.25;
+    white-space: normal;
+    min-height: 40px;
+    width: 0;
+    min-width: max-content;
+}
+
+.build-effects div {
+    white-space: nowrap;
+}
+
+.build-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+    flex: 0 0 auto;
+}
+
+.b-Homes .build-top label { width: 58px; }
+.b-Hospitals .build-top label { width: 58px; }
+.b-Farms .build-top label { width: 37px; }
+.b-Guilds .build-top label { width: 37px; }
+.b-Mills .build-top label { width: 44px; }
+.b-Towers .build-top label { width: 44px; }
+.b-Banks .build-top label { width: 84px; }
+.b-ThievesDens .build-top label { width: 84px; }
+.b-TrainingGrounds .build-top label { width: 105px; }
+.b-WatchTowers .build-top label { width: 105px; }
+.b-Armouries .build-top label { width: 71px; }
+.b-Universities .build-top label { width: 71px; }
+.b-Barracks .build-top label { width: 53px; }
+.b-Libraries .build-top label { width: 53px; }
+.b-Forts .build-top label { width: 45px; }
+.b-Stables .build-top label { width: 45px; }
+.b-Castles .build-top label { width: 64px; }
+.b-Dungeons .build-top label { width: 64px; }
+
+.col-0 .build-effects,
+.col-1 .build-effects,
+.col-2 .build-effects,
+.col-3 .build-effects,
+.col-4 .build-effects,
+.col-5 .build-effects,
+.col-6 .build-effects,
+.col-7 .build-effects,
+.col-8 .build-effects {
+    margin-left: 0;
+}
+
+.col-0 .build-effects { padding-left: 63px; }
+.col-1 .build-effects { padding-left: 42px; }
+.col-2 .build-effects { padding-left: 49px; }
+.col-3 .build-effects { padding-left: 89px; }
+.col-4 .build-effects { padding-left: 110px; }
+.col-5 .build-effects { padding-left: 76px; }
+.col-6 .build-effects { padding-left: 58px; }
+.col-7 .build-effects { padding-left: 50px; }
+.col-8 .build-effects { padding-left: 69px; }
 	
   </style>
 </head>
@@ -421,8 +508,13 @@
     <div class="settings-header">Settings</div>
     
 		<div class="settings-group">
-			<div class="settings-header">Display Options</div>      
-	</div>
+            <div class="settings-header">Display Options</div>
+
+            <label class="settings-option">
+                <input type="checkbox" id="toggle-effects" checked>
+                Show Building Effects
+            </label>
+        </div>
   </div>
     <button id="resetDefaultsBtn" class="settings-option" style="margin-top: 20px;">
     Reset to Defaults
@@ -463,6 +555,17 @@ document.addEventListener('click', (e) => {
 
 <div class="build-container">
 
+    <div class="be-container">
+      <label for="beInput">Building Efficiency:</label>
+      <input type="number" id="beInput" value="100" min="0" step="0.1">
+      <span>%</span>
+    </div>
+
+    <div class="be-container">
+        <label>Total Acres:</label>
+        <input type="number" id="landInput" value="1000">
+    </div>
+
     <div id="buildGrid" class="build-grid"></div>
 
     <div class="total-box">
@@ -484,22 +587,297 @@ const buildings = [
     "Castles", "Dungeons"
 ];
 
+const buildingEffects = {
+
+    "Homes": {
+        effects: [
+            {
+                text: "Population",
+                base: 10,
+                type: "flat",
+                usesBE: false
+            }
+        ]
+    },
+
+    "Farms": {
+        effects: [
+            {
+                text: "Bushels",
+                base: 60,
+                type: "flat"
+            }
+        ]
+    },
+
+    "Mills": {
+        effects: [
+            {
+                text: "Building Costs",
+                base: -2.5,
+                type: "percent"
+            },
+            {
+                text: "Gc Explore Costs",
+                base: -3,
+                type: "percent"
+            },
+            {
+                text: "Sols Explore Costs",
+                base: -2,
+                type: "percent"
+            }
+        ]
+    },
+
+    "Banks": {
+        effects: [
+            {
+                text: "Income",
+                base: 1.5,
+                type: "percent"
+            },
+            {
+                text: "Gold Coins/Day",
+                base: 25,
+                type: "flat"
+            }
+        ]
+    },
+
+    "Training Grounds": {
+        effects: [
+            {
+                text: "OME",
+                base: 1.5,
+                type: "percent"
+            },
+            {
+                text: "Training Time",
+                base: -1,
+                type: "percent"
+            }
+        ]
+    },
+
+    "Armouries": {
+        effects: [
+            {
+                text: "Train Costs",
+                base: -1.5,
+                type: "percent"
+            },
+            {
+                text: "Wages/Draft Costs",
+                base: -2,
+                type: "percent"
+            }
+        ]
+    },
+
+    "Barracks": {
+        effects: [
+            {
+                text: "Attack Times",
+                base: -1.5,
+                type: "percent"
+            },
+            {
+                text: "Mercenary Costs",
+                base: -2,
+                type: "percent"
+            }
+        ]
+    },
+
+    "Forts": {
+        effects: [
+            {
+                text: "DME",
+                base: 1.5,
+                type: "percent"
+            }
+        ]
+    },
+
+    "Castles": {
+        effects: [
+            {
+                text: "Resource Losses",
+                base: -2.25,
+                type: "percent"
+            },
+            {
+                text: "Honor Losses",
+                base: -1.5,
+                type: "percent"
+            }     
+        ]
+    },
+
+    "Hospitals": {
+        effects: [
+            {
+                text: "Birth Rates",
+                base: 2,
+                type: "percent"
+            },
+            {
+                text: "Plague Cure Chance",
+                base: 3,
+                type: "percent"
+            },
+            {
+                text: "Military Casualties",
+                base: -3,
+                type: "percent"
+            }
+        ]
+    },
+
+    "Guilds": {
+        effects: [
+            {
+                text: "Wizards/Day",
+                base: 0.02,
+                type: "flat"
+            }
+        ]
+    },
+
+    "Towers": {
+        effects: [
+            {
+                text: "Runes",
+                base: 12,
+                type: "flat"
+            }
+        ]
+    },
+
+    "Thieves' Dens": {
+        effects: [
+            {
+                text: "Thief Effectiveness",
+                base: 3,
+                type: "percent"
+            },
+            {
+                text: "Thief Losses",
+                base: -3.6,
+                type: "percent"
+            }
+        ]
+    },
+
+    "Watch Towers": {
+        effects: [
+            {
+                text: "Thief Damage",
+                base: -2.5,
+                type: "percent"
+            },
+            {
+                text: "Catch Enemy Thieves",
+                base: 2,
+                type: "percent"
+            }
+        ]
+    },
+
+    "Universities": {
+        effects: [
+            {
+                text: "Science Books",
+                base: 1,
+                type: "percent",
+                usesBE: false
+            },
+            {
+                text: "Scientist Generation",
+                base: 1.5,
+                type: "percent",
+                usesBE: false
+            }
+        ]
+    },
+
+    "Libraries": {
+        effects: [
+            {
+                text: "Science Effectiveness",
+                base: 1,
+                type: "percent",
+                usesBE: false
+            }
+        ]
+    },
+
+    "Stables": {
+        effects: [
+            {
+                text: "Horse Capacity",
+                base: 80,
+                type: "flat"
+            },
+            {
+                text: "Horse/day",
+                base: 2,
+                type: "flat"
+            }
+        ]
+    },
+
+    "Dungeons": {
+        effects: [
+            {
+                text: "Prisoners",
+                base: 30,
+                type: "flat"
+            }
+        ]
+    }
+};
+
 // === BUILD GRID ===
 function buildBuildingGrid() {
+
     const grid = document.getElementById('buildGrid');
     grid.innerHTML = '';
 
-    buildings.forEach((name, i) => {
-        const item = document.createElement('div');
-        item.className = 'build-item';
+    for (let i = 0; i < buildings.length; i += 2) {
 
-        item.innerHTML = `
-            <label>${name}:</label>
-            <input type="number" min="0" max="100" id="b${i}" value="0">
-        `;
+        const column = document.createElement('div');
+        column.className = `build-column col-${i / 2}`;
 
-        grid.appendChild(item);
-    });
+        for (let j = i; j < i + 2 && j < buildings.length; j++) {
+
+            const name = buildings[j];
+
+            const item = document.createElement('div');
+            item.className = `build-item b-${name.replace(/[^a-zA-Z]/g, '')}`;
+
+            item.innerHTML = `
+                <div class="build-top">
+                    <label>${name}:</label>
+
+                    <input type="number"
+                           min="0"
+                           max="100"
+                           id="b${j}"
+                           value="0">
+                </div>
+
+                <div class="build-effects" id="effect${j}">
+                    --
+                </div>
+            `;
+
+            column.appendChild(item);
+        }
+
+        grid.appendChild(column);
+    }
 
     attachListeners();
 }
@@ -528,6 +906,46 @@ function calculateBuildTotal() {
     }
 }
 
+function calculateBuildingEffects() {
+    const be = (parseFloat(document.getElementById('beInput').value) || 100) / 100;
+    const land = parseFloat(document.getElementById('landInput').value) || 0;
+
+    buildings.forEach((name, i) => {
+        const effectEl = document.getElementById(`effect${i}`);
+        const data = buildingEffects[name];
+        if (!data) {
+            effectEl.innerHTML = '--';
+            return;
+        }
+
+        const percent = parseFloat(document.getElementById(`b${i}`).value) || 0;
+        const buildingAcres = land * (percent / 100);
+
+        let html = '';
+
+        data.effects.forEach(effectData => {
+            if (effectData.type === 'flat') {
+                const usesBE = effectData.usesBE ?? true;
+                const modifier = usesBE ? be : 1;
+                const effect = buildingAcres * effectData.base * modifier;
+                html += `<div>+${Math.round(effect).toLocaleString()} ${effectData.text}</div>`;
+            }
+            else if (effectData.type === 'percent') {
+                const usesBE = effectData.usesBE ?? true;
+                const modifier = usesBE ? be : 1;
+
+                // Formula using base 1.5 with diminishing returns
+                let bonus = (percent * (100 - percent) * effectData.base * modifier) / 100;
+
+                const sign = bonus >= 0 ? '+' : '';
+                html += `<div>${sign}${bonus.toFixed(2)}% ${effectData.text}</div>`;
+            }
+        });
+
+        effectEl.innerHTML = html;
+    });
+}
+
 // === LISTENERS ===
 function attachListeners() {
     buildings.forEach((_, i) => {
@@ -535,6 +953,7 @@ function attachListeners() {
 
         input.addEventListener('input', () => {
             calculateBuildTotal();
+            calculateBuildingEffects();
             saveBuildings();
         });
     });
@@ -586,10 +1005,59 @@ window.addEventListener('load', () => {
     buildBuildingGrid();
     loadBuildings();
     calculateBuildTotal();
+    calculateBuildingEffects();
 
-    // RESET BUTTON HOOK (ADD HERE)
+    // === SAVE / LOAD BE AND ACRES ===
+    const beInput = document.getElementById('beInput');
+    const landInput = document.getElementById('landInput');
+
+    // Load saved values
+    const savedBE = localStorage.getItem('utopiaBE');
+    if (savedBE) beInput.value = savedBE;
+
+    const savedAcres = localStorage.getItem('utopiaTotalAcres');
+    if (savedAcres) landInput.value = savedAcres;
+
+    // Save on any change
+    beInput.addEventListener('input', () => {
+        localStorage.setItem('utopiaBE', beInput.value);
+        calculateBuildingEffects();
+    });
+
+    landInput.addEventListener('input', () => {
+        localStorage.setItem('utopiaTotalAcres', landInput.value);
+        calculateBuildingEffects();
+    });
+
+    // RESET BUTTON HOOK
     document.getElementById('resetDefaultsBtn')
         .addEventListener('click', resetBuildings);
+
+    // === BUILD EFFECTS TOGGLE ===
+    const toggleEffects = document.getElementById('toggle-effects');
+
+    // Load saved setting
+    const savedState =
+        localStorage.getItem('buildingEffectsEnabled') !== 'false';
+
+    toggleEffects.checked = savedState;
+
+    // Apply visibility immediately
+    document.querySelectorAll('.build-effects').forEach(el => {
+        el.style.display = savedState ? 'block' : 'none';
+    });
+
+    // Toggle visibility
+    toggleEffects.addEventListener('change', () => {
+
+        const isChecked = toggleEffects.checked;
+
+        document.querySelectorAll('.build-effects').forEach(el => {
+            el.style.display = isChecked ? 'block' : 'none';
+        });
+
+        localStorage.setItem('buildingEffectsEnabled', isChecked);
+    });
 });
 </script>
 
