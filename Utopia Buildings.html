@@ -839,6 +839,22 @@ const buildingEffects = {
     }
 };
 
+// === BUILDING EFFECT CAPS ===
+const buildingCaps = {
+    "Banks": { "Income": 37.5 },
+    "Training Grounds": { "OME": 37.5, "Training Time": 25 },
+    "Armouries": { "Train Costs": 37.5, "Wages/Draft Costs": 50 },
+    "Barracks": { "Attack Times": 37.5, "Mercenary Costs": 50 },
+    "Forts": { "DME": 37.5 },
+    "Castles": { "Resource Losses": 50, "Honor Losses": 50 },
+    "Hospitals": { "Birth Rates": 50, "Plague Cure Chance": 75, "Military Casualties": 75 },
+    "Mills": { "Building Costs": 100, "Gc Explore Costs": 75, "Sols Explore Costs": 50 },
+    "Thieves' Dens": { "Thief Effectiveness": 75, "Thief Losses": 90 },
+    "Watch Towers": { "Thief Damage": 62.5, "Catch Enemy Thieves": 50 },
+    "Universities": { "Science Books": 25, "Scientist Generation": 37.5 },
+    "Libraries": { "Science Effectiveness": 25 }
+};
+
 // === BUILD GRID ===
 function buildBuildingGrid() {
 
@@ -912,33 +928,59 @@ function calculateBuildingEffects() {
 
     buildings.forEach((name, i) => {
         const effectEl = document.getElementById(`effect${i}`);
+        const input = document.getElementById(`b${i}`);
         const data = buildingEffects[name];
+        
         if (!data) {
             effectEl.innerHTML = '--';
             return;
         }
 
-        const percent = parseFloat(document.getElementById(`b${i}`).value) || 0;
+        let percent = parseFloat(input.value) || 0;
+            if (percent > 50) {
+                percent = 50;
+            }
         const buildingAcres = land * (percent / 100);
 
         let html = '';
 
         data.effects.forEach(effectData => {
+            const effectName = effectData.text.trim();
+            let bonus = 0;
+            let isThisEffectCapped = false;
+
             if (effectData.type === 'flat') {
                 const usesBE = effectData.usesBE ?? true;
                 const modifier = usesBE ? be : 1;
-                const effect = buildingAcres * effectData.base * modifier;
-                html += `<div>+${Math.round(effect).toLocaleString()} ${effectData.text}</div>`;
+                bonus = buildingAcres * effectData.base * modifier;
+                html += `<div>+${Math.round(bonus).toLocaleString()} ${effectName}</div>`;
             }
             else if (effectData.type === 'percent') {
                 const usesBE = effectData.usesBE ?? true;
                 const modifier = usesBE ? be : 1;
 
-                // Formula using base 1.5 with diminishing returns
-                let bonus = (percent * (100 - percent) * effectData.base * modifier) / 100;
+                let rawBonus = (percent * (100 - percent) * effectData.base * modifier) / 100;
+
+                const caps = buildingCaps[name];
+                
+                if (caps && caps[effectName] !== undefined) {
+                    const maxEffect = caps[effectName];
+                    
+                    // Proper absolute value comparison for positive and negative effects
+                    if (Math.abs(rawBonus) > Math.abs(maxEffect)) {
+                        bonus = maxEffect;
+                        isThisEffectCapped = true;
+                    } else {
+                        bonus = rawBonus;
+                    }
+                } else {
+                    bonus = rawBonus;
+                }
 
                 const sign = bonus >= 0 ? '+' : '';
-                html += `<div>${sign}${bonus.toFixed(2)}% ${effectData.text}</div>`;
+                const colorStyle = isThisEffectCapped ? 'color:#ff6b6b; font-weight:bold;' : '';
+                
+                html += `<div style="${colorStyle}">${sign}${bonus.toFixed(2)}% ${effectName}</div>`;
             }
         });
 
@@ -1004,8 +1046,7 @@ function loadBuildings() {
 window.addEventListener('load', () => {
     buildBuildingGrid();
     loadBuildings();
-    calculateBuildTotal();
-    calculateBuildingEffects();
+    calculateBuildTotal();    
 
     // === SAVE / LOAD BE AND ACRES ===
     const beInput = document.getElementById('beInput');
@@ -1017,6 +1058,8 @@ window.addEventListener('load', () => {
 
     const savedAcres = localStorage.getItem('utopiaTotalAcres');
     if (savedAcres) landInput.value = savedAcres;
+
+    calculateBuildingEffects();
 
     // Save on any change
     beInput.addEventListener('input', () => {
