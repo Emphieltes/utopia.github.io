@@ -257,7 +257,7 @@
     width: 100%;
     max-width: 100%;
     margin: 0;
-    background: #2f343a;
+    background: var(--surface);
     padding: 15px 20px;
     border-radius: 10px;
     border: 1px solid #4a5057;
@@ -292,11 +292,12 @@
 .build-item input {
     width: 50px;
     padding: 4px;
-    background: #1f2327;
-    color: white;
-    border: 1px solid #555;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
     border-radius: 6px;
     text-align: center;
+    height: 20px;
 }
 
 .total-box {
@@ -317,16 +318,18 @@
 .be-container input {
     width: 70px;
     padding: 4px;
-    background: #1f2327;
-    color: white;
-    border: 1px solid #555;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
     border-radius: 6px;
     text-align: center;
+    height: 20px;    
 }
 
 .build-effects {
     font-size: 0.62rem;
-    color: var(--accent);
+    color: #8fa6c9;    
+    font-style: italic;    
     line-height: 1.25;
     white-space: normal;
     min-height: 40px;
@@ -386,6 +389,13 @@
 .col-6 .build-effects { padding-left: 58px; }
 .col-7 .build-effects { padding-left: 50px; }
 .col-8 .build-effects { padding-left: 69px; }
+
+.cap-display {
+    font-size: 0.65rem;
+    color: #9ca3af;
+    white-space: nowrap;
+    margin-left: 4px;
+}
 	
   </style>
 </head>
@@ -875,13 +885,19 @@ function buildBuildingGrid() {
 
             item.innerHTML = `
                 <div class="build-top">
+
                     <label>${name}:</label>
 
                     <input type="number"
-                           min="0"
-                           max="100"
-                           id="b${j}"
-                           value="0">
+                        min="0"
+                        max="100"
+                        id="b${j}"
+                        value="0">
+
+                    <span class="cap-display" id="cap${j}">
+                        --
+                    </span>
+
                 </div>
 
                 <div class="build-effects" id="effect${j}">
@@ -930,59 +946,106 @@ function calculateBuildingEffects() {
         const effectEl = document.getElementById(`effect${i}`);
         const input = document.getElementById(`b${i}`);
         const data = buildingEffects[name];
-        
+
         if (!data) {
             effectEl.innerHTML = '--';
             return;
         }
 
         let percent = parseFloat(input.value) || 0;
-            if (percent > 50) {
-                percent = 50;
-            }
+        if (percent > 50) percent = 50;
+
         const buildingAcres = land * (percent / 100);
 
         let html = '';
+        let buildingCapPercent = null;
 
         data.effects.forEach(effectData => {
+
             const effectName = effectData.text.trim();
+            const caps = buildingCaps[name] || {};
+            const maxEffect = caps[effectName];
+
             let bonus = 0;
-            let isThisEffectCapped = false;
+            let capPercent = null;
+            let isCapped = false;
 
+            // ======================
+            // FLAT EFFECTS
+            // ======================
             if (effectData.type === 'flat') {
+
                 const usesBE = effectData.usesBE ?? true;
                 const modifier = usesBE ? be : 1;
+
                 bonus = buildingAcres * effectData.base * modifier;
-                html += `<div>+${Math.round(bonus).toLocaleString()} ${effectName}</div>`;
+
+                html += `
+                    <div>
+                        +${Math.round(bonus).toLocaleString()} ${effectName}
+                    </div>
+                `;
             }
+
+            // ======================
+            // PERCENT EFFECTS
+            // ======================
             else if (effectData.type === 'percent') {
+
                 const usesBE = effectData.usesBE ?? true;
                 const modifier = usesBE ? be : 1;
 
-                let rawBonus = (percent * (100 - percent) * effectData.base * modifier) / 100;
+                const raw = (percent * (100 - percent) * effectData.base * modifier) / 100;
 
-                const caps = buildingCaps[name];
-                
-                if (caps && caps[effectName] !== undefined) {
-                    const maxEffect = caps[effectName];
-                    
-                    // Proper absolute value comparison for positive and negative effects
-                    if (Math.abs(rawBonus) > Math.abs(maxEffect)) {
-                        bonus = maxEffect;
-                        isThisEffectCapped = true;
-                    } else {
-                        bonus = rawBonus;
+                bonus = raw;
+
+                // ======================
+                // CAP LOGIC (FIXED)
+                // ======================
+                if (maxEffect !== undefined) {
+
+                    const discriminant =
+                        10000 -
+                        ((400 * Math.abs(maxEffect)) /
+                        (Math.abs(effectData.base) * modifier));
+
+                    if (discriminant >= 0) {
+                        capPercent =
+                            (100 - Math.sqrt(discriminant)) / 2;
                     }
-                } else {
-                    bonus = rawBonus;
+
+                    if (Math.abs(raw) >= Math.abs(maxEffect)) {
+                        bonus = maxEffect;
+                        isCapped = true;
+                    }
+                }
+
+                // Track highest cap per building
+                if (capPercent !== null) {
+                    buildingCapPercent = Math.max(
+                        buildingCapPercent ?? 0,
+                        capPercent
+                    );
                 }
 
                 const sign = bonus >= 0 ? '+' : '';
-                const colorStyle = isThisEffectCapped ? 'color:#ff6b6b; font-weight:bold;' : '';
-                
-                html += `<div style="${colorStyle}">${sign}${bonus.toFixed(2)}% ${effectName}</div>`;
+                const color = isCapped ? 'color:#ff6b6b;font-weight:bold;' : '';
+
+                html += `
+                    <div style="${color}">
+                        ${sign}${bonus.toFixed(2)}% ${effectName}
+                    </div>
+                `;
             }
         });
+
+        const capEl = document.getElementById(`cap${i}`);
+
+        if (buildingCapPercent !== null) {
+            capEl.textContent = `(${buildingCapPercent.toFixed(1)}%)`;
+        } else {
+            capEl.textContent = '';
+        }
 
         effectEl.innerHTML = html;
     });
