@@ -396,6 +396,38 @@
     white-space: nowrap;
     margin-left: 4px;
 }
+
+.swap-inputs {
+    display: flex;
+    gap: 12px;
+    justify-content: left;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
+
+.swap-group {
+    display: flex;
+    align-items: left;
+    gap: 4px;
+}
+
+.swap-group label {
+    white-space: nowrap;
+    font-size: 0.85rem;
+}
+
+.swap-group input {
+    width: 70px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 6px;
+    text-align: left;
+    height: 22px;
+}
 	
   </style>
 </head>
@@ -576,7 +608,30 @@ document.addEventListener('click', (e) => {
         <input type="number" id="landInput" value="1000">
     </div>
 
-    <div id="buildGrid" class="build-grid"></div>
+        <div id="buildGrid" class="build-grid"></div>
+
+    <div class="swap-inputs">
+
+        <div class="swap-group">
+            <label>Gold:</label>
+            <input type="number" id="goldInput" value="0">
+        </div>
+
+        <div class="swap-group">
+            <label>Build Cost:</label>
+            <input type="number" id="buildCostInput" value="542">
+        </div>
+
+        <div class="swap-group">
+            <label>Raze Cost:</label>
+            <input type="number" id="razeCostInput" value="342">
+        </div>
+
+    </div>
+
+    <div class="total-box" id="swapDisplay">
+        Swap Capacity: --
+    </div>
 
     <div class="total-box">
         Total: <span id="buildTotal">0</span>%
@@ -713,15 +768,10 @@ const buildingEffects = {
     "Castles": {
         effects: [
             {
-                text: "Resource Losses",
+                text: "Resource/Honor Losses",
                 base: -2.25,
                 type: "percent"
-            },
-            {
-                text: "Honor Losses",
-                base: -1.5,
-                type: "percent"
-            }     
+            }                 
         ]
     },
 
@@ -856,7 +906,7 @@ const buildingCaps = {
     "Armouries": { "Train Costs": 37.5, "Wages/Draft Costs": 50 },
     "Barracks": { "Attack Times": 37.5, "Mercenary Costs": 50 },
     "Forts": { "DME": 37.5 },
-    "Castles": { "Resource Losses": 50, "Honor Losses": 50 },
+    "Castles": { "Resource/Honor Losses": 50 },
     "Hospitals": { "Birth Rates": 50, "Plague Cure Chance": 75, "Military Casualties": 75 },
     "Mills": { "Building Costs": 100, "Gc Explore Costs": 75, "Sols Explore Costs": 50 },
     "Thieves' Dens": { "Thief Effectiveness": 75, "Thief Losses": 90 },
@@ -1008,12 +1058,14 @@ function calculateBuildingEffects() {
                         10000 -
                         ((400 * Math.abs(maxEffect)) /
                         (Math.abs(effectData.base) * modifier));
-
                     if (discriminant >= 0) {
                         capPercent =
                             (100 - Math.sqrt(discriminant)) / 2;
                     }
-
+                    else {
+                        // Cap impossible at current BE
+                        capPercent = 'NULL';
+                    }
                     if (Math.abs(raw) >= Math.abs(maxEffect)) {
                         bonus = maxEffect;
                         isCapped = true;
@@ -1022,10 +1074,16 @@ function calculateBuildingEffects() {
 
                 // Track highest cap per building
                 if (capPercent !== null) {
-                    buildingCapPercent = Math.max(
-                        buildingCapPercent ?? 0,
-                        capPercent
-                    );
+                    if (capPercent === 'NULL') {
+                        buildingCapPercent = 'NULL';
+                    }
+                    else if (buildingCapPercent !== 'NULL') {
+                        buildingCapPercent = Math.max(
+                            buildingCapPercent ?? 0,
+                            capPercent
+                        );
+
+                    }
                 }
 
                 const sign = bonus >= 0 ? '+' : '';
@@ -1041,14 +1099,43 @@ function calculateBuildingEffects() {
 
         const capEl = document.getElementById(`cap${i}`);
 
-        if (buildingCapPercent !== null) {
-            capEl.textContent = `(${buildingCapPercent.toFixed(1)}%)`;
-        } else {
+        if (buildingCapPercent === 'NULL') {
+            capEl.textContent = '(NULL)';
+        }
+        else if (buildingCapPercent !== null) {
+            capEl.textContent =
+                `(${buildingCapPercent.toFixed(1)}%)`;
+        }
+        else {
             capEl.textContent = '';
         }
 
         effectEl.innerHTML = html;
     });
+}
+
+function calculateSwapCapacity() {
+
+    const gold =
+        parseFloat(document.getElementById('goldInput').value) || 0;
+
+    const buildCost =
+        parseFloat(document.getElementById('buildCostInput').value) || 0;
+
+    const razeCost =
+        parseFloat(document.getElementById('razeCostInput').value) || 0;
+
+    const normal =
+        Math.floor(gold / (buildCost + razeCost));
+
+    const doubleSpeed =
+        Math.floor(gold / ((buildCost * 2) + razeCost));
+
+    document.getElementById('swapDisplay').innerHTML = `
+        Normal: ${normal}a
+        <br>
+        Double: ${doubleSpeed}a
+    `;
 }
 
 // === LISTENERS ===
@@ -1115,6 +1202,22 @@ window.addEventListener('load', () => {
     const beInput = document.getElementById('beInput');
     const landInput = document.getElementById('landInput');
 
+    const savedBuildCost =
+        localStorage.getItem('utopiaBuildCost');
+
+    if (savedBuildCost) {
+        document.getElementById('buildCostInput').value =
+            savedBuildCost;
+    }
+
+    const savedRazeCost =
+        localStorage.getItem('utopiaRazeCost');
+
+    if (savedRazeCost) {
+        document.getElementById('razeCostInput').value =
+            savedRazeCost;
+    }
+
     // Load saved values
     const savedBE = localStorage.getItem('utopiaBE');
     if (savedBE) beInput.value = savedBE;
@@ -1134,6 +1237,36 @@ window.addEventListener('load', () => {
         localStorage.setItem('utopiaTotalAcres', landInput.value);
         calculateBuildingEffects();
     });
+
+    ['goldInput', 'buildCostInput', 'razeCostInput']
+    .forEach(id => {
+
+        document.getElementById(id)
+            .addEventListener('input', calculateSwapCapacity);
+
+    });
+
+    document.getElementById('buildCostInput')
+        .addEventListener('input', () => {
+
+            localStorage.setItem(
+                'utopiaBuildCost',
+                document.getElementById('buildCostInput').value
+            );
+
+    });
+
+    document.getElementById('razeCostInput')
+        .addEventListener('input', () => {
+
+            localStorage.setItem(
+                'utopiaRazeCost',
+                document.getElementById('razeCostInput').value
+            );
+
+    });
+
+    calculateSwapCapacity();
 
     // RESET BUTTON HOOK
     document.getElementById('resetDefaultsBtn')
@@ -1166,6 +1299,5 @@ window.addEventListener('load', () => {
     });
 });
 </script>
-
 </body>
 </html>
