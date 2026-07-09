@@ -629,22 +629,25 @@ const RACE_SCIENCE_BONUS = {
     'Elf': 1.00,
     'Faery': 1.00,
     'Halfling': 1.00,
-    'Human': 1.10, // EDIT:
+    'Human': 1.00, // EDIT:
     'Orc': 1.00,
-    'Undead': 0.90,
+    'Undead': 1.00,
+    'Dryad': 1.00,
 };
 
 const PERS_SCIENCE_BONUS = {
-    'Artisan': { Economy: 1.15 },          // EDIT:
-    'Heretic': { 'Arcane Arts': 1.15 },    // EDIT:
-    'Mystic': { Channeling: 1.25 },        // EDIT:
-    'Rogue': { Crime: 1.25 },              // EDIT:
-    'Tactician': { Siege: 1.25 },          // EDIT:
-    'Warrior': { Tactics: 1.25 },          // EDIT:
+    'Artisan': { 'Economy': 1.25 },        // EDIT:
+    'Cleric': { 'Military': 1.25 },        // EDIT:
+    'Heretic': { 'Arcane Arts': 1.25 },    // EDIT:
+    'Mystic': { Channeling: 1.40 },        // EDIT:
+    'Rogue': { Crime: 1.40 },              // EDIT:
+    'Tactician': { Siege: 1.40 },          // EDIT:
+    'Warrior': { Tactics: 1.35 },          // EDIT:
     'Paladin': { Strategy: 1.25 },         // EDIT:
-    'Necromancer': { Channeling: 1.25 },   // EDIT:
-    'General': { 'Military': 1.15 },       // EDIT:
-    'War Hero': { Siege: 1.25 },           // EDIT:
+    'Necromancer': { Channeling: 1.40 },   // EDIT:
+    'General': { 'Military': 1.25 },       // EDIT:
+    'War Hero': { Valor: 1.40 },           // EDIT:
+    'Sage': { 'ALL': 1.15 },               // EDIT:
 };
 
 // Get saved race + personality from Planner
@@ -669,14 +672,21 @@ function applyBonuses(factor, scienceName, sectionName) {
     const { race, pers } = getCurrentRacePers();
     let bonus = 1.0;
 
+    // Race bonus (e.g. Human +15% to everything)
     if (RACE_SCIENCE_BONUS[race]) {
         bonus *= RACE_SCIENCE_BONUS[race];
     }
 
+    // Personality bonus
     if (pers && PERS_SCIENCE_BONUS[pers]) {
         const persBonus = PERS_SCIENCE_BONUS[pers];
 
-        if (persBonus[sectionName]) {
+        // === SAGE SPECIAL CASE ===
+        if (persBonus['ALL']) {
+            bonus *= persBonus['ALL'];        // +15% to everything
+        } 
+        // Normal personalities (section or specific science)
+        else if (persBonus[sectionName]) {
             bonus *= persBonus[sectionName];
         } else if (persBonus[scienceName]) {
             bonus *= persBonus[scienceName];
@@ -913,7 +923,7 @@ window.addEventListener('load', updateBonusDisplay);
                 <td data-type="req">-</td>
             </tr>
             <!-- VALOR -->
-            <tr data-section="Military" data-factor="0.0582" data-science="Valor">
+            <tr data-section="Military" data-factor="0.0620" data-science="Valor">
                 <td>Valor</td>
                 <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
                 <td class="effect">Reduced Military Train Time, Increased Dragon Slaying Strength</td>
@@ -991,7 +1001,7 @@ window.addEventListener('load', updateBonusDisplay);
                 <td data-type="req">-</td>
             </tr>
             <!-- SHIELDING -->
-            <tr data-section="Arcane Arts" data-factor="0.0314" data-science="Shielding">
+            <tr data-section="Arcane Arts" data-factor="0.0350" data-science="Shielding">
                 <td>Shielding</td>
                 <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
                 <td class="effect">Reduced Damage from Enemy Thievery and Magic Instant Operations</td>
@@ -999,20 +1009,11 @@ window.addEventListener('load', updateBonusDisplay);
                 <td><input type="number" step="0.1" value="0" data-type="target" min="0"></td>
                 <td data-type="req">-</td>
             </tr>
-            <!-- CUNNING -->
-            <tr data-section="Arcane Arts" data-factor="0.0314" data-science="Cunning">
-                <td>Cunning</td>
+            <!-- ARCANA -->
+            <tr data-section="Arcane Arts" data-factor="0.0314" data-science="Arcana">
+                <td>Arcana</td>
                 <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
-                <td class="effect">Increased Thievery Operation Damage</td>
-                <td data-type="output">-</td>
-                <td><input type="number" step="0.1" value="0" data-type="target" min="0"></td>
-                <td data-type="req">-</td>
-            </tr>
-            <!-- SORCERY -->
-            <tr data-section="Arcane Arts" data-factor="0.0314" data-science="Sorcery">
-                <td>Sorcery</td>
-                <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
-                <td class="effect">Increased Magic Instant Damage</td>
+                <td class="effect">Increased Spell & Thievery Operation Damage</td>
                 <td data-type="output">-</td>
                 <td><input type="number" step="0.1" value="0" data-type="target" min="0"></td>
                 <td data-type="req">-</td>
@@ -1233,8 +1234,7 @@ function parseAndFillBooks() {
         "Crime": "Crime",
         "Channeling": "Channeling",
         "Shielding": "Shielding",
-        "Cunning": "Cunning",
-        "Sorcery": "Sorcery",
+        "Arcana": "Arcana",        
         "Finesse": "Finesse"
     };
 
