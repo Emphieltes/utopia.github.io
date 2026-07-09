@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=1200">
   <title>Utopia Planner</title>
   <style>
+    /* ===== BEGIN: ROOT & GLOBAL RESET ===== */
     :root {
       --bg: #32373b;
       --text: #e0e0e0;
@@ -25,7 +26,6 @@
     *::after {
       box-sizing: border-box;
     }
-
     html, body {
         margin: 0;
         padding: 0;
@@ -33,7 +33,6 @@
         width: 100%;
         min-height: 100vh;
     }
-
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
@@ -42,27 +41,28 @@
       min-height: 100vh;
       overflow-x: auto;
     }
+    /* ===== END: ROOT & GLOBAL RESET ===== */
 
-    .planner-container {
-      min-width: 1780px; /* adjust if needed */
-}
 
-    /* Main content wrapper – this is what you'll position */
+
+    /* ===== BEGIN: LAYOUT/CONTAINER ===== */    
     .planner-container {
+        min-width: 1780px;
       padding-top: 10px;
       padding-right: 40px;
       padding-bottom: 40px;
-      padding-left: 60px;     /* Moves everything left or right */
+      padding-left: 60px; /* Moves everything left or right */
       max-width: none;
       margin: 0;
       transition: margin-left 0.3s ease;
     }
+    /* ===== END: LAYOUT/CONTAINER ===== */
 
-    /* Header section – easy to move up/down/left/right */
+
+    /* ===== BEGIN: HEADER ===== */
     .header-section {
     margin-left: 0px;
     }
-
     h1 {
       color: var(--text);
       margin: 0 0 8px 0;
@@ -70,14 +70,16 @@
       font-weight: 600;
       letter-spacing: -0.5px;
     }
-
     .subtitle {
       color: var(--text-muted);
       font-size: 1rem;
       margin: 0 0 24px 0;
     }
+    /* ===== END: HEADER ===== */
 
-    /* Input row styling */
+    
+
+    /* ===== BEGIN: FORM ROWS ===== */
     .row {
       display: flex;
       align-items: center;
@@ -86,7 +88,6 @@
       gap: 24px;
       flex-wrap: wrap;
     }
-
     label {
       width: 100px;
       text-align: right;
@@ -95,7 +96,6 @@
       color: var(--text);
       flex-shrink: 0;
     }
-
     select,
     input[type="number"] {
       width: 200px;
@@ -108,339 +108,324 @@
       outline: none;
       transition: all 0.15s ease;
     }
-
     select:focus,
     input[type="number"]:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
     }
+    /* ===== END: FORM ROWS ===== */
 	
-.bonuses-container {
-  display: flex;
-  gap: 40px;
-  margin: 24px 0;
-  flex-wrap: wrap;
-  align-items: flex-start;
-}
 
-.race-column {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
 
-.racebonus-column {
-  width: max-content;
-  min-width: 340px;
-  max-width: 450px;
-  background: var(--surface);
-  padding: 8px;
-  border-radius: 10px;
-  border: 1px solid #4a5057;
-  border-left: 6px solid #4ade80;
-}
-
-.racepenalty-column {
-  min-width: 340px;
-  max-width: 340px;
-  background: #363b40;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #4a5057;
-  border-left: 6px solid var(--danger);
-}
-
-.personality-column {
-  width: max-content;
-  min-width: 320px;
-  max-width: 420px;
-  background: #3d4348;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #4a5057;
-  border-left: 6px solid #4ade80;
-}
-
-.bonus-header {
-  color: #d8d8d8;
-  font-weight: bold;
-  margin-bottom: 8px;
-  font-size: 1.1rem;
-}
-
-.bonus {
-    color: var(--text);
-    font-size: 0.9rem;
-}
-.penalty { 
-    color: var(--text);
-    font-size: 0.9rem;
-}
-
-.unique-line {
-  margin: 6px 0;
-  font-size: 0.9rem;
-  line-height: 1.6;
-}
-
-/* ===== COLLAPSIBLE SECTIONS ===== */
-.collapsible {
-    overflow: hidden;
-    max-height: 500px;
-    opacity: 1;
-    transform: translateY(0);
-    transition:
-        max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.7s ease,
-        transform 0.7s ease;
-}
-
-.collapsed {
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(-8px);
-    margin: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    display: none !important;
-}
-
-.no-transition {
-    transition: none !important;
-}
-
-.planner-box-accent {
+    /* ===== BEGIN: BONUSES SECTION ===== */
+    .bonuses-container {
+    display: flex;
+    gap: 40px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    }
+    .race-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    }
+    .racebonus-column {
+    width: max-content;
+    min-width: 340px;
+    max-width: 450px;
     background: var(--surface);
-    border: 1px solid #444;
-    border-left: 4px solid #ff4fd8; /* fuchsia accent */
+    padding: 8px;
     border-radius: 10px;
-    padding: 0px 16px;
-    margin-bottom: 12px;
-    display: inline-block;
-}
+    border: 1px solid #4a5057;
+    border-left: 6px solid #4ade80;
+    }
+    .racepenalty-column {
+    min-width: 340px;
+    max-width: 340px;
+    background: #363b40;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #4a5057;
+    border-left: 6px solid var(--danger);
+    }
+    .personality-column {
+    width: max-content;
+    min-width: 320px;
+    max-width: 420px;
+    background: #3d4348;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #4a5057;
+    border-left: 6px solid #4ade80;
+    }
+    .bonus-header {
+    color: #d8d8d8;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+    }
+    .bonus {
+        color: var(--text);
+        font-size: 0.9rem;
+    }
+    .penalty { 
+        color: var(--text);
+        font-size: 0.9rem;
+    }
+    .unique-line {
+    margin: 6px 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    }
+    /* ===== END: BONUSES SECTION ===== */
 
-.settings-btn {
-  position: fixed;
-  top: 16px;
-  right: 20px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid var(--bg);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10001;
 
-  transition: all 0.2s ease;
-}
 
-.settings-btn:hover {
-  background: var(--surface-hover);
-  transform: rotate(20deg);
-  border-color: var(--accent);
-  box-shadow: 0 0 10px rgba(79, 195, 247, 0.2);
-}
+    /* ===== BEGIN: COLLAPSIBLE SECTIONS ===== */
+    .collapsible {
+        overflow: hidden;
+        max-height: 500px;
+        opacity: 1;
+        transform: translateY(0);
+        transition:
+            max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.7s ease,
+            transform 0.7s ease;
+    }
+    .collapsed {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-8px);
+        margin: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        display: none !important;
+    }
+    /* ===== END: COLLAPSIBLE SECTIONS ===== */
 
-.settings-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 100vh;
-  width: 275px;
-  background: var(--surface);
-  border-left: 1px solid var(--border);
-  border-top-left-radius: 16px;
-  border-bottom-left-radius: 16px;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.4);
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  z-index: 10000;
-}
 
-.settings-panel.open {
-  transform: translateX(0);
-}
 
-.settings-content {
-  padding: 20px;
-  font-size: 0.85rem;
-}
+    /* ===== BEGIN: UI PANELS (SETTINGS/LEFT PANEL) ===== */
+    .no-transition {
+        transition: none !important;
+    }
+    .planner-box-accent {
+        background: var(--surface);
+        border: 1px solid #444;
+        border-left: 4px solid #ff4fd8; /* fuchsia accent */
+        border-radius: 10px;
+        padding: 0px 16px;
+        margin-bottom: 12px;
+        display: inline-block;
+    }
+    .settings-btn {
+        position: fixed;
+        top: 16px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10001;
+        transition: all 0.2s ease;
+    }
+    .settings-btn:hover {
+        background: var(--surface-hover);
+        transform: rotate(20deg);
+        border-color: var(--accent);
+        box-shadow: 0 0 10px rgba(79, 195, 247, 0.2);
+    }
+    .settings-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 275px;
+        background: var(--surface);
+        border-left: 1px solid var(--border);
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.4);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        z-index: 10000;
+    }
+    .settings-panel.open {
+        transform: translateX(0);
+    }
+    .settings-content {
+        padding: 20px;
+        font-size: 0.85rem;
+    }
+    .settings-header {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: var(--text);
+    }
+    .settings-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .settings-option {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        overflow: visible;
+        text-overflow: clip
+    }
+    .settings-option input {
+        accent-color: var(--accent);
+        cursor: pointer;
+    }
+    .settings-option.indent {
+        margin-left: 20px;
+    }
+    #resetDefaultsBtn {
+        width: calc(100% - 40px); /* leave 20px padding on each side */
+        margin: 20px;
+        padding: 10px 0;
+        background-color: var(--text);  /* dark gray, consistent with panel borders */
+        color: #2c2c2c;             /* text color matches theme */
+        font-weight: 600;
+        font-size: 0.95rem;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        text-align: center;             /* horizontally center text */
+        display: block;                 /* ensures text-align works */
+        line-height: 1.2; 
+        transition: all 0.2s ease;
+    }
+    #resetDefaultsBtn:hover {
+        background-color: #a1a4a7;  /* slightly lighter gray on hover */
+    }
+    /* LEFT PANEL BUTTON STYLE */
+    .left-panel-btn {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        width: 44px;
+        height: 44px;
+        border-radius: 10%;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10001;
+        transition: all 0.2s ease;
+    }
+    .left-panel-btn:hover {
+        background: var(--surface-hover);
+        border-color: var(--accent);
+        box-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
+    }
+    /* LEFT PANEL STYLE */
+    .left-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 150px;
+        background: var(--bg);
+        border-right: 1px solid var(--border);
+        border-top-right-radius: 16px;
+        border-bottom-right-radius: 16px;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 20px 10px;
+        z-index: 10000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    /* When open */
+    .left-panel.open {
+        transform: translateX(0);
+    }
+    .left-panel.open ~ .planner-container {
+        margin-left: 120px; /* same as panel width */
+    }
+    .nav-btn {
+        width: 100%;
+        padding: 5px 0;
+        background-color: var(--text);   /* same as reset button */
+        color: #2c2c2c;
+        font-weight: 700;
+        font-size: 0.95rem;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    .nav-btn:first-child {
+        margin-top: 60px;
+    }
+    /* Hover effect with blue ring */
+    .nav-btn:hover {
+        box-shadow: 
+        0 0 0 2px var(--accent), 
+        0 0 8px rgba(79, 195, 247, 0.2); /* your accent color */
+    }
+    /* Active (selected page) */
+    .nav-btn.active {
+        background-color: var(--text);   /* same gray as others */
+        color: #2c2c2c;
+        box-shadow: 
+            0 0 0 2px var(--accent), 
+            0 0 8px rgba(79, 195, 247, 0.6); /* same as hover glow */
+    }
+/* ===== END: UI PANELS (SETTINGS/LEFT PANEL) ===== */
 
-.settings-header {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: var(--text);
-}
 
-.settings-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 
-.settings-option {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip
-}
-
-.settings-option input {
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-
-.settings-option.indent {
-  margin-left: 20px;
-}
-
-#resetDefaultsBtn {
-  width: calc(100% - 40px); /* leave 20px padding on each side */
-  margin: 20px;
-  padding: 10px 0;
-  background-color: var(--text);  /* dark gray, consistent with panel borders */
-  color: #2c2c2c;             /* text color matches theme */
-  font-weight: 600;
-  font-size: 0.95rem;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  text-align: center;             /* horizontally center text */
-  display: block;                 /* ensures text-align works */
-  line-height: 1.2; 
-  transition: all 0.2s ease;
-}
-
-#resetDefaultsBtn:hover {
-  background-color: #a1a4a7;  /* slightly lighter gray on hover */
-}
-
-/* LEFT PANEL BUTTON STYLE */
-.left-panel-btn {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  width: 44px;
-  height: 44px;
-  border-radius: 10%;
-  border: 1px solid var(--bg);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10001;
-  transition: all 0.2s ease;
-}
-
-.left-panel-btn:hover {
-  background: var(--surface-hover);
-  border-color: var(--accent);
-  box-shadow: 0 0 10px rgba(79, 195, 247, 0.3);
-}
-
-/* LEFT PANEL STYLE */
-.left-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 150px;
-  background: var(--bg);
-  border-right: 1px solid var(--border);
-  border-top-right-radius: 16px;
-  border-bottom-right-radius: 16px;
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 20px 10px;
-  z-index: 10000;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
-}
-
-/* When open */
-.left-panel.open {
-  transform: translateX(0);
-}
-
-.left-panel.open ~ .planner-container {
-  margin-left: 120px; /* same as panel width */
-}
-
-.nav-btn {
-  width: 100%;
-  padding: 5px 0;
-  background-color: var(--text);   /* same as reset button */
-  color: #2c2c2c;
-  font-weight: 700;
-  font-size: 0.95rem;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.2s ease;
-}
-
-.nav-btn:first-child {
-  margin-top: 60px;
-}
-
-/* Hover effect with blue ring */
-.nav-btn:hover {
-    box-shadow: 
-    0 0 0 2px var(--accent), 
-    0 0 8px rgba(79, 195, 247, 0.2); /* your accent color */
-}
-
-/* Active (selected page) */
-.nav-btn.active {
-  background-color: var(--text);   /* same gray as others */
-  color: #2c2c2c;
-  box-shadow: 
-    0 0 0 2px var(--accent), 
-    0 0 8px rgba(79, 195, 247, 0.6); /* same as hover glow */
-}
-
-/* ====================== MILITARY TARGETS ====================== */
-
+/* ===== BEGIN: MILITARY TABLE ===== */
 .military-targets {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px 18px;
-    margin-bottom: 30px;
+    margin-bottom: 0px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     width: 520px;
     border-left: 6px solid #297ac5;
     margin-right: 0;
+    border-bottom: none;
 }
-
+/* When Analysis is EXPANDED → remove bottom rounding so they connect */
+.military-analysis-box:not(.collapsed) ~ .military-targets {
+    border-radius: 12px 12px 0 0;
+}
 .military-title {
     text-align: left;
     font-weight: 700;
     margin-bottom: 16px;
+    padding: 10px 18px 0px 18px;
     font-size: 1.4rem;
     color: var(--text);
 }
-
 /* OME / DME row */
 .mil-target-inputs {
     display: flex;
@@ -448,19 +433,16 @@
     gap: 50px;
     margin-bottom: 10px;
 }
-
 .mil-target-box {
     display: flex;
     align-items: center;
     gap: 10px;
 }
-
 .mil-target-box label {
     font-weight: 600;
     color: var(--text-muted);
     min-width: 50px;
 }
-
 .mil-target-box input {
     width: 80px;
     height: 23px;
@@ -472,21 +454,16 @@
     color: var(--text);
     font-size: 0.9rem;
 }
-
 .mil-target-box input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.25);
 }
-
-/* ====================== MILITARY TABLE ====================== */
-
 #militaryTable {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.90rem;
     background: transparent;
 }
-
 #militaryTable th {
     color: var(--text);
     font-weight: 700;
@@ -495,26 +472,22 @@
     text-align: center;
     border-bottom: 2px solid var(--border);
 }
-
 #militaryTable th:first-child {
     text-align: left;
     padding-left: 11px;
 }
-
 /* Table body */
 #militaryTable td {
     padding: 6px 10px;
     border-bottom: 1px solid var(--border);   /* keep horizontal lines */
     vertical-align: middle;
 }
-
 /* FORCE REMOVE all vertical borders */
 #militaryTable th,
 #militaryTable td {
     border-left: none !important;
     border-right: none !important;
 }
-
 /* Units column tighter */
 /* Column widths */
 #militaryTable th:nth-child(1),
@@ -522,30 +495,25 @@
     text-align: left;
     width: 200px;   /* Units */
 }
-
 #militaryTable th:nth-child(2),
 #militaryTable td:nth-child(2) {
     text-align: center;
     width: 50px;    /* Owned */
 }
-
 #militaryTable th:nth-child(3),
 #militaryTable td:nth-child(3) {
     text-align: center;
     width: 50px;    /* Training */
 }
-
 #militaryTable th:nth-child(4),
 #militaryTable td:nth-child(4) {
     text-align: center;
     width: 120px;    /* Cost */
 }
-
 /* Remove border from last row */
 #militaryTable tbody tr:last-child td {
     border-bottom: none;
 }
-
 #militaryTable input {
     width: 90px;
     height: 23px;
@@ -557,38 +525,30 @@
     padding: 5px 8px 5px 6px;
     font-size: 0.9rem;
 }
-
 #militaryTable input:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.25);
 }
-
 /* Remove number input arrows */
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-
 input[type=number] {
     -moz-appearance: textfield;
 }
-
-.military-row {
-    display: flex;
-    align-items: flex-start;
-}
-
 .raw-mod-box {
-    width: 260px;
-    margin-left: -10px;
+    width: 270px;
+    margin-left: -20px;
     border-left: none;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     box-shadow: none;
+    overflow: hidden;
+    position: relative;
 }
-
 #rawModTable {
     width: calc(100% + 27px);
     margin-left: -27px;
@@ -597,7 +557,6 @@ input[type=number] {
     background: transparent;
     margin-top: 50px;
 }
-
 #rawModTable th {
     color: var(--text);
     font-weight: 700;
@@ -606,13 +565,11 @@ input[type=number] {
     text-align: center;
     border-bottom: 2px solid var(--border);
 }
-
 #rawModTable td {
     padding: 6px 10px;
     border-bottom: 1px solid var(--border);
     text-align: center;
 }
-
 #rawModTable input {
     width: 90px;
     height: 23px;
@@ -624,42 +581,29 @@ input[type=number] {
     padding: 5px 8px 5px 6px;
     font-size: 0.9rem;
 }
-
 #rawModTable input:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.25);
 }
-
 #rawModTable tbody tr:last-child td {
     border-bottom: none;
 }
-
-.raw-mod-box {
-    width: 270px;
-    overflow: hidden;
-    position: relative;
-    margin-left: -20px;
-}
-
 /* Inner content that slides */
 .raw-mod-inner {
     width: 260px;
     transform: translateX(0);
     transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
 }
-
 /* Collapsed state */
 .raw-mod-box.collapsed .raw-mod-inner {
     transform: translateX(-230px); /* 260 - 40 = 220 */
 }
-
 .military-row {
     position: relative; /* anchor for the floating arrow */
     display: flex;
     align-items: flex-start;
 }
-
 #targetsToggle {
     position: absolute;
     top: 14px;           /* vertical alignment with tables */
@@ -667,7 +611,7 @@ input[type=number] {
     width: 18px;
     height: 18px;
     background: var(--bg2);
-    border: 1px solid var(--border);
+    border: 1px solid transparent;
     border-radius: 4px;
     display: flex;
     align-items: center;
@@ -677,42 +621,35 @@ input[type=number] {
     z-index: 1000;
     transition: left 0.25s ease;
 }
-
 #targetsToggle:hover {
     background: rgba(255,255,255,0.08);
+    border-color: var(--accent);
 }
-
 .unit-expand {
     display: none;
     font-size: 12px;
     color: #8fa6c9;
-    font-style: italic;
-    
+    font-style: italic;    
 }
-
 .unit-expand td {
     padding: 4px 10px;
     border-bottom: 1px solid var(--border);
     font-size: 11px;
     line-height: 12px;
 }
-
 .unit-expand-spacer {
     display: none;
 }
-
 .unit-expand-spacer td {
     padding: 4px 10px;        /* match the expand row */
     font-size: 11px;
     line-height: 12px;
     border-bottom: 1px solid var(--border);
 }
-
 #militaryTable,
 #rawModTable {
     border-collapse: collapse;
 }
-
 .unit-expand td input,
 .unit-expand-spacer td input {
     height: 14px;         /* smaller than default 23px */
@@ -720,13 +657,15 @@ input[type=number] {
     font-size: 11px;      /* match text size */
     box-sizing: border-box; /* ensures padding doesn’t overflow */
 }
-
 .unit-expand,
 .unit-expand-spacer {
     height: 25px;              /* adjust as needed */
 }
+/* ===== END: MILITARY TABLE ===== */
 
-/* ==== Military Parser (Floating Box) ==== */
+
+
+/* ===== BEGIN: FLOATING PARSER ===== */
 .military-parser {
     position: fixed;
     top: 20px;
@@ -743,7 +682,6 @@ input[type=number] {
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     transition: right 0.3s ease;
 }
-
 /* Textarea */
 .military-parser textarea {
     width: 100%;
@@ -756,7 +694,6 @@ input[type=number] {
     resize: vertical;
     font-family: inherit;
 }
-
 /* Button */
 .parser-actions button {
     margin-top: 8px;
@@ -769,19 +706,20 @@ input[type=number] {
     font-weight: 600;
     transition: right 0.3s ease;
 }
-
 .parser-actions button:hover {
     box-shadow: 0 0 0 2px var(--accent);
 }
-
 /* Status text */
 #militaryPasteStatus {
     margin-left: 10px;
     font-size: 0.85rem;
     color: var(--text-muted);
 }
+/* ===== END: FLOATING PARSER ===== */
 
-/* ==== UTOPIA CALENDAR ==== */
+
+
+/* ===== BEGIN: CALENDAR ===== */
 .utopia-calendar {
     position: relative;
     background: var(--surface);
@@ -789,8 +727,8 @@ input[type=number] {
     border-radius: 12px;
     padding: 12px;
     width: 260px;
+    margin-top: 30px;
 }
-
 /* Header */
 .calendar-header {
     display: flex;
@@ -798,7 +736,6 @@ input[type=number] {
     justify-content: space-between;
     margin-bottom: 8px;
 }
-
 .calendar-header-center {
     display: flex;
     align-items: center;
@@ -806,27 +743,22 @@ input[type=number] {
     gap: 10px;
     min-width: 160px;
 }
-
 #calendarMonth {
     min-width: 90px;
     text-align: left;
 }
-
 #calendarYear {
     min-width: 60px;
     text-align: right;
 }
-
 .calendar-clickable {
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 600;
 }
-
 .calendar-clickable:hover {
     color: var(--accent);
 }
-
 .calendar-header button {
     background: var(--bg);
     border: 1px solid var(--border);
@@ -835,18 +767,15 @@ input[type=number] {
     cursor: pointer;
     color: var(--text);
 }
-
 .calendar-header button:hover {
     border-color: var(--accent);
 }
-
 /* Grid */
 .utopia-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 4px;
 }
-
 /* Days */
 .utopia-day {
     padding: 4px;
@@ -857,16 +786,13 @@ input[type=number] {
     border-radius: 6px;
     cursor: pointer;
 }
-
 .utopia-day:hover {
     border-color: var(--accent);
 }
-
 .utopia-day.selected {
     background: var(--accent);
     color: #000;
 }
-
 /* Popups */
 .calendar-popup {
     position: absolute;
@@ -887,13 +813,11 @@ input[type=number] {
     transition: all 0.15s ease;
     z-index: 1000;
 }
-
 .calendar-popup.active {
     opacity: 1;
     transform: translateX(-50%) scale(1);
     pointer-events: auto;
 }
-
 .calendar-popup div {
     text-align: center;
     padding: 4px;
@@ -903,22 +827,18 @@ input[type=number] {
     background: var(--bg);
     border: 1px solid var(--border);
 }
-
 .calendar-popup div:hover {
     border-color: var(--accent);
 }
-
 .calendar-popup .active-year {
     background: var(--accent);
     color: #000;
 }
-
 /* Month picker wider */
 #monthPicker {
     width: 240px;
     grid-template-columns: repeat(3, 1fr);
 }
-
 /* Calculation Section */
 .calendar-calculations {
     margin-top: 12px;
@@ -926,7 +846,6 @@ input[type=number] {
     flex-direction: column;
     gap: 6px;
 }
-
 .calendar-row {
     display: flex;
     justify-content: space-between;
@@ -935,7 +854,6 @@ input[type=number] {
     color: var(--text);
     white-space: nowrap;
 }
-
 .calendar-row input {
     width: 52px;
     padding: 3px 4px;
@@ -946,13 +864,15 @@ input[type=number] {
     color: var(--text);
     text-align: center;
 }
-
 .result-row strong {
     color: var(--accent);
     font-weight: 600;
 }
+/* ===== END: CALENDAR ===== */
 
-/* === PROVINCE SUMMARY BOX === */
+
+
+/* ===== BEGIN: PROVINCE SUMMARY BAR ===== */
 .planner-summary-box {
     background: transparent;     /* removes box look */
     border: none;                /* removes border */
@@ -963,15 +883,12 @@ input[type=number] {
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
 }
-
 .planner-summary-title {
     display: none;
 }
-
 .summary-grid {
     display: none;
 }
-
 .summary-line {
     display: inline-flex;
     align-items: center;
@@ -980,11 +897,9 @@ input[type=number] {
     font-size: 0.9rem;
     padding: 3px 0;
 }
-
 .summary-line span {
     white-space: nowrap;
 }
-
 .summary-line input {
     width: 52px;
     padding: 3px 4px;
@@ -995,22 +910,182 @@ input[type=number] {
     color: var(--text);
     text-align: center;
 }
-
 .pers-indent {
   display: block;
   padding-left: 252px;   /* controls indentation */
 }
-
 .war-indent {
   display: block;
   padding-left: 155px;   /* controls indentation */
 }
-
 .race-indent {
   display: block;
   padding-left: 208px;   /* controls indentation */
 }
-	
+/* ===== END: PROVINCE SUMMARY BAR ===== */
+
+
+
+
+/* ===== BEGIN: MILITARY OFFENCE ANALYSIS ===== */
+.military-section {
+    position: relative;
+    margin-bottom: 20px;
+}
+.military-analysis-box {
+    width: 520px;
+    margin-top: -10px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    background: var(--surface);
+    border-left: 6px solid #297ac5;
+    overflow: hidden;
+    position: relative;
+}
+#analysisToggle {
+    position: absolute;
+    top: 41px;
+    left: 15px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 1010;
+}
+#analysisToggle:hover {
+    background: var(--surface-hover);
+    border-color: var(--accent);
+}
+/* Collapsible Content */
+#analysisContent {
+    overflow: hidden;
+    max-height: 500px;
+    transition: max-height 0.55s ease;
+    padding: 0 18px 16px 18px;
+}
+.military-analysis-box.collapsed #analysisContent {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.military-analysis-box .military-title {
+    margin-bottom: 4px;
+}
+/* ===== ANALYSIS GRID (Replaces Table) ===== */
+
+#analysisTable {
+    display: grid;
+
+    /* Expanded layout (5 columns) */
+    grid-template-columns: 180px 100px 210px 140px 130px;
+
+    width: 100%;
+    max-width: 770px;
+    background: var(--surface);
+    font-size: 0.90rem;
+    border-top: none;
+}
+/* Collapsed layout (3 columns) */
+.raw-mod-box.collapsed ~ .military-analysis-box #analysisTable {
+    grid-template-columns: 180px 100px 210px !important;
+}
+/* ==================== HEADER ==================== */
+.analysis-header {
+    color: var(--text);
+    font-weight: 700;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 2px solid var(--border);
+    text-align: left;
+    font-size: 0.90rem;
+    height: 25px;
+    display: flex;
+    align-items: center;
+}
+.analysis-header:first-child {
+    padding-left: 12px;
+}
+/* ==================== GRID CELLS ==================== */
+#analysisTable > div {
+    padding: 1px 12px;
+    border-bottom: 1px solid var(--border);
+    box-sizing: border-box;
+    text-align: left;
+}
+/* ==================== COLUMN ALIGNMENT ==================== */
+
+/* Expanded (5-column layout) */
+#analysisTable > div:nth-child(5n+1) {
+    text-align: left;
+}
+#analysisTable > div:nth-child(5n+2),
+#analysisTable > div:nth-child(5n+3) {
+    text-align: left;
+}
+/* Collapsed (3-column layout) */
+.raw-mod-box.collapsed ~ .military-analysis-box
+#analysisTable > div:nth-child(3n+1) {
+    text-align: left;
+}
+.raw-mod-box.collapsed ~ .military-analysis-box
+#analysisTable > div:nth-child(3n+2),
+
+.raw-mod-box.collapsed ~ .military-analysis-box
+#analysisTable > div:nth-child(3n+3) {
+    text-align: left;
+}
+/* ==================== TRAINING COLUMNS ==================== */
+.training-col {
+    text-align: left;
+}
+/* Hide training columns when collapsed */
+.raw-mod-box.collapsed ~ .military-analysis-box .training-col {
+    display: none !important;
+}
+/* ==================== NUMBER STYLING ==================== */
+
+/* Expanded */
+#analysisTable > div:not(.analysis-header):nth-child(5n+2),
+#analysisTable > div:not(.analysis-header):nth-child(5n+3),
+#analysisTable > div:not(.analysis-header):nth-child(5n+4),
+#analysisTable > div:not(.analysis-header):nth-child(5n+5) {
+    font-style: italic;
+    color: #8fa6c9 !important;
+    font-weight: normal;
+    font-size: 0.85rem;
+}
+/* Collapsed */
+.raw-mod-box.collapsed ~ .military-analysis-box 
+#analysisTable > div:not(.analysis-header):nth-child(3n+2),
+.raw-mod-box.collapsed ~ .military-analysis-box 
+#analysisTable > div:not(.analysis-header):nth-child(3n+3) {
+    font-style: italic;
+    color: #8fa6c9 !important;
+    font-weight: normal;
+    font-size: 0.85rem;
+}
+/* ==================== LAST ROW ==================== */
+/* Expanded */
+#analysisTable > div:nth-last-child(-n+5) {
+    border-bottom: none;
+}
+/* Collapsed */
+.raw-mod-box.collapsed ~ .military-analysis-box
+#analysisTable > div:nth-last-child(-n+3) {
+    border-bottom: none;
+}
+/* ===== END: MILITARY OFFENCE ANALYSIS ===== */
+
+
+
   </style>
 </head>
 <body>
@@ -1532,6 +1607,7 @@ function parseMilitaryPaste() {
         updateExpandRows();
         saveMilitaryInputs();
         savePlannerData();
+        updateMilitaryAnalysis();
 
         status.textContent = `✅ Success! Updated ${updates} values.`;
         status.style.color = "#4ade80";
@@ -1656,7 +1732,7 @@ function calculateTotalPopulation() {
 
     switch (race) {
         case 'Halfling':
-            raceBonus = 1.10;
+            raceBonus = 1.125;
             break;
 
         case 'Faery':
@@ -1789,6 +1865,7 @@ window.addEventListener('storage', (e) => {
     <select id="race" style="width:200px; height:30px; padding-top: 5px; padding-bottom: 5px;">
     <option>Avian</option>
     <option>Dark Elf</option>
+    <option>Dryad</option>
     <option>Dwarf</option>
     <option>Elf</option>
     <option>Faery</option>
@@ -1802,15 +1879,16 @@ window.addEventListener('storage', (e) => {
     <label>Personality</label>
     <select id="pers" style="width:200px; height:30px; padding-top: 5px; padding-bottom: 5px;">
     <option>Artisan</option>
+    <option>Cleric</option>
+    <option>General</option>
     <option>Heretic</option>
     <option>Mystic</option>
-    <option>Rogue</option>
-    <option>Tactician</option>
-    <option>Warrior</option>
-    <option>Paladin</option>
     <option>Necromancer</option>
-    <option>General</option>
+    <option>Rogue</option>
+    <option>Sage</option>
+    <option>Tactician</option>       
     <option>War Hero</option>
+    <option>Warrior</option>
     </select>
 </div>
 
@@ -1863,6 +1941,9 @@ window.addEventListener('storage', (e) => {
     </div>
 
 </div>
+
+<!-- MILITARY SECTION (New wrapper for positioning) -->
+<div class="military-section">
 
 <!-- MILITARY TARGETS TABLE -->
 <div class="military-row">
@@ -1947,6 +2028,22 @@ window.addEventListener('storage', (e) => {
     <div id="targetsToggle" onclick="toggleTargets()">◀</div>
 </div>
 
+<div id="analysisToggle" onclick="toggleAnalysis()">▼</div>
+
+<!-- MILITARY ANALYSIS BOX -->
+<div class="military-analysis-box">
+    <!-- Title stays inside -->
+    <div class="military-title">
+        Military Analysis
+    </div>
+    
+    <div id="analysisContent">
+        <div id="analysisTable" class="analysis-grid">
+        </div>
+    </div>
+</div>
+</div>
+
 <!-- Utopia Calendar -->
 <div class="utopia-calendar">
 
@@ -2003,7 +2100,7 @@ function updateBonuses() {
     if (race === "Avian") {
         raceBonusHtml = `
 			<div class="bonus-header">Race Bonuses</div>
-			<span class="bonus">• -20% Attack Time</span><br>
+			<span class="bonus">• -25% Attack Time</span><br>
             <span class="bonus">• -25% Training Time</span><br>
 			<span class="bonus">• -25% Military Wages</span><br>
             <span class="bonus">• Spells: Town Watch, Illuminate Shadows</span>
@@ -2011,27 +2108,46 @@ function updateBonuses() {
 
 		racePenaltyHtml = `
 			<div class="bonus-header">Race Penalties</div>
-			<span class="penalty">• -5% Building Efficiency</span><br>
+			<span class="penalty">• +30% Rune Cost</span><br>
 			<span class="penalty">• No Access to Stables/War Horses</span>
 		`;
-        raceUnique = "(Passive) - Your offensive specialists gain +2 offense point (War Only) (Does not affect NW)";
-		warDoctrine = "(In War): Provides up to −10% Attack Time and +12.5% Birth Rates to you and all your kingdom.";
+        raceUnique = "(Passive) - Successful attacks detroy 8% of the target's current War Horses and Prisoners";
+		warDoctrine = "(In War): Provides up to −10% Attack Time and -12.5% Military Wages to you and all your kingdom.";
     }
 	// === DARK ELF ===
     else if (race === "Dark Elf") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +35% Instant Spell Damage</span><br>
-            <span class="bonus">• -35% Rune Cost (Not Including Ritual)</span><br>
+            <span class="bonus">• +30% Offensive WPA</span><br>
+            <span class="bonus">• +30% Instant Spell Damage</span><br>
             <span class="bonus">• Can Train Thieves with Specialist Credits</span><br>
-            <span class="bonus">• Spells: Blizzard, Mage's Fury, Illuminate Shadows, Pitfalls, Mind Focus</span>
+            <span class="bonus">• Spells: Blizzard, Mage's Fury, Mind Focus, Fool's Gold</span>
         `;
 		racePenaltyHtml = `
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• -15% Birth Rates</span>
+            <span class="penalty">• -15% Birth Rates</span><br>
+            <span class="penalty">• +30% Damage taken from Sabotage Ops</span>
         `;
-        raceUnique = "(Passive) - Successful offensive instant spells refund 40% rune cost.";
+        raceUnique = "(Passive) - After a successful attack, gain +20% Instant Spell Damage for 6 ticks. Successful Traditional Marches generate 1 wizard per 4 acres gained.";
 		warDoctrine = "(In War): Provides up to +12.5% Instant Spell Damage and −12.5% Rune Costs to you and all your kingdom.";
+    }
+    // === DRYAD ===
+    else if (race === "Dryad") {
+        raceBonusHtml = `
+            <div class="bonus-header">Race Bonuses</div>
+            <span class="bonus">• +12.5% DME</span><br>
+            <span class="bonus">• -40% Defensive Military Losses</span><br>
+            <span class="bonus">• +20% Birth Rate</span><br>
+            <span class="bonus">• Spells: Aggression, Greater Protection, Clear Sight</span><br>
+        `;    
+		racePenaltyHtml = `	
+			<div class="bonus-header">Race Penalties</div>
+            <span class="penalty">• +10% Attack Time</span><br>
+            <span class="penalty">• +1 Cost to Offensive Spells</span><br>
+            <span class="penalty">• Cannot use Forts</span>
+        `;
+        raceUnique = "(Passive) - After being successfully attacked, gain +5% DME for 6 ticks.";
+		warDoctrine = "(In War): Provides up to +10% Defensive Military Efficiency and -12.5% Defensive Military Casaulties to you and all your kingdom.";
     }
 	// === DWARF ===
     else if (race === "Dwarf") {
@@ -2039,99 +2155,97 @@ function updateBonuses() {
             <div class="bonus-header">Race Bonuses</div>
             <span class="bonus">• +30% Building Efficiency</span><br>
             <span class="bonus">• -50% Construction Time</span><br>
+            <span class="bonus">• -50% Construction Cost</span><br>
             <span class="bonus">• Spells: Miner's Mystique, Town Watch, Reflect Magic</span><br>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
             <span class="penalty">• Cannot Accelerate Construction</span><br>
-            <span class="penalty">• +10% Attack Time Costs</span>
+            <span class="penalty">• +90% Food Consumption</span>
         `;
-        raceUnique = "(Passive) - Incoming Raze damage reduced by 15% and Raze damage increased by 20%";
-		warDoctrine = "(In War): Provides up to -12.5% Construction Costs and +12.5% Income for you and all your kingdom.";
+        raceUnique = "(Passive) - After being successfully attacked, construction time is reduced by an additional 30% for 6 ticks.";
+		warDoctrine = "(In War): Provides up to -12.5% Construction Costs and +12.5% BE for you and all your kingdom.";
     }
 	// === ELF ===
     else if (race === "Elf") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
             <span class="bonus">• +40% Magic Effectiveness (WPA)</span><br>
-            <span class="bonus">• +1 Mana per Tick</span><br>
-            <span class="bonus">• +40% Rune Production</span><br>
-            <span class="bonus">• Spells: Pitfalls, Wrath, Vermin, Sloth</span>
+            <span class="bonus">• +30% Offensive Spell Duration</span><br>
+            <span class="bonus">• +1 Mana per Tick</span><br>            
+            <span class="bonus">• Spells: Pitfalls, Sloth, Reflect Magic, Chastity, Vermin</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• -20% TPA</span>
+            <span class="penalty">• +35% Draft Costs</span>
         `;
-        raceUnique = "(Passive) - Whenever your province’s mana drops below 40%, all spells you cast while under that threshold deal +25% spell damage. Boost disappears once mana climbs above 40%.";
-		warDoctrine = "(In War): Provides up to +12.5% Offensive WPA and +12.5% Spell Duration to you and all your kingdom.";
+        raceUnique = "(Passive) - Chastity reduces Birth Rates by 70%. Offensive duration spells cast last +2 ticks.";
+		warDoctrine = "(In War): Provides up to -12.5% damage from enemy sorcery spells and +12.5% Spell Duration to you and all your kingdom.";
     }
 	// === FAERY ===
     else if (race === "Faery") {
         raceBonusHtml = `
-            <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +20% Magic Effectiveness (WPA)</span><br>
-            <span class="bonus">• +25% Spell Duration</span><br>
+            <div class="bonus-header">Race Bonuses</div>            
+            <span class="bonus">• +30% Self Spell Duration</span><br>
+            <span class="bonus">• +20% Magic & Thievery Effectiveness (WPA/TPA)</span><br>
             <span class="bonus">• +1 Mana per Tick</span><br>
-            <span class="bonus">• Spells: All Racial Spells</span>
+            <span class="bonus">• Spells: Greater Protection, Reflect Magic, Illuminate Shadows, Tree of Gold, Revelation, Fountain of Knowledge</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• -5% Population</span>
+            <span class="penalty">• -5% Population</span><br>
+            <span class="penalty">• +15% Military Casaulties</span>
         `;
-        raceUnique = "(Passive) - Enemy spells cast against Faery provinces have a 20% chance to fail.";
+        raceUnique = "(Passive) - Enemy spells cast against Faery provinces have a 15% chance to fail.";
 		warDoctrine = "(In War): Provides up to +12.5% Defensive WPA and -12.5% Damage from Enemy Thievery Operations to you and all your kingdom.";
     }
 	// === HALFLING ===
     else if (race === "Halfling") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +10% Max Population</span><br>
-            <span class="bonus">• +1 Stealth per Tick</span><br>
-            <span class="bonus">• +20% Thievery Effectiveness (TPA)</span><br>
-            <span class="bonus">• Spells: Tree of Gold, Greater Protection</span>
+            <span class="bonus">• +12.5% Max Population</span><br>
+            <span class="bonus">• +1 Stealth Regen per Tick</span><br>
+            <span class="bonus">• +30% Thievery Effectiveness (TPA)</span><br>
+            <span class="bonus">• Spells: Tree of Gold, Greater Protection, Invisibility</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• +10% Military Casaulties</span>
+            <span class="penalty">• -25% Draft Speed</span>
         `;
-        raceUnique = "(Passive) - Sabotage operations suffer 50% fewer thievery losses.";
-		warDoctrine = "(In War): Provides up to +12.5% Sabotage Damage and +12.5% Offensive TPA to you and all your kingdom.";
+        raceUnique = "(Passive) - Successful sabotage operations against the same province increase damage by 3% (up to a max of 15%). Bonus resets when performing ops against another province.";
+		warDoctrine = "(In War): Provides up to +12.5% Sabotage Damage and -12.5% Thief Losses to you and all your kingdom.";
     }
 	// === HUMAN ===
     else if (race === "Human") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• All lands hold prisoners - 2 per acre</span><br>
-            <span class="bonus">• +1 Stealth per Tick</span><br>
-            <span class="bonus">• -30% Damage from Learn Attacks</span><br>
-            <span class="bonus">• +10% Science Efficiency</span><br>
-            <span class="bonus">• Spells: Fountain of Knowledge, Revelation, Invisibility, Guile, Steal War Horses</span>
+            <span class="bonus">• +30% Income</span><br>
+            <span class="bonus">• -30% Training Costs</span><br>
+            <span class="bonus">• +20% Draft Speed</span><br>            
+            <span class="bonus">• Spells: Fountain of Knowledge, Invisibility, Guile, Steal War Horses</span>
         `;    
 		
 		racePenaltyHtml = `		
 			<div class="bonus-header">Race Penalties</div>
-			<span class="penalty">• Military wage increases take twice as long to fully apply. Wage reductions apply normally.</span><br>
-			<span class="penalty">• +40% Rune Cost (Does NOT Include Rituals)</span>
+			<span class="penalty">• +25% Military Wages</span>			
         `;
-        raceUnique = "(Passive) - Prisoners generate an additional 2gc per tick and Mercenary costs are reduced by 40%.";
-		warDoctrine = "(In War): Provides up to +12.5% Book Generation and +12.5% Science Effectiveness to you and all your kingdom.";
+        raceUnique = "(Passive) - After a successful attack, gain building credits equal to 25% of acres gained and specialist credits equal to 100% of acres gained. For next 6 ticks, training time is reduced 20%.";
+		warDoctrine = "(In War): Provides up to +12.5% Specialist Credits and -12.5% Training Costs to you and all your kingdom.";
     }
 	// === ORC ===
     else if (race === "Orc") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +5% Gains (Out of War) & +15% Gains (In War)</span><br>
-            <span class="bonus">• -50% Draft Costs</span><br>
-            <span class="bonus">• Spells: Bloodlust, Wrath</span>
+            <span class="bonus">• +10% Gains (Out of War) & +15% Gains (In War)</span><br>
+            <span class="bonus">• +15% Enemy Military Casaulties</span><br>
+            <span class="bonus">• -40% Draft Costs</span><br>
+            <span class="bonus">• Spells: Bloodlust, Wrath, Aggression</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• -15% Defensive Military Efficiency (DME)</span>
+            <span class="penalty">• +20% Instant Spell and Sabotage Damage</span>
         `;
-        raceUnique = "(Passive) - Every time an Orc makes a successful attack, a random bonus effect is applied to that attack — the spirit of war is unpredictable and wild.<br>" +
-                            "<span class='race-indent'>• Destroy 25% of enemy resources (gold, runes, food)</span>" +
-                            "<span class='race-indent'>• Increases Military Wages by 25% for 4-6 ticks.</span>" +
-                            "<span class='race-indent'>• -30% Military Losses</span>"
+        raceUnique = "(Passive) -  Successful attacks convert 25% of enemy military casaulties into specialist credits.";
 		warDoctrine = "(In War): Provides up to +10% Offensive Military Efficiency and +12.5% Raze Damage to you and all your kingdom."                            
     }
 	// === UNDEAD ===
@@ -2142,13 +2256,13 @@ function updateBonuses() {
             <span class="bonus">• Immune to Plague</span><br>
             <span class="bonus">• No Food Needed</span><br>
             <span class="bonus">• Always carries Plague and chance to spread</span><br>
-            <span class="bonus">• Spells: Animate Dead, Aggression</span>
+            <span class="bonus">• Spells: Animate Dead, Vermin, Ghost Workers</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• -10% Science Efficiency</span>
+            <span class="penalty">• Cannot build Hospitals</span>
         `;
-        raceUnique = "(Passive) - Converts 45% of offensive losses into Soldiers instantly.";
+        raceUnique = "(Passive) - Converts 25% of offensive losses into Soldiers instantly.";
 		warDoctrine = "(In War): Provides up to -12.5% Enemy Battle Gains and +12.5% Increased Plague spread chance (does not grant the ability to spread Plague)";
     }
 	// === GNOME ===
@@ -2189,13 +2303,14 @@ function updateBonuses() {
     if (pers === "Artisan") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +40% Building Capacity (Homes, Stables, Dungeons)</span><br>
-            <span class="bonus">• +40% Building Production (Banks, Farms, Stables, Towers)</span><br>
-            <span class="bonus">• Immune to Plunder, Greed and Incite Riots</span><br>
-            <span class="bonus">• +15% Economy Science Effectiveness</span><br>
+            <span class="bonus">• +25% Building Capacity (Homes, Stables, Dungeons)</span><br>
+            <span class="bonus">• +25% Building Production (Banks, Farms, Stables, Towers)</span><br>
+            <span class="bonus">• -25% Construction Costs (Including Raze)</span><br>
+            <span class="bonus">• Immune to Greed, Incite Riots and Fool's Gold</span><br>
+            <span class="bonus">• +25% Economy Science Effectiveness</span><br>
             <span class="bonus">• Spells: Ghost Workers, Greater Protection</span>
         `;
-        persUnique = "(Passive) - For 3 ticks after a successful attack, enemy's/target's building efficiency is reduced by 10% (Does not stack).";
+        persUnique = "(Passive) - When razing buildings, recover 25% of buildings razed as Building Credits.";
     }
 	// === CLERIC ===
     else if (pers === "Cleric") {
@@ -2203,38 +2318,37 @@ function updateBonuses() {
             <div class="bonus-header">Personality Bonuses</div>
             <span class="bonus">• +1 Elite Defensive Strength</span><br>
             <span class="bonus">• +1 Defensive Specialist Strength</span><br>
-            <span class="bonus">• -1 Self-Spell Mana Cost</span><br>
-            <span class="bonus">• +35% Hospital Effectiveness</span><br>
-            <span class="bonus">• Immune to Plague</span>
+            <span class="bonus">• -40% Damage from Instant Spells</span><br>
+            <span class="bonus">• +25% Military Science Efficiency</span><br>
+            <span class="bonus">• Spells: Salvation, Revelation, Divine Shield, Illuminate Shadows, Hero's Inspiration</span>
         `;
-        persUnique = "(Passive) - When casting self-spells, Clerics have a 50% chance to double their duration.";
+        persUnique = "(Passive) - When casting self-spells, duration is increased by 4 ticks.";
     }
 	// === HERETIC ===
     else if (pers === "Heretic") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +15% Thievery Effectiveness (TPA)</span><br>
-            <span class="bonus">• +15% Wizard Effectiveness (WPA)</span><br>
+            <span class="bonus">• +35% Thievery Effectiveness (TPA)</span><br>
+            <span class="bonus">• +35% Wizard Effectiveness (WPA)</span><br>
             <span class="bonus">• -50% Thief Losses</span><br>
-            <span class="bonus">• +20% Sabotage Damage</span><br>
-            <span class="bonus">• +20% Spell Damage</span><br>
-            <span class="bonus">• +75% Guilds Effectiveness</span><br>            
-            <span class="bonus">• +15% Arcane Arts Science Effectiveness</span><br>
-            <span class="bonus">• Spells: Nightmares, Fools Gold, Mages Fury, Vermin</span>
+            <span class="bonus">• Immunity to Expose Thieves</span><br>
+            <span class="bonus">• +50% Guilds Effectiveness</span><br>            
+            <span class="bonus">• +25% Arcane Arts Science Effectiveness</span><br>
+            <span class="bonus">• Spells: Nightmares, Fool's Gold, Magic Ward, Vermin</span>
         `;
-        persUnique = "(Active) - After a failed offensive spell cast, the heretic recovers 1% Stealth.";
+        persUnique = "(Active) - After each successful attack, gain +1 mana, +1 stealth and +10% Instang Spell Damage for 6 ticks.";
     }
 	// === MYSTIC ===
     else if (pers === "Mystic") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +125% Guild Effectiveness</span><br>
+            <span class="bonus">• +100% Guild Effectiveness</span><br>
             <span class="bonus">• +1 Mana Recovery per Tick</span><br>
-            <span class="bonus">• +25% Offensive Spell Duration</span><br>            
-            <span class="bonus">• +25% Channeling Science Effectiveness</span><br>
-            <span class="bonus">• Spells: Pitfalls, Meteor Showers, Chastity</span>
+            <span class="bonus">• +25% Wizard Effectiveness (WPA)</span><br>            
+            <span class="bonus">• +40% Channeling Science Effectiveness</span><br>
+            <span class="bonus">• Spells: Pitfalls, Meteor Showers, Chastity, Fool's Gold</span>
         `;
-        persUnique = "(Passive) - While above 40% mana, spells gain +20% WPA.";
+        persUnique = "(Passive) - While above 60% mana, spells gain +20% WPA.";
     }
 	// === ROGUE ===
     else if (pers === "Rogue") {
@@ -2242,9 +2356,9 @@ function updateBonuses() {
             <div class="bonus-header">Personality Bonuses</div>
             <span class="bonus">• +100% Thieves' Den Effectiveness</span><br>
             <span class="bonus">• +1 Stealth Recovery per Tick</span><br>
-            <span class="bonus">• +20% Thievery Effectiveness (TPA)</span><br>
-            <span class="bonus">• +25% Crime Science Effectiveness</span><br>
-            <span class="bonus">• Access to all Thievery Ops</span>
+            <span class="bonus">• +25% Thievery Effectiveness (TPA)</span><br>
+            <span class="bonus">• Access to all Thievery Ops</span><br>
+            <span class="bonus">• +40% Crime Science Effectiveness</span>            
         `;
         persUnique = "(Passive) - Rogue provinces may perform thievery operations while overpopulated.";
     }
@@ -2252,30 +2366,28 @@ function updateBonuses() {
     else if (pers === "Tactician") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• -15% Attack Time</span><br>
+            <span class="bonus">• -20% Attack Time</span><br>
 			<span class="bonus">• +40% Specialist Credit Gains</span><br>
-            <span class="bonus">• +25% Draft Speed</span><br>
-            <span class="bonus">• -50% Ambush Losses</span><br>
+            <span class="bonus">• +40% Draft Speed</span><br>            
             <span class="bonus">• No Thieves Lost on Intel</span><br>
-            <span class="bonus">• +25% Siege Science Effectiveness</span><br>
+            <span class="bonus">• +40% Siege Science Effectiveness</span><br>
 			<span class="bonus">• Spells: Clearsight</span>            
         `;
         persUnique = "(Passive) - Successful Attacks in War destroy resources as follows:<br>" +
-                            "<span class='pers-indent'>• 10% of Gold</span>" +
-                            "<span class='pers-indent'>• 25% of Runes</span>" +
-                            "<span class='pers-indent'>• 20% of Food</span>"
+                            "<span class='pers-indent'>• 15% of Gold</span>" +
+                            "<span class='pers-indent'>• 15% of Runes</span>" +
+                            "<span class='pers-indent'>• 15% of Food</span>"
     }
 	// === WARRIOR ===
     else if (pers === "Warrior") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
             <span class="bonus">• +15% Offensive Military Efficiency (OME)</span><br>
-            <span class="bonus">• +5 Mercenary & Prisoner Strength</span><br>
-            <span class="bonus">• -50% Mercenary Cost</span><br>
+            <span class="bonus">• +5 Mercenary & Prisoner Strength</span><br>            
             <span class="bonus">• Mercenaries and Prisoners may be sent at 1 for every 4 normal troops sent</span><br>
-            <span class="bonus">• +25% Tactics Science Effectiveness</span>
+            <span class="bonus">• +35% Tactics Science Effectiveness</span>
         `;
-        persUnique = "(Passive) - Upon each successful attack, the attack destroys 1% of the targets total population.";
+        persUnique = "(Passive) - Upon each successful attack, the attack destroys 1.5% of the targets total population.";
     }
 	// === PALADIN ===
     else if (pers === "Paladin") {
@@ -2296,40 +2408,55 @@ function updateBonuses() {
     else if (pers === "Necromancer") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +35% Wizard Effectiveness (WPA)</span><br>
-            <span class="bonus">• +5% Offensive Military Efficiency (OME)</span><br>
-            <span class="bonus">• -50% Rune Cost (Excludes Ritual)</span><br>			
-            <span class="bonus">• +25% Channeling Science Effectiveness</span><br>
-            <span class="bonus">• Spells: Animate Dead, Mind Focus, Soul Blight, Guile, Nightmare</span>
+            <span class="bonus">• +25% Wizard Effectiveness (WPA)</span><br>
+            <span class="bonus">• +7.5% Military Efficiency (OME/DME)</span><br>
+            <span class="bonus">• -40% Rune Cost (Excludes Ritual)</span><br>			
+            <span class="bonus">• +40% Channeling Science Effectiveness</span><br>
+            <span class="bonus">• Spells: Animate Dead, Mind Focus, Soul Blight, Guile, Nightmare, Lightning Strike</span>
         `;
         persUnique = "(Passive) - After each successful attack, The Necromancer converts:<br>" +
-                            "<span class='pers-indent'>• 10% of the enemy's killed units into Wizards.</span>" +
-                            "<span class='pers-indent'>• 20% of the enemy's killed units into Soldiers.</span>" +
+                            "<span class='pers-indent'>• 7.5% of the enemy's killed units into Wizards.</span>" +
+                            "<span class='pers-indent'>• 17.5% of the enemy's killed units into Soldiers.</span>" +
                             "<span class='pers-indent'>• 10% of the enemy's killed units into Peasants.</span>"
+    }
+    // === SAGE ===
+    else if (pers === "Sage") {
+        persHtml = `
+            <div class="bonus-header">Personality Bonuses</div>
+            <span class="bonus">• +20% Book Generation</span><br>
+            <span class="bonus">• +20% Scientist Generation</span><br>            
+            <span class="bonus">• +50% Learn Protection</span><br>
+            <span class="bonus">• Start with +2 Scientists</span><br>
+            <span class="bonus">• +15% Science Efficiency</span><br>
+			<span class="bonus">• Spells: Revelation, Fountain of Knowledge</span>
+        `;
+        persUnique = "(Passive) - During War, Science effects are increased by 1% up to 15%. Effect ends when war ends.";
     }
 	// === GENERAL ===
     else if (pers === "General") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +1 General</span><br>            
-            <span class="bonus">• -20% Military Train Time & Train Cost</span><br>
+            <span class="bonus">• +1 General</span><br>
+            <span class="bonus">• +2 Offensive Elite Strength</span><br>            
+            <span class="bonus">• -25% Military Train Time & Train Cost</span><br>
             <span class="bonus">• Can Train 1 Elite for every 2 Specialist Credits</span><br>
-			<span class="bonus">• +15% Military Science Efficiency</span><br>
+			<span class="bonus">• +25% Military Science Efficiency</span><br>
 			<span class="bonus">• Spells: Mist, Wrath</span>
         `;
-        persUnique = "(Passive) - Attacks inflict +15% enemy military casualties when two or more generals are sent.";
+        persUnique = "(Passive) - Successful attacks grant +5% Enemy Military Defensive Casaulties against that enemy for 3 ticks, stacking up to 15%.";
     }
 	// === WAR HERO ===
     else if (pers === "War Hero") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +15% Honor Gains</span><br>
-            <span class="bonus">• +70% Honor Effects</span><br>
+            <span class="bonus">• +10% Battle Gains (War Only)</span><br>
+            <span class="bonus">• -25% Honor Losses</span><br>
+            <span class="bonus">• +100% Honor Effects</span><br>
             <span class="bonus">• +2 Offensive Specialist Strength (Affects NW)</span><br>
-            <span class="bonus">• +25% Siege Science Efficiency</span><br>
-            <span class="bonus">• Spells: Quick Feet, Righteous Aggressor, Heroic Inspiration</span>
+            <span class="bonus">• +40% Valor Science Efficiency</span><br>
+            <span class="bonus">• Spells: Quick Feet, Righteous Aggressor, Hero's Inspiration</span>
         `;
-        persUnique = "(Passive) - Successful Massacres kill +7% additional peons and kill an additional 2.5% thieves and wizards.";
+        persUnique = "(Passive) - Successful attacks in war grant +5% Honor Effects for 6 ticks, stacking up to 15%.";
     }
 	
     document.getElementById('persBonusBox').innerHTML = persHtml;
@@ -2360,16 +2487,17 @@ function buildMilitaryTable() {
     tableBody.innerHTML = '';
 
     const units = {
-        Avian:     { off: "Griffin 12/0",       def: "Harpies 0/10",    elite: "Drakes 16/3",          specCost: 350, eliteCost: 750 },
-        "Dark Elf":{ off: "Night Rangers 15/0", def: "Druids 0/11",     elite: "Drows 4/12",           specCost: 350, eliteCost: 750 },
-        Dwarf:     { off: "Warriors 10/0",      def: "Axemen 0/10",    elite: "Berserkers 15/5",       specCost: 350, eliteCost: 800 },
-        Elf:       { off: "Rangers 10/0",       def: "Archers 0/13",   elite: "Elf Lords 15/4",        specCost: 350, eliteCost: 750 },
-        Faery:     { off: "Magicians 10/0",     def: "Druids 0/10",    elite: "Beastmasters 4/16",     specCost: 350, eliteCost: 1000 },
-        Halfling:  { off: "Strongarms 10/0",    def: "Slingers 0/10",  elite: "Brutes 6/12",           specCost: 350, eliteCost: 700 },
-        Human:     { off: "Swordsmen 12/0",     def: "Archers 0/10",   elite: "Knights 16/3",          specCost: 350, eliteCost: 750 },
-        Orc:       { off: "Goblins 13/0",       def: "Trolls 0/10",    elite: "Ogres 18/2",            specCost: 350, eliteCost: 800 },
-        Undead:    { off: "Skeletons 11/0",     def: "Zombies 0/10",   elite: "Ghouls 17/4",           specCost: 350, eliteCost: 800 },
-        Gnome:     { off: "Quick Blades 11/0",  def: "Pikemen 0/10",   elite: "Golems 14/4",           specCost: 350, eliteCost: 900 }
+        Avian:     { off: "Griffin 12/0",       def: "Harpies 0/10",    elite: "Drakes 16/2",          specCost: 350, eliteCost: 750 },
+        "Dark Elf":{ off: "Night Rangers 14/0", def: "Druids 0/12",     elite: "Drows 16/2",           specCost: 350, eliteCost: 700 },
+        Dwarf:     { off: "Warriors 10/0",      def: "Axemen 0/10",    elite: "Berserkers 15/7",       specCost: 350, eliteCost: 900 },
+        Elf:       { off: "Rangers 10/0",       def: "Archers 0/13",   elite: "Elf Lords 14/4",        specCost: 350, eliteCost: 700 },
+        Faery:     { off: "Magicians 10/0",     def: "Druids 0/10",    elite: "Beastmasters 4/16",     specCost: 350, eliteCost: 1150 },
+        Halfling:  { off: "Strongarms 11/0",    def: "Slingers 0/10",  elite: "Brutes 10/13",           specCost: 350, eliteCost: 900 },
+        Human:     { off: "Swordsmen 15/0",     def: "Archers 0/12",   elite: "Knights 15/5",          specCost: 350, eliteCost: 800 },
+        Orc:       { off: "Goblins 13/0",       def: "Trolls 0/10",    elite: "Ogres 18/3",            specCost: 350, eliteCost: 850 },
+        Undead:    { off: "Skeletons 11/0",     def: "Zombies 0/10",   elite: "Ghouls 16/4",           specCost: 350, eliteCost: 800 },
+        Gnome:     { off: "Quick Blades 11/0",  def: "Pikemen 0/10",   elite: "Golems 14/4",           specCost: 350, eliteCost: 900 },
+        Dryad:     { off: "Quick Blades 10/0",  def: "Pikemen 0/11",   elite: "Golems 16/3",           specCost: 350, eliteCost: 800 }
     }[race];
 
     if (!units) return;
@@ -2437,6 +2565,7 @@ function buildMilitaryTable() {
             calculateEliteNeeded();
             calculateTPA();
             updateExpandRows();
+            updateMilitaryAnalysis();
         };
 
         if (curInput) curInput.addEventListener('input', recalculateAll);
@@ -2447,6 +2576,13 @@ function buildMilitaryTable() {
     function getOffSpecBonus() {
         const pers = document.getElementById('pers')?.value;
         if (pers === "War Hero") return 2;
+        return 0;
+    }
+
+    function getEliteBonusForDisplay() {
+        const pers = document.getElementById('pers')?.value;
+        if (pers === "General") return 2;           // +2 Offensive Elite
+        if (pers === "Cleric") return 0;            // Cleric bonus is defensive only
         return 0;
     }
 
@@ -2465,8 +2601,58 @@ function buildMilitaryTable() {
         'curOff', 'trainOff', units.specCost
     );
 
-    addRow(units.def,   'curDef',   'trainDef',   units.specCost);
-    addRow(units.elite, 'curElite', 'trainElite', units.eliteCost);
+    // Defensive Specialists (for Cleric +1)
+    addRow(
+        (() => {
+            const pers = document.getElementById('pers')?.value;
+            let baseDef = units.def;
+            
+            if (pers === "Cleric") {
+                // Safer way to add +1 to defense
+                const parts = baseDef.match(/(.+?)\s(\d+)\/(\d+)/);
+                if (parts) {
+                    const name = parts[1];
+                    const off = parts[2];
+                    const def = parseInt(parts[3]) + 1;
+                    baseDef = `${name} ${off}/${def}`;
+                }
+            }
+            return baseDef;
+        })(),
+        'curDef', 'trainDef', units.specCost
+    );
+
+    // Elites (for General +2 Off and Cleric +1 Def)
+    addRow(
+        (() => {
+            const pers = document.getElementById('pers')?.value;
+            let baseElite = units.elite;
+            
+            if (pers === "General") {
+                // +2 Offensive Elite
+                const parts = baseElite.match(/(.+?)\s(\d+)\/(\d+)/);
+                if (parts) {
+                    const name = parts[1];
+                    const off = parseInt(parts[2]) + 2;
+                    const def = parts[3];
+                    baseElite = `${name} ${off}/${def}`;
+                }
+            } 
+            else if (pers === "Cleric") {
+                // +1 Defensive Elite
+                const parts = baseElite.match(/(.+?)\s(\d+)\/(\d+)/);
+                if (parts) {
+                    const name = parts[1];
+                    const off = parts[2];
+                    const def = parseInt(parts[3]) + 1;
+                    baseElite = `${name} ${off}/${def}`;
+                }
+            }
+            return baseElite;
+        })(),
+        'curElite', 'trainElite', units.eliteCost
+    );
+
     addRow("Thieves",   'curThief', 'trainThief', 500, true);
 
     applyNumberFormatting();
@@ -2479,6 +2665,7 @@ function buildMilitaryTable() {
         calculateDefNeeded();
         calculateEliteNeeded();
         calculateTPA();
+        refreshAnalysisListeners();
     }, 50);
 
     // Safety listeners
@@ -2513,15 +2700,16 @@ function updateTargetRatios() {
 function getOspecStrength(race) {
     const baseValues = {
         Avian: 12,
-        "Dark Elf": 15,
+        "Dark Elf": 14,
         Dwarf: 10,
         Elf: 10,
         Faery: 10,
-        Halfling: 10,
-        Human: 12,
+        Halfling: 11,
+        Human: 15,
         Orc: 13,
         Undead: 11,
-        Gnome: 11
+        Gnome: 11,
+        Dryad: 10
     };
 
     const base = baseValues[race] || 10;
@@ -2532,7 +2720,24 @@ function getOspecStrength(race) {
     return base + warHeroBonus;
 }
 
-// === CALCULATE OSPA ===
+// === Get Honor Multiplier for Offense ===
+function getHonorMultiplier() {
+    const title = document.getElementById('title').value || 'Peasant';
+    const multipliers = {
+        'Peasant': 1.00,
+        'Knight/Lady': 1.01,
+        'Lord/Noble Lady': 1.02,
+        'Baron/Baroness': 1.03,
+        'Viscount/Viscountess': 1.04,
+        'Count/Countess': 1.06,
+        'Marquis/Marchioness': 1.08,
+        'Duke/Duchess': 1.10,
+        'Prince/Princess': 1.12
+    };
+    return multipliers[title] || 1.00;
+}
+
+// === CALCULATE OSPA (now includes Honor) ===
 function calculateOffNeeded() {
     const acres = parseInt(document.getElementById('acres').value) || 0;
     const targetOSPA = parseFloat(document.getElementById('raw1').value) || 0;
@@ -2547,14 +2752,16 @@ function calculateOffNeeded() {
     // === FINAL OSPEC STRENGTH (includes War Hero) ===
     const offValue = getOspecStrength(race);
 
-    // Safety check
     const safeOffValue = offValue > 0 ? offValue : 10;
 
-    // === TARGET CALCULATION ===
     const pointsPerAcre = acres * targetOSPA;
     const totalOffPointsTarget = pointsPerAcre * 10;
 
-    const adjusted = totalOffPointsTarget / (ome / 100);
+    let adjusted = totalOffPointsTarget / (ome / 100);
+
+    // === NEW: Apply Honor Multiplier ===
+    const honorMult = getHonorMultiplier();
+    adjusted = adjusted * honorMult;
 
     const totalSpecsNeeded = Math.round(adjusted / safeOffValue);
 
@@ -2568,13 +2775,10 @@ function calculateOffNeeded() {
         const trainCostEl = expandRow.querySelector('.train-cost');
 
         if (trainAmountEl) {
-            trainAmountEl.textContent =
-                Math.max(0, needToTrain).toLocaleString();
+            trainAmountEl.textContent = Math.max(0, needToTrain).toLocaleString();
         }
-
         if (trainCostEl) {
-            trainCostEl.textContent =
-                '$' + (Math.max(0, needToTrain) * 350).toLocaleString();
+            trainCostEl.textContent = '$' + (Math.max(0, needToTrain) * 350).toLocaleString();
         }
     }
 
@@ -2592,8 +2796,19 @@ function calculateDefNeeded() {
     const total = ownedDef + trainingDef;
 
     const race = document.getElementById('race').value;
-    const defValues = { Avian:10, "Dark Elf":11, Dwarf:10, Elf:13, Faery:10, Halfling:10, Human:10, Orc:10, Undead:10, Gnome:10 };
-    const defValue = defValues[race] || 10;
+    const pers = document.getElementById('pers')?.value || "Artisan";
+
+    const defValues = { 
+        Avian:10, "Dark Elf":12, Dwarf:10, Elf:13, Faery:10, 
+        Halfling:10, Human:12, Orc:10, Undead:10, Gnome:10, Dryad:11 
+    };
+
+    let defValue = defValues[race] || 10;
+
+    // Cleric +1 Defensive Specialist Strength
+    if (pers === "Cleric") {
+        defValue += 1;
+    }
 
     const pointsPerAcre = acres * targetDSPA;
     const totalDefPointsTarget = pointsPerAcre * 10;
@@ -2634,30 +2849,45 @@ function calculateEliteNeeded() {
     const total = owned + training;
 
     const race = document.getElementById('race').value.trim();
+    const pers = document.getElementById('pers')?.value || "Artisan";
 
-    // === FULL RACE LIST - RELIABLE LOOKUP ===
+    // === FULL RACE LIST + PERSONALITY BONUSES ===
     const eliteStrength = {
-        "Avian":     { off: 16, def: 3 },
-        "Dark Elf":  { off: 4,  def: 12 },
-        "Dwarf":     { off: 15, def: 5 },
-        "Elf":       { off: 15, def: 4 },
+        "Avian":     { off: 16, def: 2 },
+        "Dark Elf":  { off: 16, def: 2 },
+        "Dwarf":     { off: 15, def: 7 },
+        "Elf":       { off: 14, def: 4 },
         "Faery":     { off: 4,  def: 16 },
-        "Halfling":  { off: 6, def: 12 },
-        "Human":     { off: 16, def: 3 },
-        "Orc":       { off: 18, def: 2 },
-        "Undead":    { off: 17, def: 4 },
-        "Gnome":     { off: 14, def: 4 }
+        "Halfling":  { off: 10, def: 13 },
+        "Human":     { off: 15, def: 5 },
+        "Orc":       { off: 18, def: 3 },
+        "Undead":    { off: 16, def: 4 },
+        "Gnome":     { off: 14, def: 4 },
+        "Dryad":     { off: 16, def: 3 }
     };
 
+    let eliteOff = eliteStrength[race] ? eliteStrength[race].off || 10 : 10;
+    let eliteDef = eliteStrength[race] ? eliteStrength[race].def || 10 : 10;
+
+    // General: +2 Offensive Elite Strength
+    if (pers === "General") {
+        eliteOff += 2;
+    }
+
+    // Cleric: +1 Defensive Elite Strength
+    if (pers === "Cleric") {
+        eliteDef += 1;
+    }
+
     const modeKey = (mode === "offense") ? "off" : "def";
-    const strengthPerElite = eliteStrength[race] ? eliteStrength[race][modeKey] || 10 : 10;
+    const strengthPerElite = (modeKey === "off") ? eliteOff : eliteDef;
 
     console.log(`Race="${race}" | Mode=${mode} | Strength/Elite=${strengthPerElite}`);
 
     const eliteCosts = {
-        "Avian": 750, "Dark Elf": 750, "Dwarf": 800, "Elf": 750,
-        "Faery": 1000, "Halfling": 700, "Human": 750, "Orc": 800,
-        "Undead": 800, "Gnome": 900
+        "Avian": 750, "Dark Elf": 700, "Dwarf": 900, "Elf": 700,
+        "Faery": 1150, "Halfling": 900, "Human": 800, "Orc": 850,
+        "Undead": 800, "Gnome": 900, "Dryad": 800
     };
     const costPerUnit = eliteCosts[race] || 900;
 
@@ -2703,6 +2933,7 @@ function setupEliteMode() {
         radio.addEventListener('change', () => {
             save();
             calculateEliteNeeded();
+            updateMilitaryAnalysis();
         });
     });
 
@@ -2752,9 +2983,9 @@ function updateGrandTotal() {
     // Calculate total cost
     const race = document.getElementById('race').value;
     const eliteCosts = {
-        "Avian":750, "Dark Elf":750, "Dwarf":800, "Elf":750,
-        "Faery":1000, "Halfling":700, "Human":750, "Orc":800,
-        "Undead":800, "Gnome":900
+        "Avian":750, "Dark Elf":700, "Dwarf":900, "Elf":700,
+        "Faery":1150, "Halfling":900, "Human":800, "Orc":850,
+        "Undead":800, "Gnome":900, "Dryad":800
     };
     const eliteCostPer = eliteCosts[race] || 900;
 
@@ -3214,6 +3445,8 @@ function toggleTargets() {
     const content = document.getElementById("targetsContent");
     const toggle = document.getElementById("targetsToggle");
 
+    if (!box) return;
+
     const isCollapsed = box.classList.toggle("collapsed");
 
     if (isCollapsed) {
@@ -3226,8 +3459,36 @@ function toggleTargets() {
         toggle.style.left = "740px";
     }
 
-    // Save state
     localStorage.setItem("rawModTargetsCollapsed", isCollapsed);
+
+    // Force full refresh
+    syncAnalysisWidth();
+    setTimeout(() => {
+        updateMilitaryAnalysis();   // rebuild table with correct columns
+    }, 10);
+}
+
+// === MILITARY ANALYSIS TOGGLE ===
+function toggleAnalysis() {
+    const box = document.querySelector('.military-analysis-box');
+    const toggle = document.getElementById("analysisToggle");
+
+    if (!box || !toggle) return;
+
+    const isCollapsed = box.classList.toggle('collapsed');
+
+    // Update arrow
+    if (isCollapsed) {
+        toggle.innerHTML = "▲";
+    } else {
+        toggle.innerHTML = "▼";
+    }
+
+    // Save state
+    localStorage.setItem("analysisBoxCollapsed", isCollapsed);
+
+    // Sync width when toggling
+    syncAnalysisWidth();
 }
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -3278,6 +3539,256 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
 });
+
+// === SMOOTH WIDTH SYNC FOR ANALYSIS TABLE ===
+function syncAnalysisWidth() {
+    const rawModBox = document.querySelector('.raw-mod-box');
+    const analysisBox = document.querySelector('.military-analysis-box');
+    
+    if (!rawModBox || !analysisBox) return;
+
+    const isExpanded = !rawModBox.classList.contains('collapsed');
+    
+    if (isExpanded) {
+        analysisBox.style.width = '770px';
+    } else {
+        analysisBox.style.width = '520px';
+    }
+
+    // Force table re-layout
+    const table = document.getElementById('analysisTable');
+    if (table) {
+        table.style.tableLayout = 'fixed';
+    }
+}
+
+// Override toggleTargets to sync immediately
+const originalToggleTargets = toggleTargets || function(){};
+
+toggleTargets = function() {
+    originalToggleTargets.call(this);        // Run original animation
+    syncAnalysisWidth();                     // Sync width instantly
+};
+
+// Initial sync
+window.addEventListener('load', () => {
+    setTimeout(syncAnalysisWidth, 150);
+});
+
+// Also sync when window resizes (safety)
+window.addEventListener('resize', syncAnalysisWidth);
+
+// === MISSING HELPER: Elite Offensive Strength ===
+function getEliteOffStrength(race) {
+    const eliteOffValues = {
+        Avian: 16,
+        "Dark Elf": 16,
+        Dwarf: 15,
+        Elf: 14,
+        Faery: 4,
+        Halfling: 10,
+        Human: 15,
+        Orc: 18,
+        Undead: 16,
+        Gnome: 14,
+        Dryad: 16
+    };
+    return eliteOffValues[race] || 16;
+}
+
+// === Get Dspec Strength ===
+function getDspecStrength(race) {
+    const baseValues = {
+        Avian: 10,
+        "Dark Elf": 12,
+        Dwarf: 10,
+        Elf: 13,
+        Faery: 10,
+        Halfling: 10,
+        Human: 12,
+        Orc: 10,
+        Undead: 10,
+        Gnome: 10,
+        Dryad: 11
+    };
+    return baseValues[race] || 10;
+}
+
+// === Get Elite Defensive Strength ===
+function getEliteDefStrength(race) {
+    const eliteDefValues = {
+        "Avian": 2,
+        "Dark Elf": 2,
+        "Dwarf": 7,
+        "Elf": 4,
+        "Faery": 16,
+        "Halfling": 13,
+        "Human": 5,
+        "Orc": 3,
+        "Undead": 4,
+        "Gnome": 4,
+        "Dryad": 3
+    };
+    return eliteDefValues[race] || 4;
+}
+
+// === ANALYSIS LISTENERS (handles rebuilds) ===
+function attachAnalysisListeners() {
+    const watchIds = ['ome', 'race', 'pers', 'curOff', 'trainOff', 'curElite', 'trainElite'];
+
+    watchIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.removeEventListener('input', updateMilitaryAnalysis);
+            el.removeEventListener('change', updateMilitaryAnalysis);
+            
+            el.addEventListener('input', updateMilitaryAnalysis);
+            el.addEventListener('change', updateMilitaryAnalysis);
+        }
+    });
+}
+
+function refreshAnalysisListeners() {
+    setTimeout(() => {
+        attachAnalysisListeners();
+        updateMilitaryAnalysis();
+    }, 30);
+}
+
+function updateAnalysisHeader(showTraining) {
+
+    const thead = document.querySelector("#analysisTable thead");
+
+    thead.innerHTML = `
+        <tr>
+            <th style="text-align: left; padding-left: 12px;">Generals</th>
+            <th>Offense</th>
+            <th>Defense</th>
+
+            ${showTraining ? `
+                <th>Off (Training)</th>
+                <th>Def (Training)</th>
+            ` : ""}
+        </tr>
+    `;
+}
+
+// === MILITARY ANALYSIS USING GRID ===
+function updateMilitaryAnalysis() {
+    const container = document.getElementById('analysisTable');
+    if (!container) return;
+
+    const rawModBox = document.querySelector('.raw-mod-box');
+    const isExpanded = rawModBox && !rawModBox.classList.contains('collapsed');
+
+    // Force correct column count
+    if (!isExpanded) {
+        container.style.gridTemplateColumns = "180px 100px 210px";
+    } else {
+        container.style.gridTemplateColumns = "180px 100px 210px 140px 130px";
+    }
+
+    // Clear everything
+    container.innerHTML = "";
+
+    // Rebuild headers
+    const headers = ["Generals", "Offense", "Defense"];
+    headers.forEach(text => {
+        const div = document.createElement("div");
+        div.className = "analysis-header";
+        div.textContent = text;
+        container.appendChild(div);
+    });
+
+    if (isExpanded) {
+        ["Off (Training)", "Def (Training)"].forEach(text => {
+            const div = document.createElement("div");
+            div.className = "analysis-header training-col";
+            div.textContent = text;
+            container.appendChild(div);
+        });
+    }
+
+    // Data rows
+    const ome = parseFloat(document.getElementById('ome')?.value) || 100;
+    const dme = parseFloat(document.getElementById('dme')?.value) || 100;
+    const pers = document.getElementById('pers')?.value || "Artisan";
+    const race = document.getElementById('race').value;
+
+    const maxGens = (pers === "General") ? 5 : 4;
+
+    const ownedOff = getNumber('curOff');
+    const ownedDef = getNumber('curDef');
+    const ownedElite = getNumber('curElite');
+
+    const offSpecStrength = getOspecStrength(race);
+    const defSpecStrength = getDspecStrength(race);
+    const eliteOffStrength = getEliteOffStrength(race);
+    const eliteDefStrength = getEliteDefStrength(race);
+
+    const honorMult = getHonorMultiplier();
+
+    const eliteModeEl = document.querySelector('input[name="eliteMode"]:checked');
+    const useEliteOffense = eliteModeEl && eliteModeEl.value === "offense";
+    const useEliteDefense = !useEliteOffense;
+
+    for (let gens = 1; gens <= maxGens; gens++) {
+        const generalBonus = (gens - 1) * 0.05;
+
+        let rawOffense = ownedOff * offSpecStrength;
+        if (useEliteOffense) rawOffense += ownedElite * eliteOffStrength;
+        const offMultiplier = (ome / 100) * (1 + generalBonus) * honorMult;
+        const finalOffense = Math.round(rawOffense * offMultiplier);
+
+        let rawDefense = ownedDef * defSpecStrength;
+        if (useEliteDefense) rawDefense += ownedElite * eliteDefStrength;
+        const defMultiplier = (dme / 100) * 1.00;
+        const finalDefense = Math.round(rawDefense * defMultiplier);
+
+        const genCell = document.createElement('div');
+        genCell.textContent = `${gens} General${gens > 1 ? 's' : ''}`;
+
+        const offCell = document.createElement('div');
+        offCell.textContent = finalOffense.toLocaleString();
+
+        const defCell = document.createElement('div');
+        defCell.textContent = (gens === 1) ? finalDefense.toLocaleString() : '—';
+
+        container.appendChild(genCell);
+        container.appendChild(offCell);
+        container.appendChild(defCell);
+
+        if (isExpanded) {
+            const offTrainCell = document.createElement('div');
+            offTrainCell.textContent = '—';
+            offTrainCell.classList.add('training-col');
+            container.appendChild(offTrainCell);
+
+            const defTrainCell = document.createElement('div');
+            defTrainCell.textContent = '—';
+            defTrainCell.classList.add('training-col');
+            container.appendChild(defTrainCell);
+        }
+    }
+}
+
+// Restore analysis collapsed state
+function restoreAnalysisState() {
+    const box = document.querySelector('.military-analysis-box');
+    const toggle = document.getElementById("analysisToggle");
+    
+    if (!box || !toggle) return;
+
+    const savedState = localStorage.getItem("analysisBoxCollapsed");
+    
+    if (savedState === "true") {
+        box.classList.add('collapsed');
+        toggle.innerHTML = "▲";
+    } else {
+        box.classList.remove('collapsed');
+        toggle.innerHTML = "▼";
+    }
+}
 </script>
 <script>
 window.addEventListener('load', () => {
@@ -3295,37 +3806,42 @@ window.addEventListener('load', () => {
         if (typeof setupEliteMode === "function") setupEliteMode();
 
         // === RESTORE UI STATE ===
-        const isCollapsed = localStorage.getItem("rawModTargetsCollapsed");
-        const box = document.querySelector(".raw-mod-box");
-        const content = document.getElementById("targetsContent");
-        const toggle = document.getElementById("targetsToggle");
+        const isModCollapsed = localStorage.getItem("rawModTargetsCollapsed");
+        const modBox = document.querySelector(".raw-mod-box");
+        const modContent = document.getElementById("targetsContent");
+        const modToggle = document.getElementById("targetsToggle");
 
-        if (box && content && toggle) {
-            if (isCollapsed === "true") {
-                box.classList.add("collapsed");
-                content.style.display = "none";
-                toggle.innerHTML = "▶";
-                toggle.style.left = "490px";
+        if (modBox && modContent && modToggle) {
+            if (isModCollapsed === "true") {
+                modBox.classList.add("collapsed");
+                modContent.style.display = "none";
+                modToggle.innerHTML = "▶";
+                modToggle.style.left = "490px";
             } else {
-                box.classList.remove("collapsed");
-                content.style.display = "block";
-                toggle.innerHTML = "◀";
-                toggle.style.left = "740px";
+                modBox.classList.remove("collapsed");
+                modContent.style.display = "block";
+                modToggle.innerHTML = "◀";
+                modToggle.style.left = "740px";
             }
         }
+
+// Restore Analysis Box state
+restoreAnalysisState();
+syncAnalysisWidth();
+attachAnalysisListeners();
 
         // === CALCULATIONS ===
         setTimeout(() => {
             if (typeof updateHousingScienceDisplay === "function") updateHousingScienceDisplay();
             if (typeof calculateTotalArmy === "function") calculateTotalArmy();
             if (typeof calculateTotalPopulation === "function") calculateTotalPopulation();
-
             if (typeof calculateTPA === "function") calculateTPA();
             if (typeof calculateOffNeeded === "function") calculateOffNeeded();
             if (typeof calculateDefNeeded === "function") calculateDefNeeded();
             if (typeof updateExpandRows === "function") updateExpandRows();
             if (typeof updateAllTrainingCosts === "function") updateAllTrainingCosts();
             if (typeof calculateEliteNeeded === "function") calculateEliteNeeded();
+            if (typeof updateMilitaryAnalysis === "function") updateMilitaryAnalysis();
         }, 250);
 
 
@@ -3402,14 +3918,49 @@ window.addEventListener('load', () => {
         if (trainingEl) trainingEl.addEventListener('input', calculateDates);
         if (draftEl) draftEl.addEventListener('input', calculateDates);
 
-        // === POPULATION LISTENERS ===
-        ['race', 'title'].forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
+        // === LISTENERS FOR BOTH OFFENSE AND DEFENSE ===
+                ['race', 'pers', 'title', 'ome', 'dme'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
 
-            el.addEventListener('change', calculateTotalPopulation);
-            el.addEventListener('input', calculateTotalPopulation);
-        });
+                    const triggerUpdate = () => {
+                        calculateTotalPopulation();
+                        updateMilitaryAnalysis();
+                    };
+
+                    el.addEventListener('change', triggerUpdate);
+            
+                    // Extra input listener for OME/DME (live updates)
+                    if (id === 'ome' || id === 'dme') {
+                        el.addEventListener('input', triggerUpdate);
+                    }
+                });
+
+        // === UPDATE ANALYSIS TABLE LIVE (Fixed) ===
+        function attachAnalysisListeners() {
+            const watchIds = ['ome', 'race', 'pers', 'curOff', 'trainOff', 'curElite', 'trainElite'];
+
+            watchIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    // Remove old listeners to prevent duplicates
+                    el.removeEventListener('input', updateMilitaryAnalysis);
+                    el.removeEventListener('change', updateMilitaryAnalysis);
+            
+                    el.addEventListener('input', updateMilitaryAnalysis);
+                    el.addEventListener('change', updateMilitaryAnalysis);
+                }
+            });
+
+            // Also trigger when race/personality changes rebuild military table
+            const raceSelect = document.getElementById('race');
+            if (raceSelect) {
+                raceSelect.addEventListener('change', () => {
+                    buildMilitaryTable();
+                    refreshAnalysisListeners();
+                });
+            }
+        }
 
     } catch (e) {
         console.error("Planner crashed:", e);
