@@ -1634,15 +1634,86 @@ function updateTotalSoldiers() {
 </script>
 
 <script>
-// === GENERAL TRAINING COST MODIFIER ===
+// === GENERAL (Personality) + HUMAN (Race) TRAINING COST MODIFIER ===
 function getUnitTrainingCost(baseCost) {
     const pers = document.getElementById('pers')?.value || "";
+    const race = document.getElementById('race')?.value || "";
+    let multiplier = 1.0;
 
+    // General Personality: -25% training cost
     if (pers === "General") {
-        return Math.round(baseCost * 0.8);
+        multiplier *= 0.75;
     }
 
-    return baseCost;
+    // Human Race: -30% training cost
+    if (race === "Human") {
+        multiplier *= 0.70;
+    }
+
+    return Math.round(baseCost * multiplier);
+}
+
+// ==== UPDATE ALL EXPAND ROW COSTS (when race or personality changes) ====
+function updateAllTrainingCosts() {
+    // Force recalc first so amounts are up-to-date
+    calculateOffNeeded();
+    calculateDefNeeded();
+    calculateEliteNeeded();
+    calculateTPA();
+
+    const race = document.getElementById('race').value;
+
+    // OSPEC
+    const offExpand = document.getElementById('curOffExpand');
+    if (offExpand) {
+        const amountEl = offExpand.querySelector('.train-amount');
+        const costEl = offExpand.querySelector('.train-cost');
+        if (amountEl && costEl) {
+            const amount = parseInt(amountEl.textContent.replace(/,/g,'')) || 0;
+            costEl.textContent = '$' + (amount * getUnitTrainingCost(350)).toLocaleString();
+        }
+    }
+
+    // DSPEC
+    const defExpand = document.getElementById('curDefExpand');
+    if (defExpand) {
+        const amountEl = defExpand.querySelector('.train-amount');
+        const costEl = defExpand.querySelector('.train-cost');
+        if (amountEl && costEl) {
+            const amount = parseInt(amountEl.textContent.replace(/,/g,'')) || 0;
+            costEl.textContent = '$' + (amount * getUnitTrainingCost(350)).toLocaleString();
+        }
+    }
+
+    // ELITES
+    const eliteExpand = document.getElementById('curEliteExpand');
+    if (eliteExpand) {
+        const amountEl = eliteExpand.querySelector('.train-amount');
+        const costEl = eliteExpand.querySelector('.train-cost');
+        if (amountEl && costEl) {
+            const eliteCosts = {
+                "Avian":750,"Dark Elf":700,"Dwarf":900,"Elf":700,
+                "Faery":1150,"Halfling":900,"Human":800,"Orc":850,
+                "Undead":800,"Gnome":900,"Dryad":800
+            };
+            const baseEliteCost = eliteCosts[race] || 900;
+            const amount = parseInt(amountEl.textContent.replace(/,/g,'')) || 0;
+            costEl.textContent = '$' + (amount * getUnitTrainingCost(baseEliteCost)).toLocaleString();
+        }
+    }
+
+    // Thieves
+    const thiefExpand = document.getElementById('curThiefExpand');
+    if (thiefExpand) {
+        const amountEl = thiefExpand.querySelector('.train-amount');
+        const costEl = thiefExpand.querySelector('.train-cost');
+        if (amountEl && costEl) {
+            const amount = parseInt(amountEl.textContent.replace(/,/g,'')) || 0;
+            costEl.textContent = '$' + (amount * getThiefCostWithPersonality()).toLocaleString();
+        }
+    }
+
+    updateGrandTotal();
 }
 </script>
 
@@ -1820,7 +1891,7 @@ window.addEventListener('storage', (e) => {
 
 <!-- HEADER -->
 <div class="header-section">
-    <h1>Utopia Province Planner - AGE 116</h1>
+    <h1>Utopia Province Planner - AGE 115</h1>
 
 <!-- POPULATION -->
 <div class="planner-summary-box">
@@ -2491,20 +2562,12 @@ function buildMilitaryTable() {
     if (!units) return;
 
     const addRow = (name, curId, trainId, baseCost, isThief = false) => {
-        let finalCost = baseCost;
-
-        if (isThief) {
-            finalCost = getThiefCostWithPersonality();
-        } else {
-            finalCost = getUnitTrainingCost(baseCost);
-        }
-
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${name}</td>
             <td><input type="text" class="number-input mil-input" id="${curId}" value="0"></td>
             <td><input type="text" class="number-input mil-input" id="${trainId}" value="0"></td>
-            <td>$${finalCost.toLocaleString()}</td>
+            <td>$${getUnitTrainingCost(baseCost).toLocaleString()}</td>
         `;
         tableBody.appendChild(row);
 
@@ -2514,7 +2577,6 @@ function buildMilitaryTable() {
         const cleanName = name.replace(/\s\d+\/\d+$/, '');
 
         if (isThief) {
-            // === GRAND TOTAL ROW ===
             expandRow.innerHTML = `
                 <td colspan="4" style="position: relative; padding-right: 20px;">
                     <span>Train <span class="train-amount">0</span> ${cleanName} | Cost: <span class="train-cost">$0</span></span>
@@ -2649,6 +2711,7 @@ function buildMilitaryTable() {
     setTimeout(() => {
         updateTargetRatios();
         updateExpandRows();
+        updateAllTrainingCosts();
         calculateOffNeeded();
         calculateDefNeeded();
         calculateEliteNeeded();
@@ -2737,37 +2800,26 @@ function calculateOffNeeded() {
 
     const race = document.getElementById('race').value;
 
-    // === FINAL OSPEC STRENGTH (includes War Hero) ===
     const offValue = getOspecStrength(race);
-
     const safeOffValue = offValue > 0 ? offValue : 10;
 
     const pointsPerAcre = acres * targetOSPA;
     const totalOffPointsTarget = pointsPerAcre * 10;
 
     let adjusted = totalOffPointsTarget / (ome / 100);
-
-    // === NEW: Apply Honor Multiplier ===
     const honorMult = getHonorMultiplier();
     adjusted = adjusted * honorMult;
 
     const totalSpecsNeeded = Math.round(adjusted / safeOffValue);
-
     const needToTrain = totalSpecsNeeded - total;
 
-    // === UI UPDATE ===
     const expandRow = document.getElementById('curOffExpand');
-
     if (expandRow) {
         const trainAmountEl = expandRow.querySelector('.train-amount');
         const trainCostEl = expandRow.querySelector('.train-cost');
 
-        if (trainAmountEl) {
-            trainAmountEl.textContent = Math.max(0, needToTrain).toLocaleString();
-        }
-        if (trainCostEl) {
-            trainCostEl.textContent = '$' + (Math.max(0, needToTrain) * 350).toLocaleString();
-        }
+        if (trainAmountEl) trainAmountEl.textContent = Math.max(0, needToTrain).toLocaleString();
+        if (trainCostEl) trainCostEl.textContent = '$' + (Math.max(0, needToTrain) * getUnitTrainingCost(350)).toLocaleString();
     }
 
     updateGrandTotal();
@@ -2792,23 +2844,20 @@ function calculateDefNeeded() {
     };
 
     let defValue = defValues[race] || 10;
-
-    // Cleric +1 Defensive Specialist Strength
-    if (pers === "Cleric") {
-        defValue += 1;
-    }
+    if (pers === "Cleric") defValue += 1;
 
     const pointsPerAcre = acres * targetDSPA;
     const totalDefPointsTarget = pointsPerAcre * 10;
     const adjusted = totalDefPointsTarget / (dme / 100);
     const totalSpecsNeeded = Math.round(adjusted / defValue);
-
     const needToTrain = totalSpecsNeeded - total;
 
     const expandRow = document.getElementById('curDefExpand');
     if (expandRow) {
-        expandRow.querySelector('.train-amount').textContent = Math.max(0, needToTrain).toLocaleString();
-        expandRow.querySelector('.train-cost').textContent = '$' + (Math.max(0, needToTrain) * getUnitTrainingCost(350)).toLocaleString();
+        const trainAmountEl = expandRow.querySelector('.train-amount');
+        const trainCostEl = expandRow.querySelector('.train-cost');
+        if (trainAmountEl) trainAmountEl.textContent = Math.max(0, needToTrain).toLocaleString();
+        if (trainCostEl) trainCostEl.textContent = '$' + (Math.max(0, needToTrain) * getUnitTrainingCost(350)).toLocaleString();
     }
 
     updateGrandTotal();
@@ -2890,7 +2939,7 @@ function calculateEliteNeeded() {
         const amountEl = expandRow.querySelector('.train-amount');
         const costEl   = expandRow.querySelector('.train-cost');
         if (amountEl) amountEl.textContent = needToTrain.toLocaleString();
-        if (costEl)   costEl.textContent   = '$' + (needToTrain * costPerUnit).toLocaleString();
+        if (costEl)   costEl.textContent   = '$' + (needToTrain * getUnitTrainingCost(costPerUnit)).toLocaleString();
     }
 
     // Update mod target
@@ -2994,10 +3043,6 @@ function updateGrandTotal() {
             grandEl.style.color = "#4ade80";
         }
     }
-}
-
-// ==== UPDATE TRAIN AMOUNTS + COSTS (Only for non-calculated units) ====
-function updateAllTrainingCosts() {
 }
 
 function applyNumberFormatting() {
