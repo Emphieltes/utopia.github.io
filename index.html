@@ -1020,28 +1020,7 @@ input[type=number] {
     box-sizing: border-box;
     text-align: left;
 }
-/* ==================== COLUMN ALIGNMENT ==================== */
 
-/* Expanded (5-column layout) */
-#analysisTable > div:nth-child(5n+1) {
-    text-align: left;
-}
-#analysisTable > div:nth-child(5n+2),
-#analysisTable > div:nth-child(5n+3) {
-    text-align: left;
-}
-/* Collapsed (3-column layout) */
-.raw-mod-box.collapsed ~ .military-analysis-box
-#analysisTable > div:nth-child(3n+1) {
-    text-align: left;
-}
-.raw-mod-box.collapsed ~ .military-analysis-box
-#analysisTable > div:nth-child(3n+2),
-
-.raw-mod-box.collapsed ~ .military-analysis-box
-#analysisTable > div:nth-child(3n+3) {
-    text-align: left;
-}
 /* ==================== TRAINING COLUMNS ==================== */
 .training-col {
     text-align: left;
@@ -1050,28 +1029,26 @@ input[type=number] {
 .raw-mod-box.collapsed ~ .military-analysis-box .training-col {
     display: none !important;
 }
-/* ==================== NUMBER STYLING ==================== */
 
-/* Expanded */
-#analysisTable > div:not(.analysis-header):nth-child(5n+2),
-#analysisTable > div:not(.analysis-header):nth-child(5n+3),
-#analysisTable > div:not(.analysis-header):nth-child(5n+4),
-#analysisTable > div:not(.analysis-header):nth-child(5n+5) {
-    font-style: italic;
+/* ==================== NUMBER STYLING ==================== */
+/* General column */
+.analysis-general {
+    color: var(--text);
+    font-style: normal;
+    font-weight: normal;
+    font-size: 0.90rem;
+}
+/* Offense, Defense and Training numbers */
+.analysis-offense,
+.analysis-defense,
+.analysis-offtraining,
+.analysis-deftraining {
     color: #8fa6c9 !important;
+    font-style: italic;
     font-weight: normal;
     font-size: 0.85rem;
 }
-/* Collapsed */
-.raw-mod-box.collapsed ~ .military-analysis-box 
-#analysisTable > div:not(.analysis-header):nth-child(3n+2),
-.raw-mod-box.collapsed ~ .military-analysis-box 
-#analysisTable > div:not(.analysis-header):nth-child(3n+3) {
-    font-style: italic;
-    color: #8fa6c9 !important;
-    font-weight: normal;
-    font-size: 0.85rem;
-}
+
 /* ==================== LAST ROW ==================== */
 /* Expanded */
 #analysisTable > div:nth-last-child(-n+5) {
@@ -1373,11 +1350,22 @@ resetBtn.addEventListener('click', () => {
 
   // ==== RESET MILITARY ====
   setTimeout(() => {
+    // Reset all inputs in the military table
     document.querySelectorAll('#militaryTable input').forEach(input => {
       input.value = 0;
     });
 
+    // Explicitly reset Soldiers (hidden input outside the table)
+    const soldiersInput = document.getElementById('curSoldiers');
+    if (soldiersInput) {
+      soldiersInput.value = "0";
+    }
+
     calculateTotalArmy();
+    updateTotalSoldiers();   // Update top bar display
+
+    // Force save clean state after reset
+    savePlannerData();
   }, 0);
 
   // ==== RESET OME / DME ====
@@ -1832,7 +1820,7 @@ window.addEventListener('storage', (e) => {
 
 <!-- HEADER -->
 <div class="header-section">
-    <h1>Utopia Province Planner - AGE 115</h1>
+    <h1>Utopia Province Planner - AGE 116</h1>
 
 <!-- POPULATION -->
 <div class="planner-summary-box">
@@ -3308,7 +3296,7 @@ function savePlannerData() {
     // ✅ Save Soldiers (NOT in military table)
     const soldiersInput = document.getElementById('curSoldiers');
     if (soldiersInput) {
-        saved.curSoldiers = soldiersInput.value.replace(/,/g, '');
+        saved.curSoldiers = soldiersInput.value.replace(/,/g, '') || "0";
     }
 
     localStorage.setItem('utopiaPlanner', JSON.stringify(saved));
@@ -3376,6 +3364,15 @@ if (dmeInput) {
     });
 }
 
+// === SOLDIERS SAVE LISTENER ===
+const soldiersInputListener = document.getElementById('curSoldiers');
+if (soldiersInputListener) {
+    soldiersInputListener.addEventListener('input', () => {
+        savePlannerData();
+        updateTotalSoldiers();
+        calculateTotalArmy();
+    });
+}
 // ==== LOAD SAVED DATA ====
 function loadPlannerData() {
     const saved = localStorage.getItem('utopiaPlanner');
@@ -3745,13 +3742,17 @@ function updateMilitaryAnalysis() {
         const defMultiplier = (dme / 100) * 1.00;
         const finalDefense = Math.round(rawDefense * defMultiplier);
 
+        // Create row elements
         const genCell = document.createElement('div');
+        genCell.className = "analysis-general";
         genCell.textContent = `${gens} General${gens > 1 ? 's' : ''}`;
 
         const offCell = document.createElement('div');
+        offCell.className = "analysis-offense";
         offCell.textContent = finalOffense.toLocaleString();
 
         const defCell = document.createElement('div');
+        defCell.className = "analysis-defense";
         defCell.textContent = (gens === 1) ? finalDefense.toLocaleString() : '—';
 
         container.appendChild(genCell);
@@ -3760,13 +3761,13 @@ function updateMilitaryAnalysis() {
 
         if (isExpanded) {
             const offTrainCell = document.createElement('div');
+            offTrainCell.className = "analysis-offtraining training-col";
             offTrainCell.textContent = '—';
-            offTrainCell.classList.add('training-col');
             container.appendChild(offTrainCell);
 
             const defTrainCell = document.createElement('div');
+            defTrainCell.className = "analysis-deftraining training-col";
             defTrainCell.textContent = '—';
-            defTrainCell.classList.add('training-col');
             container.appendChild(defTrainCell);
         }
     }
