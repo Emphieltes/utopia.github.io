@@ -1321,8 +1321,50 @@ function updateBreakpoints() {
         "Normal Build Time", "Builder's Boon", "BB + Double Construction");
 
     const valorPct = getScienceOutputPct("Valor");
-    updateCombinedBreakpoint("valor-breakpoint", valorPct, VALOR_BREAKPOINTS,
-        "Normal Train Time", "Inspire Army");
+
+    updateTrainingBreakpoints(valorPct);
+}
+
+function updateTrainingBreakpoints(valorPct) {
+    const row = document.getElementById("valor-breakpoint");
+    if (!row) return;
+
+    const isVisible = document.getElementById("toggle-breakpoints").checked;
+    row.style.display = isVisible ? "table-row" : "none";
+
+    const td = row.querySelector("td");
+    if (!td) return;
+
+    const baseHours = getBaseTrainingHours();   // Already includes Avian + General
+
+    // === NORMAL ===
+    const normal = getTrainingInfo(baseHours, valorPct);
+
+    // === INSPIRE ARMY (-20%) ===
+    const iaBase = baseHours * 0.8;
+    const ia = getTrainingInfo(iaBase, valorPct);
+
+    // === IA + Haste Ritual (-20% then -25%) ===
+    const bothBase = iaBase * 0.75;
+    const both = getTrainingInfo(bothBase, valorPct);
+
+    // Build clean display string
+    let html = `Normal Train Time: ${normal.current}h | Next: `;
+    html += normal.next !== null 
+        ? `${normal.next}h at ${normal.nextPct}%` 
+        : `--`;
+
+    html += ` | Inspire Army: ${ia.current}h | Next: `;
+    html += ia.next !== null 
+        ? `${ia.next}h at ${ia.nextPct}%` 
+        : `--`;
+
+    html += ` | Haste + Inspire Army: ${both.current}h | Next: `;
+    html += both.next !== null 
+        ? `${both.next}h at ${both.nextPct}%` 
+        : `--`;
+
+    td.innerHTML = html;
 }
 
 function getScienceOutputPct(scienceName) {
@@ -1376,6 +1418,57 @@ function updateSingleBreakpoint(rowId, currentPct, table, label) {
     } else if (table.length > 0) {
         td.textContent = `${label}: ${table[0].hours}h | Next: ${table[0].hours-1}h at ${table[0].pct}%`;
     }
+}
+
+// Base Training Time + Race/Personality
+function getBaseTrainingHours() {
+
+    const { race, pers } = getCurrentRacePers();
+
+    let hours = 24;
+
+    if (race === "Avian") {
+        hours *= 0.75;
+    }
+
+    if (pers === "General") {
+        hours *= 0.75;
+    }
+
+    return hours;
+}
+
+function getTrainingInfo(baseHours, sciPct) {
+    const actualHours = baseHours * (1 - sciPct / 100);
+    let displayedHours = Math.round(actualHours);
+
+    const nextDisplayed = displayedHours - 1;
+    if (nextDisplayed < 1) {
+        return {
+            current: displayedHours,
+            next: null,
+            nextPct: null
+        };
+    }
+
+    const targetHours = nextDisplayed + 0.49;
+    let nextPct = (1 - (targetHours / baseHours)) * 100;
+
+    // Round to nearest tenth
+    nextPct = Math.round(nextPct * 10) / 10;
+
+    // Prevent floating-point rounding errors around zero
+if (Math.abs(nextPct) < 0.1) {
+    nextPct = 0.1;
+}
+
+    console.log(`Valor Debug - Base: ${baseHours.toFixed(2)}h | Next %: ${nextPct}%`); // temporary debug
+
+    return {
+        current: displayedHours,
+        next: nextDisplayed,
+        nextPct: Math.max(0, nextPct)
+    };
 }
 
 function getBreakpointInfo(currentPct, table) {
