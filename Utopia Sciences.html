@@ -432,6 +432,127 @@ tbody tr:hover {
     color: #8fa6c9;
     padding: 4px 8px;
     font-style: italic;
+    position:relative;
+}
+
+/* Valor Caculator Settings */
+.valor-breakpoint-wrapper{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+}
+#valorBreakpointText{
+    flex:1;
+}
+.valor-calc-btn{
+    padding:3px 10px;
+    font-size:12px;
+    font-weight: 600;
+    border:none;
+    border-radius:6px;
+    background: var(--text);
+    color: #2c2c2c;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:0.15s;
+}
+.valor-calc-btn:hover{
+    background:var(--accent);
+    color:white;
+}
+/* Valor Caculator Pop-Up Settings */
+.valor-popup{
+    position:absolute;
+    top:32px;
+    right:0;
+    width:360px;
+    min-width:320px;
+    background:#383838;
+    border:1px solid var(--border);
+    border-radius:10px;
+    box-shadow:0 12px 30px rgba(0,0,0,.55);
+    z-index:9999;
+    box-sizing:border-box;
+}
+.hidden{
+    display:none;
+}
+.valor-popup-header{
+    padding:12px;
+    font-weight:700;
+    border-bottom:1px solid var(--border);
+    color:var(--accent);
+}
+.valor-section-title{
+    font-size:12px;
+    font-weight:700;
+    color:var(--accent);
+    margin:5px 0 5px 0;
+}
+.valor-popup-body > .valor-section-title:first-child{
+    margin-top:0;
+}
+.valor-popup-body{
+    padding:12px;
+}
+.valor-current,
+.valor-target,
+.valor-required{
+    display:block;
+}
+.valor-target-input input{
+    width:56px;
+    height: 23px;
+    padding:6px 8px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background: var(--bg);
+    color: var(--text);
+    text-align:center;
+}
+.valor-target-input span{
+    color: var(--text);
+    font-size:700;
+}
+.valor-required-table,
+.valor-info-table {
+    width:100%;
+    border-collapse:collapse;
+}
+.valor-required-table tr,
+.valor-info-table tr {
+    transition: background-color 0.15s ease;
+}
+.valor-required-table tr:hover,
+.valor-info-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+.valor-required-table td,
+.valor-info-table td {
+    padding:4px 0;
+    color: var(--text);
+}
+.valor-required-table td:first-child,
+.valor-info-table td:first-child {
+    font-size:12px;
+    color:#d0d0d0;
+}
+.valor-required-table td:last-child,
+.valor-info-table td:last-child {
+    font-size:12px;
+    text-align:right;
+    font-weight:bold;
+    color:rgb(255, 255, 255);
+}
+.valor-required-table tr + tr td,
+.valor-info-table tr + tr td {
+    border-top:1px solid rgba(255,255,255,0.08);
+}
+.valor-current-info{   
+    font-size:12px;
+    color:#14bb2a;
+    font-weight:600;
 }
 	
   </style>
@@ -934,7 +1055,83 @@ window.addEventListener('load', updateBonusDisplay);
             <!-- Valor Breakpoints -->
             <tr id="valor-breakpoint" class="breakpoint-row" style="display:none;">
                 <td colspan="6" class="breakpoint-info">
-                    Normal Train Time: --h | Next: -- | Inspire Army: --h | Next: --
+                    <div class="valor-breakpoint-wrapper">
+                        <span id="valorBreakpointText">
+                            Normal Train Time: --h | Next: -- | Inspire Army: --h | Next: --
+                        </span>
+
+                        <button
+                            type="button"
+                            id="valorCalcBtn"
+                            class="valor-calc-btn">
+                            Target Hour
+                        </button>
+                        <div id="valorTargetPopup" class="valor-popup hidden">
+                            <div class="valor-popup-header">
+                                Valor Target Hour Calculator
+                            </div>
+                            <div class="valor-popup-body">
+
+                                <div class="valor-section-title">
+                                    Current Training Times
+                                </div>
+                                <table class="valor-info-table">
+                                    <tr>
+                                        <td>Normal</td>
+                                        <td id="popupNormalTime">-- hrs</td>
+                                    </tr>
+                                    <tr>
+                                        <td id="popupSpellLabel">Inspire Army</td>
+                                        <td id="popupSpellTime">-- hrs</td>
+                                    </tr>
+                                    <tr>
+                                        <td id="popupHasteLabel">Haste + Inspire Army</td>
+                                        <td id="popupHasteTime">-- hrs</td>
+                                    </tr>
+                                </table>
+                                <div class="valor-current">
+                                    <div class="valor-section-title">Current Valor</div>
+
+                                    <div id="valorCurrentInfo" class="valor-current-info">
+                                        --.-% - -- Books Invested
+                                    </div>
+                                </div>
+                                <div class="valor-target">
+                                    <div class="valor-section-title">
+                                        Desired Train Time
+                                    </div>
+                                    <div class="valor-target-input">
+                                        <input
+                                            type="number"
+                                            id="valorTargetHours"
+                                            min="1"
+                                            max="24"
+                                            value="0">
+                                        <span>Hours</span>
+                                    </div>
+                                    <div class="valor-section-title">
+                                        Required Valor
+                                    </div>
+                                    <div class="valor-required">
+                                        <table class="valor-required-table">
+                                            <tr>
+                                                <td>Normal</td>
+                                                <td id="valorNormalResult">--% — -- Books (+--)</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="valorSpellResultLabel">Hero's Inspiration</td>
+                                                <td id="valorSpellResult">--% — -- Books (+--)</td>
+                                            </tr>
+                                            <tr>
+                                                <td id="valorHasteResultLabel">Haste + Hero's Inspiration</td>
+                                                <td id="valorHasteResult">--% — -- Books (+--)</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </td>
             </tr>
             <!-- HEROISM -->
@@ -1340,13 +1537,11 @@ function updateTrainingBreakpoints(valorPct) {
     // === NORMAL ===
     const normal = getTrainingInfo(baseHours, valorPct);
 
-    // === INSPIRE ARMY (-20%) ===
-    const iaBase = baseHours * 0.8;
-    const ia = getTrainingInfo(iaBase, valorPct);
-
-    // === IA + Haste Ritual (-20% then -25%) ===
-    const bothBase = iaBase * 0.75;
-    const both = getTrainingInfo(bothBase, valorPct);
+    const spell = getTrainingSpell();
+    const spellBase = baseHours * spell.reduction;
+    const spellInfo = getTrainingInfo(spellBase, valorPct);
+    const bothBase = spellBase * 0.75;
+    const bothInfo = getTrainingInfo(bothBase, valorPct);
 
     // Build clean display string
     let html = `Normal Train Time: ${normal.current}h | Next: `;
@@ -1354,17 +1549,116 @@ function updateTrainingBreakpoints(valorPct) {
         ? `${normal.next}h at ${normal.nextPct}%` 
         : `--`;
 
-    html += ` | Inspire Army: ${ia.current}h | Next: `;
-    html += ia.next !== null 
-        ? `${ia.next}h at ${ia.nextPct}%` 
+    html += ` | ${spell.name}: ${spellInfo.current}h | Next: `;
+    html += spellInfo.next !== null
+        ? `${spellInfo.next}h at ${spellInfo.nextPct}%`
         : `--`;
 
-    html += ` | Haste + Inspire Army: ${both.current}h | Next: `;
-    html += both.next !== null 
-        ? `${both.next}h at ${both.nextPct}%` 
+    html += ` | Haste + ${spell.name}: ${bothInfo.current}h | Next: `;
+    html += bothInfo.next !== null
+        ? `${bothInfo.next}h at ${bothInfo.nextPct}%`
         : `--`;
 
-    td.innerHTML = html;
+    // ----- Update Calculator Popup -----
+    const valorRow = document.querySelector('tr[data-science="Valor"]');
+
+    const investedBooks =
+        parseInt(
+            valorRow.querySelector('[data-type="invested"]')
+                .value.replace(/,/g, '')
+        ) || 0;
+
+    const currentInfo = document.getElementById("valorCurrentInfo");
+
+    if (currentInfo) {
+        currentInfo.textContent =
+            `${valorPct.toFixed(1)}% - ${investedBooks.toLocaleString()} Books Invested`;
+    }
+
+    document.getElementById("valorBreakpointText").innerHTML = html;
+}
+
+function updateValorPopup() {
+    const valorPct = getScienceOutputPct("Valor");
+    const baseHours = getBaseTrainingHours();
+
+    // Normal
+    const normal = getTrainingInfo(baseHours, valorPct);
+    const spell = getTrainingSpell();
+
+    document.getElementById("popupSpellLabel").textContent = spell.name;
+    document.getElementById("popupHasteLabel").textContent = `Haste + ${spell.name}`;
+
+    document.getElementById("valorSpellResultLabel").textContent = spell.name;
+    document.getElementById("valorHasteResultLabel").textContent = `Haste + ${spell.name}`;
+
+    const spellInfo = getTrainingInfo(baseHours * spell.reduction, valorPct);
+    const haste = getTrainingInfo(baseHours * spell.reduction * 0.75, valorPct);
+
+    document.getElementById("popupNormalTime").textContent =
+        normal.current + " hrs";
+    document.getElementById("popupSpellLabel").textContent =
+        spell.name;
+    document.getElementById("popupSpellTime").textContent =
+        spellInfo.current + " hrs";
+    document.getElementById("popupHasteLabel").textContent =
+        "Haste + " + spell.name;
+    document.getElementById("popupHasteTime").textContent =
+        haste.current + " hrs";
+
+    updateValorTargetResults(valorPct, baseHours, spell.reduction);
+}
+
+function updateValorTargetResults(valorPct, baseHours, spellReduction) {
+    const targetInput = document.getElementById("valorTargetHours");
+    const targetHours = parseInt(targetInput?.value, 10) || 0;
+    const valorRow = document.querySelector('tr[data-science="Valor"]');
+    const investedBooks = valorRow
+        ? parseInt(valorRow.querySelector('[data-type="invested"]').value.replace(/,/g, ''), 10) || 0
+        : 0;
+
+    const valorK = getValorScalingFactor();
+
+    const updateResult = (spanId, effectiveBaseHours) => {
+        const requiredPct = getRequiredValorPercent(targetHours, effectiveBaseHours);
+        const result = getValorBooksForTarget(requiredPct, investedBooks, valorK);
+
+        const text = targetHours > 0
+            ? `${requiredPct.toFixed(1)}% — ${result.totalBooks.toLocaleString()} (+${result.moreBooks.toLocaleString()} )`
+            : `--% — -- (+--)`;
+
+        document.getElementById(spanId).textContent = text;
+    };
+
+    updateResult("valorNormalResult", baseHours);
+    updateResult("valorSpellResult", baseHours * spellReduction);
+    updateResult("valorHasteResult", baseHours * spellReduction * 0.75);
+}
+
+function getValorScalingFactor() {
+    const libs = parseFloat(document.getElementById('libraries-percent')?.value) || 0;
+    const bonus = 1 + (SciBonusPct(libs) / 100);
+    return applyBonuses(0.0620, "Valor", "Military") * bonus;
+}
+
+function getRequiredValorPercent(targetHours, baseHours) {
+    if (!targetHours || targetHours < 1 || !baseHours || baseHours <= 0) return 0;
+    const thresholdHours = targetHours + 0.49;
+    return Math.max(0, (1 - thresholdHours / baseHours) * 100);
+}
+
+function getValorTotalBooksForTarget(targetPct, k) {
+    if (!targetPct || targetPct <= 0 || !k || k <= 0) return 0;
+    return Math.pow(targetPct / k, INV_EXP);
+}
+
+function getValorBooksForTarget(targetPct, investedBooks, k) {
+    const totalBooks = Math.max(0, Math.ceil(getValorTotalBooksForTarget(targetPct, k)));
+    const moreBooks = Math.max(0, totalBooks - investedBooks);
+    return {
+        totalBooks,
+        moreBooks
+    };
 }
 
 function getScienceOutputPct(scienceName) {
@@ -1436,6 +1730,25 @@ function getBaseTrainingHours() {
     }
 
     return hours;
+}
+
+// Race/Personalities with Hero's Inspiration
+function getTrainingSpell() {
+    const { pers } = getCurrentRacePers();
+
+    // Personalities with Hero's Inspiration
+    if (pers === "War Hero" || pers === "Cleric") {
+        return {
+            name: "Hero's Inspiration",
+            reduction: 0.70       // -30%
+        };
+    }
+
+    // Everyone else
+    return {
+        name: "Inspire Army",
+        reduction: 0.80       // -20%
+    };
 }
 
 function getTrainingInfo(baseHours, sciPct) {
@@ -1631,6 +1944,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.style.display = isChecked ? 'table-row' : 'none';
             });
             localStorage.setItem('breakpointsEnabled', isChecked);
+        });
+    }
+    
+    // Valor Target Hour Popup
+    const calcBtn = document.getElementById("valorCalcBtn");
+    const popup = document.getElementById("valorTargetPopup");
+
+    if (calcBtn && popup) {
+        calcBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            updateValorPopup();
+            popup.classList.toggle("hidden");
+        });
+        document.addEventListener("click", function () {
+            popup.classList.add("hidden");
+        });
+        popup.addEventListener("click", function (e) {
+            e.stopPropagation();
+        });
+    }
+
+    const valorTargetInput = document.getElementById("valorTargetHours");
+    if (valorTargetInput) {
+        valorTargetInput.addEventListener("input", () => {
+            updateValorPopup();
         });
     }
 
