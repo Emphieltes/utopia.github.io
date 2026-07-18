@@ -721,13 +721,17 @@ input[type=number] {
 
 /* ===== BEGIN: CALENDAR ===== */
 .utopia-calendar {
-    position: relative;
+    position: fixed;
+    top: 200px;
+    right: 100px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px;
     width: 260px;
-    margin-top: 30px;
+    margin-top: 0;
+    z-index: 998;
+    transition: right 0.3s ease;
 }
 /* Header */
 .calendar-header {
@@ -1183,23 +1187,28 @@ input[type=number] {
 		</label>
 
 		<label class="settings-option indent">
-			<input type="radio" name="minimize" value="race-bonuses">
+			<input type="checkbox" name="collapseOption" value="race-bonuses">
 			Collapse Race Bonuses
 		</label>
 
 		<label class="settings-option indent">
-			<input type="radio" name="minimize" value="race-penalties">
+			<input type="checkbox" name="collapseOption" value="race-penalties">
 			Collapse Race Penalties
 		</label>
 
 		<label class="settings-option indent">
-			<input type="radio" name="minimize" value="personality">
+			<input type="checkbox" name="collapseOption" value="personality">
 			Collapse Personality Bonuses
 		</label>
 
         <label class="settings-option indent">
-            <input type="radio" name="minimize" value="uniques">
+            <input type="checkbox" name="collapseOption" value="uniques">
             Collapse Uniques/War Doctrine
+        </label>
+
+        <label class="settings-option">
+            <input type="checkbox" id="calendarVisibleToggle" checked>
+            Show Calendar
         </label>
         
         <div class="settings-header">Elites Specs Per Acres</div>
@@ -1221,7 +1230,7 @@ input[type=number] {
 </div>
 
 <script>
-// ==== SETTINGS PANEL TOGGLE + FLOATING PARSER SHIFT ====
+// ==== SETTINGS PANEL TOGGLE + FLOATING PARSER/CALENDAR SHIFT ==== 
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsPanel = document.getElementById('settingsPanel');
 const MARGIN = 100;
@@ -1230,23 +1239,26 @@ function getParser() {
     return document.querySelector('.military-parser');
 }
 
-function updateParserPosition() {
+function getCalendar() {
+    return document.querySelector('.utopia-calendar');
+}
+
+function updatePanelPositions() {
     const militaryParser = getParser();
-    if (!militaryParser) return;
+    const calendar = getCalendar();
+    if (!militaryParser || !calendar) return;
 
     const isOpen = settingsPanel.classList.contains('open');
-    
-    if (isOpen) {
-        militaryParser.style.right = (190 + MARGIN) + 'px';   // 275px = settings panel width
-    } else {
-        militaryParser.style.right = MARGIN + 'px';
-    }
+    const offset = isOpen ? (190 + MARGIN) : MARGIN;
+
+    militaryParser.style.right = offset + 'px';
+    calendar.style.right = offset + 'px';
 }
 
 // Toggle panel
 settingsBtn.addEventListener('click', () => {
     settingsPanel.classList.toggle('open');
-    updateParserPosition();
+    updatePanelPositions();
 });
 
 // Close when clicking outside
@@ -1256,18 +1268,35 @@ document.addEventListener('click', (e) => {
         e.target !== settingsBtn) {
         
         settingsPanel.classList.remove('open');
-        updateParserPosition();
+        updatePanelPositions();
     }
 });
 
 // Run on load and resize
-window.addEventListener('load', updateParserPosition);
-window.addEventListener('resize', updateParserPosition);
+window.addEventListener('load', updatePanelPositions);
+window.addEventListener('resize', updatePanelPositions);
 
-// ==== MINIMIZE OPTIONS LOGIC (KEEP THIS) ====
+// ==== MINIMIZE OPTIONS LOGIC ==== 
 const radios = document.querySelectorAll('input[name="minimize"]');
+const collapseCheckboxes = document.querySelectorAll('input[name="collapseOption"]');
+const calendarVisibleToggle = document.getElementById('calendarVisibleToggle');
 
-function applyMinimizeSetting(value) {
+function saveCollapseBoxStates() {
+    const boxStateMap = {
+        'race-bonuses': 'raceBonusBox',
+        'race-penalties': 'racePenaltyBox',
+        'personality': 'persBonusBox',
+        'uniques': 'uniquesBox'
+    };
+
+    Object.entries(boxStateMap).forEach(([value, id]) => {
+        const el = document.getElementById(id);
+        const isCollapsed = el && el.classList.contains('collapsed');
+        localStorage.setItem(id + '_collapsed', isCollapsed ? 'true' : 'false');
+    });
+}
+
+function applyMinimizeSetting() {
     const raceBonus = document.getElementById('raceBonusBox');
     const racePenalty = document.getElementById('racePenaltyBox');
     const persBonus = document.getElementById('persBonusBox');
@@ -1275,29 +1304,89 @@ function applyMinimizeSetting(value) {
 
     const allBoxes = [raceBonus, racePenalty, persBonus, uniquesBox];
 
-    // Reset all first
     allBoxes.forEach(el => {
         if (el) el.classList.remove('collapsed');
     });
 
-    if (value === "all") {
+    const selectedValues = Array.from(collapseCheckboxes)
+        .filter(checkbox => checkbox.checked)
+        .map(checkbox => checkbox.value);
+
+    if (selectedValues.length === 4) {
         allBoxes.forEach(el => {
             if (el) el.classList.add('collapsed');
         });
+    } else {
+        if (selectedValues.includes('race-bonuses') && raceBonus) raceBonus.classList.add('collapsed');
+        if (selectedValues.includes('race-penalties') && racePenalty) racePenalty.classList.add('collapsed');
+        if (selectedValues.includes('personality') && persBonus) persBonus.classList.add('collapsed');
+        if (selectedValues.includes('uniques') && uniquesBox) uniquesBox.classList.add('collapsed');
     }
 
-    if (value === "race-bonuses" && raceBonus) raceBonus.classList.add('collapsed');
-    if (value === "race-penalties" && racePenalty) racePenalty.classList.add('collapsed');
-    if (value === "personality" && persBonus) persBonus.classList.add('collapsed');
-    if (value === "uniques" && uniquesBox) uniquesBox.classList.add('collapsed');
-
-    localStorage.setItem("minimizeSetting", value);
+    localStorage.setItem('minimizeSetting', JSON.stringify(selectedValues));
+    saveCollapseBoxStates();
 }
 
-// Attach change listeners
+function applyCalendarVisibility() {
+    const calendar = getCalendar();
+    if (!calendar) return;
+
+    calendar.style.display = calendarVisibleToggle && calendarVisibleToggle.checked ? '' : 'none';
+    localStorage.setItem('calendarVisible', calendarVisibleToggle && calendarVisibleToggle.checked ? 'true' : 'false');
+}
+
 radios.forEach(radio => {
-    radio.addEventListener('change', (e) => applyMinimizeSetting(e.target.value));
+    radio.addEventListener('change', (e) => {
+        const isAll = e.target.value === 'all';
+        collapseCheckboxes.forEach(checkbox => {
+            checkbox.checked = isAll;
+        });
+        applyMinimizeSetting();
+    });
 });
+
+collapseCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+        const checkedCount = Array.from(collapseCheckboxes).filter(box => box.checked).length;
+
+        if (checkedCount === 0) {
+            document.querySelector('input[name="minimize"][value="none"]').checked = true;
+        } else if (checkedCount === 4) {
+            document.querySelector('input[name="minimize"][value="all"]').checked = true;
+        } else {
+            document.querySelector('input[name="minimize"][value="none"]').checked = false;
+            document.querySelector('input[name="minimize"][value="all"]').checked = false;
+        }
+
+        applyMinimizeSetting();
+    });
+});
+
+if (calendarVisibleToggle) {
+    calendarVisibleToggle.addEventListener('change', applyCalendarVisibility);
+}
+
+const savedMinimize = localStorage.getItem('minimizeSetting');
+if (savedMinimize) {
+    try {
+        const savedValues = JSON.parse(savedMinimize);
+        collapseCheckboxes.forEach(checkbox => {
+            checkbox.checked = savedValues.includes(checkbox.value);
+        });
+
+        const checkedCount = Array.from(collapseCheckboxes).filter(box => box.checked).length;
+        if (checkedCount === 0) {
+            document.querySelector('input[name="minimize"][value="none"]').checked = true;
+        } else if (checkedCount === 4) {
+            document.querySelector('input[name="minimize"][value="all"]').checked = true;
+        }
+    } catch (e) {
+        // Ignore invalid saved data
+    }
+}
+
+applyMinimizeSetting();
+applyCalendarVisibility();
 </script>
 
 <!-- Reset Values -->
@@ -1320,14 +1409,25 @@ resetBtn.addEventListener('click', () => {
   document.getElementById('acres').value = defaults.acres;
   document.getElementById('title').value = defaults.title;
 
-  // Reset minimize radios
+  // Reset minimize radios and checkboxes
   const radios = document.querySelectorAll('input[name="minimize"]');
   radios.forEach(radio => {
     radio.checked = radio.value === defaults.minimize;
   });
 
+  document.querySelectorAll('input[name="collapseOption"]').forEach(checkbox => {
+    checkbox.checked = false;
+  });
+
+  if (document.getElementById('calendarVisibleToggle')) {
+    document.getElementById('calendarVisibleToggle').checked = true;
+  }
+
   const event = new Event('change');
   document.querySelector('input[name="minimize"]:checked').dispatchEvent(event);
+  if (document.getElementById('calendarVisibleToggle')) {
+    document.getElementById('calendarVisibleToggle').dispatchEvent(event);
+  }
 
   // Update bonuses
   if (typeof updateBonuses === "function") {
@@ -1891,7 +1991,7 @@ window.addEventListener('storage', (e) => {
 
 <!-- HEADER -->
 <div class="header-section">
-    <h1>Utopia Province Planner - AGE 116</h1>
+    <h1>Utopia Province Planner - AGE 115</h1>
 
 <!-- POPULATION -->
 <div class="planner-summary-box">
@@ -3549,13 +3649,25 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   // Restore individual collapsed states
-  boxes.forEach(id => {
-    const savedState = localStorage.getItem(id + "_collapsed");
-    if (savedState === "true") {
-      const el = document.getElementById(id);
-      if (el) el.classList.add("collapsed");
+  const savedMinimize = localStorage.getItem("minimizeSetting");
+  if (savedMinimize) {
+    try {
+      const savedValues = JSON.parse(savedMinimize);
+      document.querySelectorAll('input[name="collapseOption"]').forEach(checkbox => {
+        checkbox.checked = savedValues.includes(checkbox.value);
+      });
+    } catch (e) {
+      // Ignore invalid saved data
     }
-  });
+  } else {
+    boxes.forEach(id => {
+      const savedState = localStorage.getItem(id + "_collapsed");
+      if (savedState === "true") {
+        const el = document.getElementById(id);
+        if (el) el.classList.add("collapsed");
+      }
+    });
+  }
 
   // Re-enable transitions after layout loads
   setTimeout(() => {
@@ -3572,12 +3684,13 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // Load saved minimize setting
-  const savedMinimize = localStorage.getItem("minimizeSetting");
-  if (savedMinimize) {
-    const radio = document.querySelector(`input[name="minimize"][value="${savedMinimize}"]`);
-    if (radio) radio.checked = true;
-    applyMinimizeSetting(savedMinimize);
+  applyMinimizeSetting();
+  if (calendarVisibleToggle) {
+    const savedCalendarVisible = localStorage.getItem('calendarVisible');
+    if (savedCalendarVisible !== null) {
+      calendarVisibleToggle.checked = savedCalendarVisible === 'true';
+    }
+    applyCalendarVisibility();
   }
 
 });
@@ -3676,7 +3789,7 @@ function getEliteDefStrength(race) {
 
 // === ANALYSIS LISTENERS (handles rebuilds) ===
 function attachAnalysisListeners() {
-    const watchIds = ['ome', 'race', 'pers', 'curOff', 'trainOff', 'curElite', 'trainElite'];
+    const watchIds = ['ome', 'dme', 'race', 'pers', 'curOff', 'trainOff', 'curDef', 'trainDef', 'curElite', 'trainElite'];
 
     watchIds.forEach(id => {
         const el = document.getElementById(id);
@@ -3762,6 +3875,9 @@ function updateMilitaryAnalysis() {
     const ownedOff = getNumber('curOff');
     const ownedDef = getNumber('curDef');
     const ownedElite = getNumber('curElite');
+    const trainingOff = getNumber('trainOff');
+    const trainingDef = getNumber('trainDef');
+    const trainingElite = getNumber('trainElite');
 
     const offSpecStrength = getOspecStrength(race);
     const defSpecStrength = getDspecStrength(race);
@@ -3787,6 +3903,16 @@ function updateMilitaryAnalysis() {
         const defMultiplier = (dme / 100) * 1.00;
         const finalDefense = Math.round(rawDefense * defMultiplier);
 
+        let rawTrainingOffense = trainingOff * offSpecStrength;
+        if (useEliteOffense) rawTrainingOffense += trainingElite * eliteOffStrength;
+        const trainingOffMultiplier = (ome / 100) * (1 + generalBonus) * honorMult;
+        const finalTrainingOffense = Math.round(rawTrainingOffense * trainingOffMultiplier);
+
+        let rawTrainingDefense = trainingDef * defSpecStrength;
+        if (useEliteDefense) rawTrainingDefense += trainingElite * eliteDefStrength;
+        const trainingDefMultiplier = (dme / 100) * 1.00;
+        const finalTrainingDefense = Math.round(rawTrainingDefense * trainingDefMultiplier);
+
         // Create row elements
         const genCell = document.createElement('div');
         genCell.className = "analysis-general";
@@ -3807,12 +3933,12 @@ function updateMilitaryAnalysis() {
         if (isExpanded) {
             const offTrainCell = document.createElement('div');
             offTrainCell.className = "analysis-offtraining training-col";
-            offTrainCell.textContent = '—';
+            offTrainCell.textContent = finalTrainingOffense.toLocaleString();
             container.appendChild(offTrainCell);
 
             const defTrainCell = document.createElement('div');
             defTrainCell.className = "analysis-deftraining training-col";
-            defTrainCell.textContent = '—';
+            defTrainCell.textContent = (gens === 1) ? finalTrainingDefense.toLocaleString() : '—';
             container.appendChild(defTrainCell);
         }
     }
