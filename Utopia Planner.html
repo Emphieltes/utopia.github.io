@@ -1448,6 +1448,11 @@ resetBtn.addEventListener('click', () => {
     if (rawInput) rawInput.value = 0;
   }
 
+  // Collapse the military panels back to their default state
+  if (typeof setMilitaryPanelState === 'function') {
+    setMilitaryPanelState(true, true);
+  }
+
   // ==== RESET MILITARY ====
   setTimeout(() => {
     // Reset all inputs in the military table
@@ -3228,7 +3233,7 @@ function updateExpandRows() {
 
         if (!expandRow || !spacerRow) return;
 
-        const needsTraining = (rawVal > 0 || modVal > 0);
+        const needsTraining = rawVal > 0;
 
         if (needsTraining) {
             expandRow.style.display = 'table-row';
@@ -3581,30 +3586,56 @@ function loadPlannerData() {
     }
 }
 
+function setMilitaryPanelState(modCollapsed, analysisCollapsed) {
+    const modBox = document.querySelector('.raw-mod-box');
+    const modContent = document.getElementById('targetsContent');
+    const modToggle = document.getElementById('targetsToggle');
+    const analysisBox = document.querySelector('.military-analysis-box');
+    const analysisToggle = document.getElementById('analysisToggle');
+
+    if (typeof modCollapsed === 'boolean' && modBox && modContent && modToggle) {
+        if (modCollapsed) {
+            modBox.classList.add('collapsed');
+            modContent.style.display = 'none';
+            modToggle.innerHTML = '▶';
+            modToggle.style.left = '490px';
+        } else {
+            modBox.classList.remove('collapsed');
+            modContent.style.display = 'block';
+            modToggle.innerHTML = '◀';
+            modToggle.style.left = '740px';
+        }
+        localStorage.setItem('rawModTargetsCollapsed', modCollapsed ? 'true' : 'false');
+    }
+
+    if (typeof analysisCollapsed === 'boolean' && analysisBox && analysisToggle) {
+        if (analysisCollapsed) {
+            analysisBox.classList.add('collapsed');
+            analysisToggle.innerHTML = '▲';
+        } else {
+            analysisBox.classList.remove('collapsed');
+            analysisToggle.innerHTML = '▼';
+        }
+        localStorage.setItem('analysisBoxCollapsed', analysisCollapsed ? 'true' : 'false');
+    }
+
+    syncAnalysisWidth();
+    if (typeof updateMilitaryAnalysis === 'function') {
+        updateMilitaryAnalysis();
+    }
+}
+
 // ModTarget Table Toggle + Save State
 function toggleTargets() {
-    const box = document.querySelector(".raw-mod-box");
-    const content = document.getElementById("targetsContent");
-    const toggle = document.getElementById("targetsToggle");
+    const box = document.querySelector('.raw-mod-box');
 
     if (!box) return;
 
-    const isCollapsed = box.classList.toggle("collapsed");
+    const isCollapsed = box.classList.toggle('collapsed');
 
-    if (isCollapsed) {
-        content.style.display = "none";
-        toggle.innerHTML = "▶";
-        toggle.style.left = "490px";
-    } else {
-        content.style.display = "block";
-        toggle.innerHTML = "◀";
-        toggle.style.left = "740px";
-    }
-
-    localStorage.setItem("rawModTargetsCollapsed", isCollapsed);
+    setMilitaryPanelState(isCollapsed);
 
     // Force full refresh
-    syncAnalysisWidth();
     setTimeout(() => {
         updateMilitaryAnalysis();   // rebuild table with correct columns
     }, 10);
@@ -3613,24 +3644,12 @@ function toggleTargets() {
 // === MILITARY ANALYSIS TOGGLE ===
 function toggleAnalysis() {
     const box = document.querySelector('.military-analysis-box');
-    const toggle = document.getElementById("analysisToggle");
 
-    if (!box || !toggle) return;
+    if (!box) return;
 
     const isCollapsed = box.classList.toggle('collapsed');
 
-    // Update arrow
-    if (isCollapsed) {
-        toggle.innerHTML = "▲";
-    } else {
-        toggle.innerHTML = "▼";
-    }
-
-    // Save state
-    localStorage.setItem("analysisBoxCollapsed", isCollapsed);
-
-    // Sync width when toggling
-    syncAnalysisWidth();
+    setMilitaryPanelState(undefined, isCollapsed);
 }
 
 document.addEventListener("DOMContentLoaded", function() {
