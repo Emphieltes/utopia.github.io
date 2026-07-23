@@ -1530,6 +1530,10 @@ function parseMilitaryPaste() {
 
     const race = document.getElementById('race').value || 'Human';
     const lines = text.split('\n').map(l => l.trim());
+    const buildUnitPattern = (...unitNames) => {
+        const escaped = unitNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        return new RegExp(`(?:${escaped.join('|')})`, 'i');
+    };
 
     // IMPORTANT: Save current owned thieves before resetting anything
     const currentThievesOwned = document.getElementById('curThief').value || "0";
@@ -1584,20 +1588,21 @@ function parseMilitaryPaste() {
         const armyLines = section.split('\n').map(l => l.trim()).filter(l => l);
 
         const patterns = {
-            Avian:     { off: /griffin/i,     def: /harpy/i,      elite: /drake/i },
-            "Dark Elf":{ off: /night ranger/i,def: /druid/i,      elite: /drow/i },
-            Dwarf:     { off: /warrior/i,     def: /axeman/i,     elite: /berserker/i },
-            Elf:       { off: /ranger/i,      def: /archer/i,      elite: /elf lord/i },
-            Faery:     { off: /magician/i,    def: /druid/i,      elite: /beastmaster/i },
-            Halfling:  { off: /strongarm/i,   def: /slinger/i,    elite: /brute/i },
-            Human:     { off: /swordsman/i,   def: /archer/i,     elite: /knight/i },
-            Orc:       { off: /goblin/i,      def: /troll/i,       elite: /ogre/i },
-            Undead:    { off: /skeleton/i,    def: /zombie/i,     elite: /ghoul/i },
-            Gnome:     { off: /quick blade/i, def: /pikeman/i,    elite: /golem/i }
-        }[race] || { off: /swordsman/i, def: /archer/i, elite: /knight/i };
+            Avian:     { off: buildUnitPattern('griffin', 'griffins'),     def: buildUnitPattern('harpy', 'harpies'),      elite: buildUnitPattern('drake', 'drakes') },
+            "Dark Elf":{ off: buildUnitPattern('night ranger', 'night rangers'), def: buildUnitPattern('druid', 'druids'),      elite: buildUnitPattern('drow', 'drows') },
+            Dwarf:     { off: buildUnitPattern('warrior', 'warriors'),     def: buildUnitPattern('axeman', 'axemen'),     elite: buildUnitPattern('berserker', 'berserkers') },
+            Elf:       { off: buildUnitPattern('ranger', 'rangers'),      def: buildUnitPattern('archer', 'archers'),      elite: buildUnitPattern('elf lord', 'elf lords') },
+            Faery:     { off: buildUnitPattern('magician', 'magicians'),    def: buildUnitPattern('druid', 'druids'),      elite: buildUnitPattern('beastmaster', 'beastmasters') },
+            Halfling:  { off: buildUnitPattern('strongarm', 'strongarms'),   def: buildUnitPattern('slinger', 'slingers'),    elite: buildUnitPattern('brute', 'brutes') },
+            Human:     { off: buildUnitPattern('swordsman', 'swordsmen'),   def: buildUnitPattern('archer', 'archers'),     elite: buildUnitPattern('knight', 'knights') },
+            Orc:       { off: buildUnitPattern('goblin', 'goblins'),      def: buildUnitPattern('troll', 'trolls'),       elite: buildUnitPattern('ogre', 'ogres') },
+            Undead:    { off: buildUnitPattern('skeleton', 'skeletons'),    def: buildUnitPattern('zombie', 'zombies'),     elite: buildUnitPattern('ghoul', 'ghouls') },
+            Gnome:     { off: buildUnitPattern('quick blade', 'quick blades'), def: buildUnitPattern('pikeman', 'pikemen'),    elite: buildUnitPattern('golem', 'golems') },
+            Dryad:     { off: buildUnitPattern('huldra', 'huldras'), def: buildUnitPattern('nymph', 'nymphs'),    elite: buildUnitPattern('will o the wisp', 'will o the wisps') }
+        }[race] || { off: buildUnitPattern('swordsman', 'swordsmen'), def: buildUnitPattern('archer', 'archers'), elite: buildUnitPattern('knight', 'knights') };
 
         for (const line of armyLines) {
-            const parts = line.replace(/[\t\s]{2,}/g, '\t').split('\t').map(p => p.trim());
+            const parts = line.split(/\s+/).filter(Boolean);
             if (parts.length < 2) continue;
 
             const unitLine = line.toLowerCase();
@@ -1637,17 +1642,18 @@ function parseMilitaryPaste() {
         const trainLines = section.split('\n').map(l => l.trim()).filter(l => /^[A-Za-z]/.test(l));
 
         const trainPatterns = {
-            Avian:     { off: /griffin/i,     def: /harpy/i,      elite: /drake/i,     thief: /thief/i },
-            "Dark Elf":{ off: /night ranger/i,def: /druid/i,      elite: /drow/i,      thief: /thief/i },
-            Dwarf:     { off: /warrior/i,     def: /axeman/i,     elite: /berserker/i, thief: /thief/i },
-            Elf:       { off: /ranger/i,      def: /archer/i,      elite: /elf lord/i,  thief: /thief/i },
-            Faery:     { off: /magician/i,    def: /druid/i,      elite: /beastmaster/i,thief: /thief/i },
-            Halfling:  { off: /strongarm/i,   def: /slinger/i,    elite: /brute/i,     thief: /thief/i },
-            Human:     { off: /swordsman/i,   def: /archer/i,     elite: /knight/i,    thief: /thief/i },
-            Orc:       { off: /goblin/i,      def: /troll/i,       elite: /ogre/i,      thief: /thief/i },
-            Undead:    { off: /skeleton/i,    def: /zombie/i,     elite: /ghoul/i,     thief: /thief/i },
-            Gnome:     { off: /quick blade/i, def: /pikeman/i,    elite: /golem/i,     thief: /thief/i }
-        }[race] || { off: /swordsman/i, def: /archer/i, elite: /knight/i, thief: /thief/i };
+            Avian:     { off: buildUnitPattern('griffin', 'griffins'),     def: buildUnitPattern('harpy', 'harpies'),      elite: buildUnitPattern('drake', 'drakes'),     thief: buildUnitPattern('thief', 'thieves') },
+            "Dark Elf":{ off: buildUnitPattern('night ranger', 'night rangers'), def: buildUnitPattern('druid', 'druids'),      elite: buildUnitPattern('drow', 'drows'),      thief: buildUnitPattern('thief', 'thieves') },
+            Dwarf:     { off: buildUnitPattern('warrior', 'warriors'),     def: buildUnitPattern('axeman', 'axemen'),     elite: buildUnitPattern('berserker', 'berserkers'), thief: buildUnitPattern('thief', 'thieves') },
+            Elf:       { off: buildUnitPattern('ranger', 'rangers'),      def: buildUnitPattern('archer', 'archers'),      elite: buildUnitPattern('elf lord', 'elf lords'),  thief: buildUnitPattern('thief', 'thieves') },
+            Faery:     { off: buildUnitPattern('magician', 'magicians'),    def: buildUnitPattern('druid', 'druids'),      elite: buildUnitPattern('beastmaster', 'beastmasters'),thief: buildUnitPattern('thief', 'thieves') },
+            Halfling:  { off: buildUnitPattern('strongarm', 'strongarms'),   def: buildUnitPattern('slinger', 'slingers'),    elite: buildUnitPattern('brute', 'brutes'),     thief: buildUnitPattern('thief', 'thieves') },
+            Human:     { off: buildUnitPattern('swordsman', 'swordsmen'),   def: buildUnitPattern('archer', 'archers'),     elite: buildUnitPattern('knight', 'knights'),    thief: buildUnitPattern('thief', 'thieves') },
+            Orc:       { off: buildUnitPattern('goblin', 'goblins'),      def: buildUnitPattern('troll', 'trolls'),       elite: buildUnitPattern('ogre', 'ogres'),      thief: buildUnitPattern('thief', 'thieves') },
+            Undead:    { off: buildUnitPattern('skeleton', 'skeletons'),    def: buildUnitPattern('zombie', 'zombies'),     elite: buildUnitPattern('ghoul', 'ghouls'),     thief: buildUnitPattern('thief', 'thieves') },
+            Gnome:     { off: buildUnitPattern('quick blade', 'quick blades'), def: buildUnitPattern('pikeman', 'pikemen'),    elite: buildUnitPattern('golem', 'golems'),     thief: buildUnitPattern('thief', 'thieves') },
+            Dryad:     { off: buildUnitPattern('huldra', 'huldras'), def: buildUnitPattern('nymph', 'nymphs'),    elite: buildUnitPattern('will o the wisp', 'will o the wisps'), thief: buildUnitPattern('thief', 'thieves') }
+        }[race] || { off: buildUnitPattern('swordsman', 'swordsmen'), def: buildUnitPattern('archer', 'archers'), elite: buildUnitPattern('knight', 'knights'), thief: buildUnitPattern('thief', 'thieves') };
 
         for (const line of trainLines) {
             let parts = line.split(/\s+/).map(p => p.trim());
@@ -1698,9 +1704,11 @@ function parseMilitaryPaste() {
         calculateTPA();
         updateTargetRatios();
         updateExpandRows();
+        updateAllTrainingCosts();
         saveMilitaryInputs();
         savePlannerData();
         updateMilitaryAnalysis();
+        refreshAnalysisListeners();
 
         status.textContent = `✅ Success! Updated ${updates} values.`;
         status.style.color = "#4ade80";
@@ -1712,7 +1720,7 @@ function parseMilitaryPaste() {
 }
 </script>
 <script>
-// === THIEF COST WITH PERSONALITY (Heretic -40% Discount) ===
+// === THIEF COST (base cost only; only Heretic changes it) ===
 function getThiefCostWithPersonality() {
     const baseCost = 500;
     const pers = document.getElementById('pers').value || "Artisan";
@@ -2656,23 +2664,24 @@ function buildMilitaryTable() {
         Dwarf:     { off: "Warriors 10/0",      def: "Axemen 0/10",    elite: "Berserkers 15/7",       specCost: 350, eliteCost: 900 },
         Elf:       { off: "Rangers 10/0",       def: "Archers 0/13",   elite: "Elf Lords 14/4",        specCost: 350, eliteCost: 700 },
         Faery:     { off: "Magicians 10/0",     def: "Druids 0/10",    elite: "Beastmasters 4/16",     specCost: 350, eliteCost: 1150 },
-        Halfling:  { off: "Strongarms 11/0",    def: "Slingers 0/10",  elite: "Brutes 10/13",           specCost: 350, eliteCost: 900 },
+        Halfling:  { off: "Strongarms 11/0",    def: "Slingers 0/10",  elite: "Brutes 10/13",          specCost: 350, eliteCost: 900 },
         Human:     { off: "Swordsmen 15/0",     def: "Archers 0/12",   elite: "Knights 15/5",          specCost: 350, eliteCost: 800 },
         Orc:       { off: "Goblins 13/0",       def: "Trolls 0/10",    elite: "Ogres 18/3",            specCost: 350, eliteCost: 850 },
         Undead:    { off: "Skeletons 11/0",     def: "Zombies 0/10",   elite: "Ghouls 16/4",           specCost: 350, eliteCost: 800 },
         Gnome:     { off: "Quick Blades 11/0",  def: "Pikemen 0/10",   elite: "Golems 14/4",           specCost: 350, eliteCost: 900 },
-        Dryad:     { off: "Quick Blades 10/0",  def: "Pikemen 0/11",   elite: "Golems 16/3",           specCost: 350, eliteCost: 800 }
+        Dryad:     { off: "Huldras 10/0",       def: "Nymphs 0/11",    elite: "Will O The Wisps 16/3", specCost: 350, eliteCost: 800 }
     }[race];
 
     if (!units) return;
 
     const addRow = (name, curId, trainId, baseCost, isThief = false) => {
         const row = document.createElement('tr');
+        const displayedCost = isThief ? getThiefCostWithPersonality() : getUnitTrainingCost(baseCost);
         row.innerHTML = `
             <td>${name}</td>
             <td><input type="text" class="number-input mil-input" id="${curId}" value="0"></td>
             <td><input type="text" class="number-input mil-input" id="${trainId}" value="0"></td>
-            <td>$${getUnitTrainingCost(baseCost).toLocaleString()}</td>
+            <td>$${displayedCost.toLocaleString()}</td>
         `;
         tableBody.appendChild(row);
 
