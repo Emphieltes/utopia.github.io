@@ -2973,24 +2973,7 @@ function getOspecStrength(race) {
     return base + warHeroBonus;
 }
 
-// === Get Honor Multiplier for Offense ===
-function getHonorMultiplier() {
-    const title = document.getElementById('title').value || 'Peasant';
-    const multipliers = {
-        'Peasant': 1.00,
-        'Knight/Lady': 1.01,
-        'Lord/Noble Lady': 1.02,
-        'Baron/Baroness': 1.03,
-        'Viscount/Viscountess': 1.04,
-        'Count/Countess': 1.06,
-        'Marquis/Marchioness': 1.08,
-        'Duke/Duchess': 1.10,
-        'Prince/Princess': 1.12
-    };
-    return multipliers[title] || 1.00;
-}
-
-// === CALCULATE OSPA (now includes Honor) ===
+// === CALCULATE OSPA ===
 function calculateOffNeeded() {
     const acres = parseInt(document.getElementById('acres').value) || 0;
     const targetOSPA = parseFloat(document.getElementById('raw1').value) || 0;
@@ -3008,9 +2991,7 @@ function calculateOffNeeded() {
     const pointsPerAcre = acres * targetOSPA;
     const totalOffPointsTarget = pointsPerAcre * 10;
 
-    let adjusted = totalOffPointsTarget / (ome / 100);
-    const honorMult = getHonorMultiplier();
-    adjusted = adjusted * honorMult;
+    const adjusted = totalOffPointsTarget / (ome / 100);
 
     const totalSpecsNeeded = Math.round(adjusted / safeOffValue);
     const needToTrain = totalSpecsNeeded - total;
@@ -4061,8 +4042,6 @@ function updateMilitaryAnalysis() {
         eliteDefStrength += 1;
     }
 
-    const honorMult = getHonorMultiplier();
-
     // Warhorse support: get stored total (hidden)
     const warhorsesTotal = getParsedWarhorses();
     const ownedOffUnits = ownedOff + ownedElite;
@@ -4089,7 +4068,7 @@ function updateMilitaryAnalysis() {
         if (useEliteOffense) rawOffense += ownedElite * eliteOffStrength;
         // Add warhorse points assigned to owned units
         rawOffense += (ownedWarhorsePoints || 0);
-        const offMultiplier = (effectiveOme / 100) * (1 + generalBonus) * honorMult;
+        const offMultiplier = (effectiveOme / 100) * (1 + generalBonus);
         const finalOffense = Math.round(rawOffense * offMultiplier);
 
         let rawDefense = ownedDef * defSpecStrength;
@@ -4101,7 +4080,7 @@ function updateMilitaryAnalysis() {
         if (useEliteOffense) rawTrainingOffense += trainingElite * eliteOffStrength;
         // Add warhorse points assigned to training units
         rawTrainingOffense += (trainingWarhorsePoints || 0);
-        const trainingOffMultiplier = (effectiveOme / 100) * (1 + generalBonus) * honorMult;
+        const trainingOffMultiplier = (effectiveOme / 100) * (1 + generalBonus);
         const finalTrainingOffense = Math.round(rawTrainingOffense * trainingOffMultiplier);
 
         let rawTrainingDefense = trainingDef * defSpecStrength;
