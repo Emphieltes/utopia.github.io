@@ -1205,12 +1205,21 @@ window.addEventListener('load', updateBonusDisplay);
                 <td data-type="output">-</td>
                 <td><input type="number" step="0.1" value="0" data-type="target" min="0"></td>
                 <td data-type="req">-</td>
-            </tr>
-            <!-- ARCANA -->
-            <tr data-section="Arcane Arts" data-factor="0.0314" data-science="Arcana">
-                <td>Arcana</td>
+            </tr>            
+            <!-- CUNNING -->
+            <tr data-section="Arcane Arts" data-factor="0.0314" data-science="Cunning">
+                <td>Cunning</td>
                 <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
-                <td class="effect">Increased Spell & Thievery Operation Damage</td>
+                <td class="effect">Increased Thievery Operation Damage</td>
+                <td data-type="output">-</td>
+                <td><input type="number" step="0.1" value="0" data-type="target" min="0"></td>
+                <td data-type="req">-</td>
+            </tr>
+            <!-- SORCERY -->
+            <tr data-section="Arcane Arts" data-factor="0.0314" data-science="Sorcery">
+                <td>Sorcery</td>
+                <td><input type="text" inputmode="numeric" pattern="[0-9]*" value="0" data-type="invested" min="0" step="1"></td>
+                <td class="effect">Increased Instant Spell Damage</td>
                 <td data-type="output">-</td>
                 <td><input type="number" step="0.1" value="0" data-type="target" min="0"></td>
                 <td data-type="req">-</td>
@@ -1431,7 +1440,8 @@ function parseAndFillBooks() {
         "Crime": "Crime",
         "Channeling": "Channeling",
         "Shielding": "Shielding",
-        "Arcana": "Arcana",        
+        "Cunning": "Cunning",
+        "Sorcery": "Sorcery",       
         "Finesse": "Finesse"
     };
 
