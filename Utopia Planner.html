@@ -493,7 +493,7 @@
 #militaryTable th:nth-child(1),
 #militaryTable td:nth-child(1) {
     text-align: left;
-    width: 200px;   /* Units */
+    width: 220px;   /* Units */
 }
 #militaryTable th:nth-child(2),
 #militaryTable td:nth-child(2) {
@@ -990,7 +990,7 @@ input[type=number] {
     display: grid;
 
     /* Expanded layout (5 columns) */
-    grid-template-columns: 180px 100px 210px 140px 130px;
+    grid-template-columns: 200px 100px 210px 140px 130px;
 
     width: 100%;
     max-width: 770px;
@@ -1000,7 +1000,7 @@ input[type=number] {
 }
 /* Collapsed layout (3 columns) */
 .raw-mod-box.collapsed ~ .military-analysis-box #analysisTable {
-    grid-template-columns: 180px 100px 210px !important;
+    grid-template-columns: 200px 100px 210px !important;
 }
 /* ==================== HEADER ==================== */
 .analysis-header {
@@ -1057,6 +1057,62 @@ input[type=number] {
 /* Expanded */
 #analysisTable > div:nth-last-child(-n+5) {
     border-bottom: none;
+}
+
+.analysis-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 12px;
+}
+
+.analysis-title-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--text);
+    font-size: 0.90rem;
+    font-weight: normal;
+}
+
+.analysis-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text);
+    font-size: 0.90rem;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.analysis-toggle-label input {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background-color: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    top: 1px;
+}
+
+.analysis-toggle-label input:checked::after {
+    content: '';
+    position: absolute;
+    width: 5px;
+    height: 9px;
+    border: solid var(--text);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    top: 1px;
+    left: 4px;
 }
 /* Collapsed */
 .raw-mod-box.collapsed ~ .military-analysis-box
@@ -1476,6 +1532,17 @@ resetBtn.addEventListener('click', () => {
   // ==== RESET OME / DME ====
   if (document.getElementById('ome')) document.getElementById('ome').value = 100;
   if (document.getElementById('dme')) document.getElementById('dme').value = 100;
+
+  // ==== RESET FANATICISM / BLOODLUST ====
+  const fanCheckbox = document.getElementById('fanaticismToggle');
+  if (fanCheckbox) fanCheckbox.checked = false;
+  const bloodCheckbox = document.getElementById('bloodlustToggle');
+  if (bloodCheckbox) bloodCheckbox.checked = false;
+
+  // ==== RESET HIDDEN WAR HORSES ====
+  if (typeof setParsedWarhorses === 'function') {
+    setParsedWarhorses(0);
+  }
 
   // ==== RESET CALENDAR ====
   currentYear = 0;
@@ -2222,8 +2289,12 @@ window.addEventListener('storage', (e) => {
 <!-- MILITARY ANALYSIS BOX -->
 <div class="military-analysis-box">
     <!-- Title stays inside -->
-    <div class="military-title">
-        Military Analysis
+    <div class="military-title analysis-header-row">
+        <span>Military Analysis</span>
+        <span class="analysis-title-controls">
+            <label class="analysis-toggle-label"><input type="checkbox" id="fanaticismToggle"> Fanaticism</label>
+            <label class="analysis-toggle-label"><input type="checkbox" id="bloodlustToggle"> Bloodlust</label>
+        </span>
     </div>
     
     <div id="analysisContent">
@@ -3881,7 +3952,7 @@ function getParsedWarhorses() {
 
 // === ANALYSIS LISTENERS (handles rebuilds) ===
 function attachAnalysisListeners() {
-    const watchIds = ['ome', 'dme', 'race', 'pers', 'curOff', 'trainOff', 'curDef', 'trainDef', 'curElite', 'trainElite'];
+    const watchIds = ['ome', 'dme', 'race', 'pers', 'curOff', 'trainOff', 'curDef', 'trainDef', 'curElite', 'trainElite', 'fanaticismToggle', 'bloodlustToggle'];
 
     watchIds.forEach(id => {
         const el = document.getElementById(id);
@@ -3959,6 +4030,10 @@ function updateMilitaryAnalysis() {
     // Data rows
     const ome = parseFloat(document.getElementById('ome')?.value) || 100;
     const dme = parseFloat(document.getElementById('dme')?.value) || 100;
+    const fanaticismChecked = document.getElementById('fanaticismToggle')?.checked;
+    const bloodlustChecked = document.getElementById('bloodlustToggle')?.checked;
+    const effectiveOme = ome + (fanaticismChecked ? 5 : 0) + (bloodlustChecked ? 10 : 0);
+    const effectiveDme = fanaticismChecked ? Math.max(0, dme - 5) : dme;
     const pers = document.getElementById('pers')?.value || "Artisan";
     const race = document.getElementById('race').value;
 
@@ -4014,24 +4089,24 @@ function updateMilitaryAnalysis() {
         if (useEliteOffense) rawOffense += ownedElite * eliteOffStrength;
         // Add warhorse points assigned to owned units
         rawOffense += (ownedWarhorsePoints || 0);
-        const offMultiplier = (ome / 100) * (1 + generalBonus) * honorMult;
+        const offMultiplier = (effectiveOme / 100) * (1 + generalBonus) * honorMult;
         const finalOffense = Math.round(rawOffense * offMultiplier);
 
         let rawDefense = ownedDef * defSpecStrength;
         if (useEliteDefense) rawDefense += ownedElite * eliteDefStrength;
-        const defMultiplier = (dme / 100) * 1.00;
+        const defMultiplier = (effectiveDme / 100) * 1.00;
         const finalDefense = Math.round(rawDefense * defMultiplier);
 
         let rawTrainingOffense = trainingOff * offSpecStrength;
         if (useEliteOffense) rawTrainingOffense += trainingElite * eliteOffStrength;
         // Add warhorse points assigned to training units
         rawTrainingOffense += (trainingWarhorsePoints || 0);
-        const trainingOffMultiplier = (ome / 100) * (1 + generalBonus) * honorMult;
+        const trainingOffMultiplier = (effectiveOme / 100) * (1 + generalBonus) * honorMult;
         const finalTrainingOffense = Math.round(rawTrainingOffense * trainingOffMultiplier);
 
         let rawTrainingDefense = trainingDef * defSpecStrength;
         if (useEliteDefense) rawTrainingDefense += trainingElite * eliteDefStrength;
-        const trainingDefMultiplier = (dme / 100) * 1.00;
+        const trainingDefMultiplier = (effectiveDme / 100) * 1.00;
         const finalTrainingDefense = Math.round(rawTrainingDefense * trainingDefMultiplier);
 
         // Create row elements
