@@ -983,6 +983,8 @@ input[type=number] {
 }
 .military-analysis-box .military-title {
     margin-bottom: 4px;
+    font-size: 1.25rem;
+    line-height: 1.1;
 }
 /* ===== ANALYSIS GRID (Replaces Table) ===== */
 
@@ -1063,27 +1065,32 @@ input[type=number] {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding: 0 12px;
+    gap: 8px;
+    padding: 0 10px;
+    flex-wrap: nowrap;
 }
 
 .analysis-title-controls {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 6px;
     color: var(--text);
-    font-size: 0.90rem;
+    font-size: 0.84rem;
     font-weight: normal;
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .analysis-toggle-label {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
     color: var(--text);
-    font-size: 0.90rem;
+    font-size: 0.84rem;
     font-weight: normal;
     cursor: pointer;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .analysis-toggle-label input {
@@ -1533,11 +1540,13 @@ resetBtn.addEventListener('click', () => {
   if (document.getElementById('ome')) document.getElementById('ome').value = 100;
   if (document.getElementById('dme')) document.getElementById('dme').value = 100;
 
-  // ==== RESET FANATICISM / BLOODLUST ====
+// ==== RESET FANATICISM / BLOODLUST / AGGRESSION ==== 
   const fanCheckbox = document.getElementById('fanaticismToggle');
   if (fanCheckbox) fanCheckbox.checked = false;
   const bloodCheckbox = document.getElementById('bloodlustToggle');
   if (bloodCheckbox) bloodCheckbox.checked = false;
+  const aggressionCheckbox = document.getElementById('aggressionToggle');
+  if (aggressionCheckbox) aggressionCheckbox.checked = false;
 
   // ==== RESET HIDDEN WAR HORSES ====
   if (typeof setParsedWarhorses === 'function') {
@@ -2294,6 +2303,7 @@ window.addEventListener('storage', (e) => {
         <span class="analysis-title-controls">
             <label class="analysis-toggle-label"><input type="checkbox" id="fanaticismToggle"> Fanaticism</label>
             <label class="analysis-toggle-label"><input type="checkbox" id="bloodlustToggle"> Bloodlust</label>
+            <label class="analysis-toggle-label"><input type="checkbox" id="aggressionToggle"> Aggression</label>
         </span>
     </div>
     
@@ -3520,6 +3530,9 @@ function savePlannerData() {
     saved.dme = document.getElementById('dme')?.value;
 
     saved.homes = document.getElementById('homesPercent')?.value || 0;
+    saved.fanaticism = document.getElementById('fanaticismToggle')?.checked || false;
+    saved.bloodlust = document.getElementById('bloodlustToggle')?.checked || false;
+    saved.aggression = document.getElementById('aggressionToggle')?.checked || false;
 
     saved.calendar = {
         year: currentYear,
@@ -3664,6 +3677,21 @@ function loadPlannerData() {
         // ✅ LOAD HOMES
         if (data.homes !== undefined) {
             document.getElementById('homesPercent').value = data.homes;
+        }
+
+        if (data.fanaticism !== undefined) {
+            const fanEl = document.getElementById('fanaticismToggle');
+            if (fanEl) fanEl.checked = data.fanaticism;
+        }
+
+        if (data.bloodlust !== undefined) {
+            const bloodEl = document.getElementById('bloodlustToggle');
+            if (bloodEl) bloodEl.checked = data.bloodlust;
+        }
+
+        if (data.aggression !== undefined) {
+            const aggressionEl = document.getElementById('aggressionToggle');
+            if (aggressionEl) aggressionEl.checked = data.aggression;
         }
 
         // ✅ LOAD CALENDAR
@@ -3933,7 +3961,7 @@ function getParsedWarhorses() {
 
 // === ANALYSIS LISTENERS (handles rebuilds) ===
 function attachAnalysisListeners() {
-    const watchIds = ['ome', 'dme', 'race', 'pers', 'curOff', 'trainOff', 'curDef', 'trainDef', 'curElite', 'trainElite', 'fanaticismToggle', 'bloodlustToggle'];
+    const watchIds = ['ome', 'dme', 'race', 'pers', 'curOff', 'trainOff', 'curDef', 'trainDef', 'curElite', 'trainElite', 'fanaticismToggle', 'bloodlustToggle', 'aggressionToggle'];
 
     watchIds.forEach(id => {
         const el = document.getElementById(id);
@@ -4013,8 +4041,11 @@ function updateMilitaryAnalysis() {
     const dme = parseFloat(document.getElementById('dme')?.value) || 100;
     const fanaticismChecked = document.getElementById('fanaticismToggle')?.checked;
     const bloodlustChecked = document.getElementById('bloodlustToggle')?.checked;
+    const aggressionChecked = document.getElementById('aggressionToggle')?.checked;
     const effectiveOme = ome + (fanaticismChecked ? 5 : 0) + (bloodlustChecked ? 10 : 0);
     const effectiveDme = fanaticismChecked ? Math.max(0, dme - 5) : dme;
+    const soldiersOwned = parseInt((document.getElementById('curSoldiers')?.value || '0').replace(/,/g, ''), 10) || 0;
+    const soldierStrength = 3 + (aggressionChecked ? 2 : 0);
     const pers = document.getElementById('pers')?.value || "Artisan";
     const race = document.getElementById('race').value;
 
@@ -4066,6 +4097,7 @@ function updateMilitaryAnalysis() {
 
         let rawOffense = ownedOff * offSpecStrength;
         if (useEliteOffense) rawOffense += ownedElite * eliteOffStrength;
+        rawOffense += soldiersOwned * soldierStrength;
         // Add warhorse points assigned to owned units
         rawOffense += (ownedWarhorsePoints || 0);
         const offMultiplier = (effectiveOme / 100) * (1 + generalBonus);
