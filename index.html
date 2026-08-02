@@ -1722,12 +1722,8 @@ function parseMilitaryPaste() {
 <script>
 // === THIEF COST (base cost only; only Heretic changes it) ===
 function getThiefCostWithPersonality() {
-    const baseCost = 500;
-    const pers = document.getElementById('pers').value || "Artisan";
-    if (pers === "Heretic") {
-        return Math.round(baseCost * 1.0);
-    }
-    return baseCost;
+    // In this age thieves cost a flat 500 (no race/personality modifiers).
+    return 500;
 }
 </script>
 
@@ -3118,33 +3114,25 @@ function calculateTPA() {
 
 // ==== GRAND TOTAL - "NEEDS TO BE TRAINED" ====
 function updateGrandTotal() {
-    // Safe null checks
-    const getNeeded = (id) => {
-        const el = document.querySelector(`#${id} .train-amount`);
-        return el ? parseInt(el.textContent.replace(/,/g, '') || 0) : 0;
-    };
-
-    const offNeeded   = getNeeded('curOffExpand');
-    const defNeeded   = getNeeded('curDefExpand');
-    const eliteNeeded = getNeeded('curEliteExpand');
-    const thiefNeeded = getNeeded('curThiefExpand');
-
-    const totalSoldiersNeeded = offNeeded + defNeeded + eliteNeeded + thiefNeeded;
-
-    // Calculate total cost
-    const race = document.getElementById('race').value;
-    const eliteCosts = {
-        "Avian":750, "Dark Elf":700, "Dwarf":900, "Elf":700,
-        "Faery":1150, "Halfling":900, "Human":800, "Orc":850,
-        "Undead":800, "Gnome":900, "Dryad":800
-    };
-    const eliteCostPer = eliteCosts[race] || 900;
-
+    // matches the per-row displayed values (train-amount and train-cost).
+    let totalSoldiersNeeded = 0;
     let totalCost = 0;
-    totalCost += offNeeded   * 350;
-    totalCost += defNeeded   * getUnitTrainingCost(350);
-    totalCost += eliteNeeded * eliteCostPer;
-    totalCost += thiefNeeded * getThiefCostWithPersonality();
+
+    document.querySelectorAll('.unit-expand').forEach(expandRow => {
+        const amtEl = expandRow.querySelector('.train-amount');
+        const costEl = expandRow.querySelector('.train-cost');
+
+        if (amtEl) {
+            const amt = parseInt((amtEl.textContent || '').replace(/,/g, ''), 10) || 0;
+            totalSoldiersNeeded += amt;
+        }
+
+        if (costEl) {
+            const costText = costEl.textContent || '';
+            const n = parseInt(costText.replace(/[^0-9\-]/g, ''), 10) || 0;
+            totalCost += n;
+        }
+    });
 
     const grandEl = document.getElementById('grandTotal');
     if (grandEl) {
@@ -3908,9 +3896,19 @@ function updateMilitaryAnalysis() {
     const trainingElite = getNumber('trainElite');
 
     const offSpecStrength = getOspecStrength(race);
-    const defSpecStrength = getDspecStrength(race);
-    const eliteOffStrength = getEliteOffStrength(race);
-    const eliteDefStrength = getEliteDefStrength(race);
+    let defSpecStrength = getDspecStrength(race);
+    let eliteOffStrength = getEliteOffStrength(race);
+    let eliteDefStrength = getEliteDefStrength(race);
+
+    // Apply personality bonuses to strengths used in analysis
+    if (pers === "General") {
+        eliteOffStrength += 2; // General: +2 Offensive Elite Strength
+    }
+    if (pers === "Cleric") {
+        // Cleric: +1 Defensive Specialist strength AND +1 Elite defensive strength
+        defSpecStrength += 1;
+        eliteDefStrength += 1;
+    }
 
     const honorMult = getHonorMultiplier();
 
