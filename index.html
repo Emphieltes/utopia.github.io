@@ -1635,6 +1635,29 @@ function parseMilitaryPaste() {
         }
     }
 
+    // Parse War Horses total from the pasted military page (stored but not displayed)
+    try {
+        let parsedWarHorses = 0;
+        // Prefer the Army Availability section (variable `section`) when available
+        if (typeof section === 'string' && section.length > 0) {
+            const warMatch = section.match(/war\s*horses?\s*[:\-]?\s*([\d,]+)/i) || section.match(/warhorses?\s*[:\-]?\s*([\d,]+)/i) || section.match(/horses?\s*owned\s*[:\-]?\s*([\d,]+)/i);
+            if (warMatch && warMatch[1]) parsedWarHorses = parseInt(warMatch[1].replace(/,/g, ''), 10) || 0;
+        }
+
+        // Fallback: scan all lines
+        if (!parsedWarHorses) {
+            for (const line of lines) {
+                const m = line.match(/war\s*horses?\s*[:\-]?\s*([\d,]+)/i) || line.match(/warhorses?\s*[:\-]?\s*([\d,]+)/i) || line.match(/horses?\s*owned\s*[:\-]?\s*([\d,]+)/i);
+                if (m && m[1]) { parsedWarHorses = parseInt(m[1].replace(/,/g, ''), 10) || 0; break; }
+            }
+        }
+
+        setParsedWarhorses(parsedWarHorses);
+        if (parsedWarHorses > 0) messages.push(`War Horses → ${parsedWarHorses}`);
+    } catch (e) {
+        // ignore
+    }
+
     // 4. Training Estimates
     const trainingMatch = text.match(/Military Training Estimates([\s\S]*?)(?=$)/i);
     if (trainingMatch) {
@@ -1688,8 +1711,6 @@ function parseMilitaryPaste() {
             updates++;
         }
     }
-
-    // Restore owned thieves (this is the important protection)
     document.getElementById('curThief').value = currentThievesOwned;
     messages.push(`Owned Thieves → kept at ${currentThievesOwned}`);
 
@@ -3147,6 +3168,36 @@ function updateGrandTotal() {
     }
 }
 
+    // Parse War Horses total from the pasted military page (stored but not displayed)
+    let parsedWarHorses = 0;
+    try {
+        // Look for common patterns like "War Horses: 3,000" or "War Horses130"
+        let warMatch = section.match(/war\s*horses?\s*[:\-]?\s*([\d,]+)/i) ||
+                       section.match(/horses?\s*owned\s*[:\-]?\s*([\d,]+)/i);
+
+        if (warMatch && warMatch[1]) {
+            parsedWarHorses = parseInt(warMatch[1].replace(/,/g, ''), 10) || 0;
+        } else {
+            // fallback scanning whole text lines
+            for (const line of lines) {
+                const m = line.match(/war\s*horses?\s*[:\-]?\s*([\d,]+)/i) ||
+                          line.match(/horses?\s*owned\s*[:\-]?\s*([\d,]+)/i) ||
+                          line.match(/warhorses?\s*[:\-]?\s*([\d,]+)/i);
+                if (m && m[1]) {
+                    parsedWarHorses = parseInt(m[1].replace(/,/g, ''), 10) || 0;
+                    break;
+                }
+            }
+        }
+    } catch (e) {
+        parsedWarHorses = 0;
+    }
+
+    // Persist parsed warhorses (hidden field)
+    setParsedWarhorses(parsedWarHorses);
+
+    if (parsedWarHorses > 0) messages.push(`War Horses → ${parsedWarHorses}`);
+
 function applyNumberFormatting() {
     document.querySelectorAll('#militaryTable .number-input').forEach(input => {
 
@@ -3446,6 +3497,9 @@ function savePlannerData() {
         saved.curSoldiers = soldiersInput.value.replace(/,/g, '') || "0";
     }
 
+    // Save parsed warhorses (hidden)
+    saved.warhorses = getParsedWarhorses();
+
     localStorage.setItem('utopiaPlanner', JSON.stringify(saved));
 }
 
@@ -3576,6 +3630,11 @@ function loadPlannerData() {
                 const el = document.getElementById(id);
                 if (el) el.value = data.military[id];
             });
+        }
+
+        // Load parsed warhorses if present (hidden)
+        if (data.warhorses !== undefined) {
+            setParsedWarhorses(data.warhorses);
         }
 
     } catch (e) {
@@ -3803,6 +3862,23 @@ function getEliteDefStrength(race) {
     return eliteDefValues[race] || 4;
 }
 
+// === Persisted parsed War Horses (hidden) ===
+function setParsedWarhorses(n) {
+    try {
+        localStorage.setItem('utopiaWarhorses', String(parseInt(n || 0, 10) || 0));
+    } catch (e) {
+        // ignore storage errors
+    }
+}
+
+function getParsedWarhorses() {
+    try {
+        return parseInt(localStorage.getItem('utopiaWarhorses') || '0', 10) || 0;
+    } catch (e) {
+        return 0;
+    }
+}
+
 // === ANALYSIS LISTENERS (handles rebuilds) ===
 function attachAnalysisListeners() {
     const watchIds = ['ome', 'dme', 'race', 'pers', 'curOff', 'trainOff', 'curDef', 'trainDef', 'curElite', 'trainElite'];
@@ -3912,6 +3988,21 @@ function updateMilitaryAnalysis() {
 
     const honorMult = getHonorMultiplier();
 
+    // Warhorse support: get stored total (hidden)
+    const warhorsesTotal = getParsedWarhorses();
+    const ownedOffUnits = ownedOff + ownedElite;
+    const trainingOffUnits = trainingOff + trainingElite;
+    const totalOffUnits = ownedOffUnits + trainingOffUnits;
+    const warhorsesUsed = Math.min(warhorsesTotal, totalOffUnits);
+    const warStrengthPer = (race === 'Human') ? 3 : 2;
+    const warhorsePointsTotal = warhorsesUsed * warStrengthPer;
+    let ownedWarhorsePoints = 0;
+    let trainingWarhorsePoints = 0;
+    if (totalOffUnits > 0) {
+        ownedWarhorsePoints = Math.round(warhorsePointsTotal * (ownedOffUnits / totalOffUnits));
+        trainingWarhorsePoints = warhorsePointsTotal - ownedWarhorsePoints;
+    }
+
     const eliteModeEl = document.querySelector('input[name="eliteMode"]:checked');
     const useEliteOffense = eliteModeEl && eliteModeEl.value === "offense";
     const useEliteDefense = !useEliteOffense;
@@ -3921,6 +4012,8 @@ function updateMilitaryAnalysis() {
 
         let rawOffense = ownedOff * offSpecStrength;
         if (useEliteOffense) rawOffense += ownedElite * eliteOffStrength;
+        // Add warhorse points assigned to owned units
+        rawOffense += (ownedWarhorsePoints || 0);
         const offMultiplier = (ome / 100) * (1 + generalBonus) * honorMult;
         const finalOffense = Math.round(rawOffense * offMultiplier);
 
@@ -3931,6 +4024,8 @@ function updateMilitaryAnalysis() {
 
         let rawTrainingOffense = trainingOff * offSpecStrength;
         if (useEliteOffense) rawTrainingOffense += trainingElite * eliteOffStrength;
+        // Add warhorse points assigned to training units
+        rawTrainingOffense += (trainingWarhorsePoints || 0);
         const trainingOffMultiplier = (ome / 100) * (1 + generalBonus) * honorMult;
         const finalTrainingOffense = Math.round(rawTrainingOffense * trainingOffMultiplier);
 
