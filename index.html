@@ -4063,20 +4063,17 @@ function updateMilitaryAnalysis() {
         eliteDefStrength += 1;
     }
 
-    // Warhorse support: get stored total (hidden)
+    // Warhorse support: horses are always owned and can only be used with ready (owned) units
     const warhorsesTotal = getParsedWarhorses();
-    const ownedOffUnits = ownedOff + ownedElite;
-    const trainingOffUnits = trainingOff + trainingElite;
-    const totalOffUnits = ownedOffUnits + trainingOffUnits;
-    const warhorsesUsed = Math.min(warhorsesTotal, totalOffUnits);
+    const ownedOffUnits = ownedOff + ownedElite;          // only ready units
     const warStrengthPer = (race === 'Human') ? 3 : 2;
-    const warhorsePointsTotal = warhorsesUsed * warStrengthPer;
-    let ownedWarhorsePoints = 0;
-    let trainingWarhorsePoints = 0;
-    if (totalOffUnits > 0) {
-        ownedWarhorsePoints = Math.round(warhorsePointsTotal * (ownedOffUnits / totalOffUnits));
-        trainingWarhorsePoints = warhorsePointsTotal - ownedWarhorsePoints;
-    }
+
+    // Cap horses at the number of owned offensive units
+    const usableHorses = Math.min(warhorsesTotal, ownedOffUnits);
+    const ownedWarhorsePoints = usableHorses * warStrengthPer;
+
+    // Training column never gets warhorse points
+    const trainingWarhorsePoints = 0;
 
     const eliteModeEl = document.querySelector('input[name="eliteMode"]:checked');
     const useEliteOffense = eliteModeEl && eliteModeEl.value === "offense";
