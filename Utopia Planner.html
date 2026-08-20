@@ -1704,22 +1704,42 @@ function parseMilitaryPaste() {
     // Parse War Horses total from the pasted military page (stored but not displayed)
     try {
         let parsedWarHorses = 0;
-        // Prefer the Army Availability section (variable `section`) when available
+
         if (typeof section === 'string' && section.length > 0) {
-            const warMatch = section.match(/war\s*horses?\s*[:\-]?\s*([\d,]+)/i) || section.match(/warhorses?\s*[:\-]?\s*([\d,]+)/i) || section.match(/horses?\s*owned\s*[:\-]?\s*([\d,]+)/i);
-            if (warMatch && warMatch[1]) parsedWarHorses = parseInt(warMatch[1].replace(/,/g, ''), 10) || 0;
+            const armyLines = section.split('\n').map(l => l.trim()).filter(l => l);
+
+            for (const line of armyLines) {
+                if (/war\s*horses?|warhorses?/i.test(line)) {
+                    const parts = line.split(/\s+/).filter(Boolean);
+                    for (let i = 1; i < parts.length; i++) {
+                        const cleaned = parts[i].replace(/,/g, '').trim();
+                        if (cleaned !== '' && cleaned !== '-' && !isNaN(cleaned)) {
+                            parsedWarHorses += parseInt(cleaned, 10);
+                        }
+                    }
+                    break; // found the War Horses line
+                }
+            }
         }
 
-        // Fallback: scan all lines
+        // Fallback: scan whole paste if section method found nothing
         if (!parsedWarHorses) {
             for (const line of lines) {
-                const m = line.match(/war\s*horses?\s*[:\-]?\s*([\d,]+)/i) || line.match(/warhorses?\s*[:\-]?\s*([\d,]+)/i) || line.match(/horses?\s*owned\s*[:\-]?\s*([\d,]+)/i);
-                if (m && m[1]) { parsedWarHorses = parseInt(m[1].replace(/,/g, ''), 10) || 0; break; }
+                if (/war\s*horses?|warhorses?/i.test(line)) {
+                    const parts = line.split(/\s+/).filter(Boolean);
+                    for (let i = 1; i < parts.length; i++) {
+                        const cleaned = parts[i].replace(/,/g, '').trim();
+                        if (cleaned !== '' && cleaned !== '-' && !isNaN(cleaned)) {
+                            parsedWarHorses += parseInt(cleaned, 10);
+                        }
+                    }
+                    break;
+                }
             }
         }
 
         setParsedWarhorses(parsedWarHorses);
-        if (parsedWarHorses > 0) messages.push(`War Horses → ${parsedWarHorses}`);
+        if (parsedWarHorses > 0) messages.push(`War Horses → ${parsedWarHorses.toLocaleString()}`);
     } catch (e) {
         // ignore
     }
