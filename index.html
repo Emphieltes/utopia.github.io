@@ -1764,7 +1764,9 @@ function parseMilitaryPaste() {
             Dryad:     { off: buildUnitPattern('huldra', 'huldras'), def: buildUnitPattern('nymph', 'nymphs'),    elite: buildUnitPattern('will o the wisp', 'will o the wisps'), thief: buildUnitPattern('thief', 'thieves') }
         }[race] || { off: buildUnitPattern('swordsman', 'swordsmen'), def: buildUnitPattern('archer', 'archers'), elite: buildUnitPattern('knight', 'knights'), thief: buildUnitPattern('thief', 'thieves') };
 
-        for (const line of trainLines) {
+        for (const line of trainLines) {            
+            if (/the table below|training estimates for the next|commandant/i.test(line)) continue;
+
             let parts = line.split(/\s+/).map(p => p.trim());
             if (parts.length < 2) continue;
 
