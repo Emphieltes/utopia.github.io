@@ -2300,13 +2300,18 @@ function saveData() {
     document.querySelectorAll('tbody tr').forEach(row => {
         const science = row.dataset.science;
 
-        const invested = row.querySelector('[data-type="invested"]')?.value || '';
-        const target   = row.querySelector('[data-type="target"]')?.value || '';
+        const investedInput = row.querySelector('[data-type="invested"]');
+        const targetInput   = row.querySelector('[data-type="target"]');
+
+        const invested = investedInput?.value || '';
+        const target   = targetInput?.value || '';
 
         data.push({
             science,
             invested,
-            target
+            target,
+            fromParse: investedInput?.dataset.fromParse || 'false',
+            manualZero: investedInput?.dataset.manualZero || 'false'
         });
     });
 
@@ -2341,8 +2346,12 @@ function loadData() {
                 const investedInput = row.querySelector('[data-type="invested"]');
                 const targetInput   = row.querySelector('[data-type="target"]');
 
-                if (investedInput) investedInput.value = item.invested;
-                if (targetInput)   targetInput.value   = item.target;
+                if (investedInput) {
+                    investedInput.value = item.invested ?? '';
+                    investedInput.dataset.fromParse = item.fromParse ?? 'false';
+                    investedInput.dataset.manualZero = item.manualZero ?? 'false';
+                }
+                if (targetInput) targetInput.value = item.target ?? '';
             });
         }
 
