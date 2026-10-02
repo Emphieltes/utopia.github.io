@@ -414,6 +414,35 @@
   font-weight: 600;
 }
 
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.section-name {
+  color: inherit;
+  font-weight: 700;
+}
+
+.section-name .scientist-count {
+  color: #4fc3f7;
+  font-weight: 700;
+}
+
+.section-books {
+  color: #22c55e;
+  font-weight: 600;
+  min-width: 140px;
+  text-align: right;
+  margin-right: 6px;
+}
+
+.section-books .books-number {
+  font-size: 0.85em;
+}
+
 /* Floating Libraries Panel */
 #libraries-section {
     position: fixed;        /* stays in place */
@@ -957,7 +986,7 @@ window.addEventListener('load', updateBonusDisplay);
 
 <!-- SCIENCES ECONOMY TABLE -->
     <div id="economy-table" class="section-table" data-section="Economy">
-        <h2>Economy</h2>
+        <h2 class="section-header"><span class="section-name">Economy (0)</span><span class="section-books">(Books 0)</span></h2>
         <table>
             <thead>
                 <tr>
@@ -1134,7 +1163,7 @@ window.addEventListener('load', updateBonusDisplay);
 
 <!-- SCIENCES MILITARY TABLE -->
 <div id="military-table" class="section-table" data-section="Military">
-    <h2>Military</h2>
+    <h2 class="section-header"><span class="section-name">Military (0)</span><span class="section-books">(Books 0)</span></h2>
     <table>
         <thead>
             <tr>
@@ -1297,7 +1326,7 @@ window.addEventListener('load', updateBonusDisplay);
 
 <!-- SCIENCES ARCANE ARTS TABLE -->
 <div id="arcane-table" class="section-table" data-section="Arcane Arts">
-    <h2>Arcane Arts</h2>
+    <h2 class="section-header"><span class="section-name">Arcane Arts (0)</span><span class="section-books">(Books 0)</span></h2>
     <table>
         <thead>
             <tr>
@@ -1507,6 +1536,67 @@ function calculateRow(row) {
 }
 
 // Calculate Book Totals for each Science
+function updateSectionUnallocatedDisplay(sectionValues = {}) {
+    const sectionMap = {
+        'Economy': document.querySelector('#economy-table .section-header'),
+        'Military': document.querySelector('#military-table .section-header'),
+        'Arcane Arts': document.querySelector('#arcane-table .section-header')
+    };
+
+    Object.entries(sectionMap).forEach(([sectionName, headerEl]) => {
+        if (!headerEl) return;
+
+        const raw = sectionValues[sectionName];
+        const scientists = Number.isFinite(raw?.scientists) ? Number(raw.scientists) : (Number.isFinite(raw) ? Number(raw) : 0);
+        const books = Number.isFinite(raw?.books) ? Number(raw.books) : (Number.isFinite(raw) ? Number(raw) : 0);
+
+        const nameEl = headerEl.querySelector('.section-name');
+        const booksEl = headerEl.querySelector('.section-books');
+
+        if (nameEl) {
+            nameEl.innerHTML = `${sectionName} <span class="scientist-count">(${scientists.toLocaleString()})</span>`;
+        }
+
+        if (booksEl) {
+            booksEl.innerHTML = `(<span class="books-number">${books.toLocaleString()}</span>)`;
+        }
+    });
+}
+
+function parseSectionUnallocatedBooks(text) {
+    const sections = ['Economy', 'Military', 'Arcane Arts'];
+    const result = {};
+
+    sections.forEach(section => {
+        const escaped = section.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const sectionPattern = new RegExp(`${escaped}\\b[^\\n]*?(?:(?:-)|(?:\\s+))?(\\d[\\d,]*)\\s*(?:scientists?|researchers?|workers?|scholars?)\\s*(?:-|:|\\s+)?\\s*(\\d[\\d,]*)\\s*books?\\s*(?:available|free|left|remaining|unused|unallocated)`, 'i');
+        const fallbackBooksPattern = new RegExp(`${escaped}\\b[^\\n]*?(?:-\\s*)?(\\d[\\d,]*)\\s*books?\\s*(?:available|free|left|remaining|unused|unallocated)`, 'i');
+
+        let scientists = 0;
+        let books = 0;
+
+        const sectionMatch = text.match(sectionPattern);
+        if (sectionMatch) {
+            scientists = Number(sectionMatch[1].replace(/,/g, ''));
+            books = Number(sectionMatch[2].replace(/,/g, ''));
+        } else {
+            const fallbackBooks = text.match(fallbackBooksPattern);
+            if (fallbackBooks) {
+                books = Number(fallbackBooks[1].replace(/,/g, ''));
+            }
+
+            const scientistFallback = text.match(new RegExp(`${escaped}\\b[^\\n]*?(\\d[\\d,]*)\\s*(?:scientists?|researchers?|workers?|scholars?)`, 'i'));
+            if (scientistFallback) {
+                scientists = Number(scientistFallback[1].replace(/,/g, ''));
+            }
+        }
+
+        result[section] = { scientists, books };
+    });
+
+    return result;
+}
+
 function calculateAll() {
     // Skip breakpoint rows (they are not real sciences)
     document.querySelectorAll('tbody tr:not(.breakpoint-row)').forEach(row => {
@@ -1562,6 +1652,8 @@ function parseAndFillBooks() {
     }
 
     const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+    const sectionUnallocated = parseSectionUnallocatedBooks(text);
+    updateSectionUnallocatedDisplay(sectionUnallocated);
 
     // Science mapping
     const scienceMap = {
@@ -1629,6 +1721,7 @@ function parseAndFillBooks() {
 
     if (filled > 0) {
         calculateAll();
+        updateSectionUnallocatedDisplay(parseSectionUnallocatedBooks(text));
 
         if (typeof saveData === 'function') {
             saveData();
@@ -2168,6 +2261,12 @@ function resetToDefaults() {
     for (const key in REAL_SCIENCE_PCTS) {
         delete REAL_SCIENCE_PCTS[key];
     }
+
+    updateSectionUnallocatedDisplay({
+        Economy: { scientists: 0, books: 0 },
+        Military: { scientists: 0, books: 0 },
+        'Arcane Arts': { scientists: 0, books: 0 }
+    });
 
     calculateAll();
 
