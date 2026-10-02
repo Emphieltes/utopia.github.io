@@ -306,6 +306,7 @@
   padding-left: 11px;
   margin-top: 20px;
   max-width: 1000px;
+  width: 100%;
 }
 
 /* Section Title */
@@ -320,6 +321,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+  table-layout: fixed;
 }
 
 .section-table th,
@@ -327,6 +329,45 @@
   padding: 8px;
   border-bottom: 1px solid var(--border);
   text-align: left;
+}
+
+.section-table th:nth-child(1),
+.section-table td:nth-child(1) {
+  width: 75px;
+}
+
+.section-table th:nth-child(2),
+.section-table td:nth-child(2) {
+  width: 90px;
+}
+
+.section-table th:nth-child(3),
+.section-table td:nth-child(3) {
+  width: 310px;
+}
+
+.section-table th:nth-child(4),
+.section-table td:nth-child(4) {
+  width: 100px;
+}
+
+.section-table th:nth-child(5),
+.section-table td:nth-child(5) {
+  width: 65px;
+}
+
+.section-table th:nth-child(6),
+.section-table td:nth-child(6) {
+  width: 95px;
+}
+
+.section-table td.effect,
+.section-table th:nth-child(3) {
+  white-space: nowrap;
+}
+
+.section-table td[data-type="output"] {
+  text-align: center;
 }
 
 .section-table th {
@@ -382,7 +423,7 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px;
-    width: 170px;
+    width: 175px;
     font-size: 0.9rem;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     z-index: 1000;
@@ -399,7 +440,7 @@
 }
 
 #libraries-percent {
-    width: 140px;
+    width: 145px;
     padding: 4px 6px;
     border-radius: 6px;
     border: 1px solid var(--border);
@@ -1300,6 +1341,19 @@ function SciBonusPct(libsPercent) {
     return a * (1 - Math.pow(r, libsPercent));
 }
 
+function formatOutputWithLibraryBonus(baseOutput, libsPercent) {
+    const outputValue = Number.isFinite(baseOutput) ? baseOutput : 0;
+    const libs = parseFloat(libsPercent) || 0;
+
+    if (libs <= 0) {
+        return outputValue ? `${outputValue.toFixed(1)}%` : '-';
+    }
+
+    const bonusPct = SciBonusPct(libs);
+    const adjustedOutput = outputValue * (1 + (bonusPct / 100));
+    return `${adjustedOutput.toFixed(1)}%`;
+}
+
 // Calculate Books Needed for Individual Rows
 function calculateRow(row) {
     const investedInput = row.querySelector('[data-type="invested"]');
@@ -1345,7 +1399,7 @@ function calculateRow(row) {
         }
     }
 
-    outputCell.textContent = output ? output.toFixed(1) + '%' : '-';
+    outputCell.textContent = formatOutputWithLibraryBonus(output, libs);
 
     // BOOKS REQUIRED
     let targetBooks = 0;
