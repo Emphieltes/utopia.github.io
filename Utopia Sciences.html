@@ -128,6 +128,26 @@
   font-size: 0.85rem;
 }
 
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.settings-option input[type="checkbox"] {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
 /* Settings Panel Header/Title */
 .settings-header {
   font-size: 1rem;
@@ -751,6 +771,21 @@ tbody tr:hover {
       <label class="settings-option">
         <input type="checkbox" id="toggle-breakpoints">
         Show Artisan & Valor Breakpoints
+      </label>
+
+      <label class="settings-option">
+        <input type="checkbox" id="toggle-scientist-count" checked>
+        Display Scientists Owned
+      </label>
+
+      <label class="settings-option">
+        <input type="checkbox" id="toggle-unallocated-books" checked>
+        Display Unallocated Books
+      </label>
+
+      <label class="settings-option">
+        <input type="checkbox" id="toggle-potential-gain" checked>
+        Display Potential Science Gained
       </label>
 	</div>
   </div>
@@ -1547,11 +1582,11 @@ function calculateRow(row) {
     let output = 0;
     let k = 0;
 
-    // If a parsed real % exists from the copied page, prefer it unless the user manually edited the invested amount.
+    // If the row was populated from the pasted game data, prefer the real current output from the game.
     const cameFromParser = investedInput.dataset.fromParse === 'true';
     const manuallyZeroed = investedInput.dataset.manualZero === 'true' || (investedInput.value === '0' && investedInput.dataset.fromParse === 'false');
 
-    if (realPct != null && cameFromParser && !manuallyZeroed && invested === 0) {
+    if (realPct != null && cameFromParser && !manuallyZeroed) {
         output = realPct;
         k = factor * bonus;
     } else {
@@ -1571,9 +1606,15 @@ function calculateRow(row) {
 
     if (sectionBooks > 0 && potentialGain > 0) {
         const currentText = currentDisplay === '-' ? '0.0%' : currentDisplay;
-        outputCell.innerHTML = `${currentText} <span style="color: #f59e0b;">(${potentialGain.toFixed(1)}%)</span>`;
+        outputCell.innerHTML = `${currentText} <span class="potential-gain-display" style="color: #f59e0b;">(${potentialGain.toFixed(1)}%)</span>`;
     } else {
         outputCell.textContent = currentDisplay;
+    }
+
+    const potentialGainEl = outputCell.querySelector('.potential-gain-display');
+    if (potentialGainEl) {
+        const showPotentialGain = document.getElementById('toggle-potential-gain')?.checked !== false;
+        potentialGainEl.style.display = showPotentialGain ? '' : 'none';
     }
 
     // BOOKS REQUIRED
@@ -1758,13 +1799,14 @@ function parseAndFillBooks() {
         let booksStr = parts[1].replace(/,/g, '');
         let effectText = parts[2] || '';
 
-        // Extract first percentage found
-        const pctMatch = effectText.match(/-?\d+(\.\d+)?(?=%)/);
+        // Extract the actual visible current output percentage from the pasted line.
+        const lineText = `${nameRaw} ${booksStr} ${effectText}`;
+        const pctMatches = [...lineText.matchAll(/-?\d+(?:\.\d+)?(?=%)/g)].map(match => Math.abs(parseFloat(match[0])));
 
         let realPct = null;
 
-        if (pctMatch) {
-            realPct = Math.abs(parseFloat(pctMatch[0]));
+        if (pctMatches.length > 0) {
+            realPct = pctMatches[pctMatches.length - 1];
         }
 
         if (!scienceMap[name]) return;
@@ -1791,6 +1833,9 @@ function parseAndFillBooks() {
     if (filled > 0) {
         calculateAll();
         updateSectionUnallocatedDisplay(parseSectionUnallocatedBooks(text));
+        if (typeof applyDisplayToggles === 'function') {
+            applyDisplayToggles();
+        }
 
         if (typeof saveData === 'function') {
             saveData();
@@ -2341,10 +2386,46 @@ function resetToDefaults() {
     });
 
     calculateAll();
+    if (typeof applyDisplayToggles === 'function') {
+        applyDisplayToggles();
+    }
 
     if (typeof saveData === 'function') {
         saveData();
     }
+}
+
+function applyDisplayToggles() {
+    const scientistToggle = document.getElementById('toggle-scientist-count');
+    const booksToggle = document.getElementById('toggle-unallocated-books');
+    const potentialToggle = document.getElementById('toggle-potential-gain');
+
+    const showScientists = scientistToggle?.checked === true;
+    const showBooks = booksToggle?.checked === true;
+
+    if (potentialToggle) {
+        if (!showBooks) {
+            potentialToggle.checked = false;
+        }
+        const potentialLabel = potentialToggle.closest('label');
+        if (potentialLabel) {
+            potentialLabel.style.display = showBooks ? '' : 'none';
+        }
+    }
+
+    const showPotentialGain = showBooks && potentialToggle?.checked === true;
+
+    document.querySelectorAll('.scientist-count').forEach(el => {
+        el.style.display = showScientists ? '' : 'none';
+    });
+
+    document.querySelectorAll('.section-books').forEach(el => {
+        el.style.display = showBooks ? '' : 'none';
+    });
+
+    document.querySelectorAll('.potential-gain-display').forEach(el => {
+        el.style.display = showPotentialGain ? '' : 'none';
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2401,6 +2482,47 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('breakpointsEnabled', isChecked);
         });
     }
+
+    const toggles = [
+        document.getElementById('toggle-scientist-count'),
+        document.getElementById('toggle-unallocated-books'),
+        document.getElementById('toggle-potential-gain')
+    ];
+
+    const booksToggle = document.getElementById('toggle-unallocated-books');
+    const potentialToggle = document.getElementById('toggle-potential-gain');
+
+    toggles.forEach(toggle => {
+        if (!toggle) return;
+
+        const storageKey = {
+            'toggle-scientist-count': 'scientistsDisplayEnabled',
+            'toggle-unallocated-books': 'unallocatedBooksDisplayEnabled',
+            'toggle-potential-gain': 'potentialGainDisplayEnabled'
+        }[toggle.id];
+
+        if (storageKey) {
+            const saved = localStorage.getItem(storageKey);
+            if (saved !== null) toggle.checked = saved === 'true';
+        }
+
+        toggle.addEventListener('change', () => {
+            if (storageKey) localStorage.setItem(storageKey, String(toggle.checked));
+
+            if (toggle === booksToggle && !booksToggle.checked && potentialToggle) {
+                potentialToggle.checked = false;
+                localStorage.setItem('potentialGainDisplayEnabled', 'false');
+            }
+
+            applyDisplayToggles();
+        });
+    });
+
+    if (booksToggle && !booksToggle.checked && potentialToggle) {
+        potentialToggle.checked = false;
+    }
+
+    applyDisplayToggles();
     
     // Artisan Target Hour Popup
     const artisanCalcBtn = document.getElementById("artisanCalcBtn");
