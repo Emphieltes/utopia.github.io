@@ -1423,6 +1423,7 @@ function setupInvestedFormatting() {
 
         input.addEventListener('input', () => {
             input.value = input.value.replace(/[^\d]/g, '');
+            input.dataset.fromParse = 'false';
         });
 
     });
@@ -1473,6 +1474,48 @@ function formatOutputWithLibraryBonus(baseOutput, libsPercent) {
     return `${adjustedOutput.toFixed(1)}%`;
 }
 
+function getSectionBooksAvailable(sectionName) {
+    const sectionMap = {
+        'Economy': '#economy-table .section-books .books-number',
+        'Military': '#military-table .section-books .books-number',
+        'Arcane Arts': '#arcane-table .section-books .books-number'
+    };
+
+    const selector = sectionMap[sectionName];
+    if (!selector) return 0;
+
+    const el = document.querySelector(selector);
+    if (!el) return 0;
+
+    const value = Number(el.textContent.replace(/,/g, '')) || 0;
+    return Number.isFinite(value) ? value : 0;
+}
+
+function getPotentialOutputIncrease(row, sectionBooks) {
+    if (!row || !(sectionBooks > 0)) return 0;
+
+    const investedInput = row.querySelector('[data-type="invested"]');
+    const invested = parseFloat((investedInput?.value || '').replace(/,/g, '')) || 0;
+    let factor = parseFloat(row.dataset.factor) || 0;
+    factor = applyBonuses(factor, row.dataset.science, row.dataset.section);
+
+    const libs = parseFloat(document.getElementById('libraries-percent')?.value) || 0;
+    const bonus = 1 + (SciBonusPct(libs) / 100);
+    const k = factor * bonus;
+    const scienceName = row.dataset.science;
+    const realPct = REAL_SCIENCE_PCTS[scienceName];
+
+    let currentOutput = 0;
+    if (realPct != null && invested === 0) {
+        currentOutput = realPct;
+    } else if (invested > 0) {
+        currentOutput = Math.pow(invested, EXP) * k;
+    }
+
+    const potentialOutput = Math.pow(invested + sectionBooks, EXP) * k;
+    return Math.max(0, potentialOutput - currentOutput);
+}
+
 // Calculate Books Needed for Individual Rows
 function calculateRow(row) {
     const investedInput = row.querySelector('[data-type="invested"]');
@@ -1501,9 +1544,9 @@ function calculateRow(row) {
     let output = 0;
     let k = 0;
 
-    // If a parsed real % exists, use it only when the user has not entered books.
-    // Manual invested values should always override stale parsed output values.
-    if (realPct != null && invested === 0) {
+    // If a parsed real % exists from the copied page, prefer it unless the user manually edited the invested amount.
+    const cameFromParser = investedInput.dataset.fromParse === 'true';
+    if (realPct != null && (invested === 0 || cameFromParser)) {
         output = realPct;
         k = factor * bonus;
     } else {
@@ -1514,10 +1557,27 @@ function calculateRow(row) {
         }
     }
 
-    outputCell.textContent = formatOutputWithLibraryBonus(output, libs);
+    const sectionBooks = getSectionBooksAvailable(row.dataset.section);
+    const potentialGain = getPotentialOutputIncrease(row, sectionBooks);
+    const currentDisplay = formatOutputWithLibraryBonus(output, libs);
+
+    if (sectionBooks > 0 && potentialGain > 0) {
+        const currentText = currentDisplay === '-' ? '0.0%' : currentDisplay;
+        outputCell.innerHTML = `${currentText} <span style="color: #f59e0b;">(${potentialGain.toFixed(1)}%)</span>`;
+    } else {
+        outputCell.textContent = currentDisplay;
+    }
 
     // BOOKS REQUIRED
     let targetBooks = 0;
+    const currentDisplayValue = parseFloat(currentDisplay.replace(/%/g, '')) || 0;
+    const authoritativeCurrentPct = (realPct != null && cameFromParser) ? realPct : currentDisplayValue;
+
+    if (target > 0 && isFinite(authoritativeCurrentPct) && target <= authoritativeCurrentPct) {
+        reqCell.textContent = '0';
+        reqCell.classList.remove('req', 'overshot');
+        return;
+    }
 
     if (target > 0 && isFinite(k) && k > 0) {
         targetBooks = Math.pow(target / k, INV_EXP);
@@ -1710,6 +1770,7 @@ function parseAndFillBooks() {
 
         // Apply books
         input.value = Number(booksStr).toLocaleString('en-US');
+        input.dataset.fromParse = 'true';
 
         // Store REAL game %
         if (realPct !== null) {
@@ -2253,7 +2314,10 @@ function resetToDefaults() {
         const invested = row.querySelector('[data-type="invested"]');
         const target   = row.querySelector('[data-type="target"]');
 
-        if (invested) invested.value = 0;
+        if (invested) {
+            invested.value = 0;
+            invested.dataset.fromParse = 'false';
+        }
         if (target) target.value = 0;
     });
 
