@@ -744,23 +744,23 @@ tbody tr:hover {
 const ARTISAN_BREAKPOINTS = {
     normal: [
         { pct: 0,   hours: 16 },   // base
-        { pct: 3.2, hours: 15 },
+        { pct: 3.1, hours: 15 },
         { pct: 9.4, hours: 14 },
         { pct: 15.7, hours: 13 },
         { pct: 21.9, hours: 12 }
     ],
     buildersBoon: [
         { pct: 0,   hours: 12 },   // base with BB
-        { pct: 4.2, hours: 11 },
-        { pct: 12.5, hours: 10 },
-        { pct: 20.8, hours: 9 },
-        { pct: 29.2, hours: 8 }
+        { pct: 4.1, hours: 11 },
+        { pct: 12.6, hours: 10 },
+        { pct: 20.9, hours: 9 },
+        { pct: 29.3, hours: 8 }
     ],
     double: [
         { pct: 0,   hours: 6 },    // base with BB + Double
-        { pct: 8.3, hours: 5 },
-        { pct: 25.0, hours: 4 },
-        { pct: 41.7, hours: 3 }
+        { pct: 8.2, hours: 5 },
+        { pct: 24.9, hours: 4 },
+        { pct: 41.6, hours: 3 }
     ]
 };
 
@@ -1027,7 +1027,97 @@ window.addEventListener('load', updateBonusDisplay);
                 <!-- Artisan Breakpoints -->
                 <tr id="artisan-breakpoint" class="breakpoint-row" style="display:none;">
                     <td colspan="6" class="breakpoint-info">
-                        Normal Build Time: --h | Next: -- | Builder's Boon: --h | Next: -- | BB + Double Construction: --h | Next: --
+                        <div class="valor-breakpoint-wrapper">
+                            <span id="artisanBreakpointText">
+                                Normal Build Time: --h | Next: -- | Builder's Boon: --h | Next: -- | Haste + Builder's Boon: --h | Next: --
+                            </span>
+
+                            <button
+                                type="button"
+                                id="artisanCalcBtn"
+                                class="valor-calc-btn">
+                                Target Hour
+                            </button>
+                            <div id="artisanTargetPopup" class="valor-popup hidden">
+                                <div class="valor-popup-header">
+                                    Artisan Target Hour Calculator
+                                </div>
+                                <div class="valor-popup-body">
+                                    <div class="valor-section-title">
+                                        Current Construction Times
+                                    </div>
+                                    <table class="valor-info-table">
+                                        <tr>
+                                            <td>Normal</td>
+                                            <td id="artisanPopupNormalTime">-- hrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Builder's Boon</td>
+                                            <td id="artisanPopupBuilderTime">-- hrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Haste + Builder's Boon</td>
+                                            <td id="artisanPopupHasteBuilderTime">-- hrs</td>
+                                        </tr>
+                                        <tr id="artisanPopupDoubleRow" style="display:none;">
+                                            <td>BB + Double Construction</td>
+                                            <td id="artisanPopupDoubleTime">-- hrs</td>
+                                        </tr>
+                                        <tr id="artisanPopupHasteDoubleRow" style="display:none;">
+                                            <td>Haste + BB + Double Construction</td>
+                                            <td id="artisanPopupHasteDoubleTime">-- hrs</td>
+                                        </tr>
+                                    </table>
+                                    <div class="valor-current">
+                                        <div class="valor-section-title">Current Artisan</div>
+                                        <div id="artisanCurrentInfo" class="valor-current-info">
+                                            --.-% - -- Books Invested
+                                        </div>
+                                    </div>
+                                    <div class="valor-target">
+                                        <div class="valor-section-title">
+                                            Desired Build Time
+                                        </div>
+                                        <div class="valor-target-input">
+                                            <input
+                                                type="number"
+                                                id="artisanTargetHours"
+                                                min="1"
+                                                max="24"
+                                                value="0">
+                                            <span>Hours</span>
+                                        </div>
+                                        <div class="valor-section-title">
+                                            Required Artisan
+                                        </div>
+                                        <div class="valor-required">
+                                            <table class="valor-required-table">
+                                                <tr>
+                                                    <td>Normal</td>
+                                                    <td id="artisanNormalResult">--% — -- Books (+--)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Builder's Boon</td>
+                                                    <td id="artisanBuilderResult">--% — -- Books (+--)</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Haste + Builder's Boon</td>
+                                                    <td id="artisanHasteBuilderResult">--% — -- Books (+--)</td>
+                                                </tr>
+                                                <tr id="artisanDoubleResultRow" style="display:none;">
+                                                    <td>BB + Double Construction</td>
+                                                    <td id="artisanDoubleResult">--% — -- Books (+--)</td>
+                                                </tr>
+                                                <tr id="artisanHasteDoubleResultRow" style="display:none;">
+                                                    <td>Haste + BB + Double Construction</td>
+                                                    <td id="artisanHasteDoubleResult">--% — -- Books (+--)</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             </tbody>
@@ -1382,16 +1472,12 @@ function calculateRow(row) {
     let output = 0;
     let k = 0;
 
-    // If REAL parsed value exists, ALWAYS use it
-    if (realPct != null) {
-
+    // If a parsed real % exists, use it only when the user has not entered books.
+    // Manual invested values should always override stale parsed output values.
+    if (realPct != null && invested === 0) {
         output = realPct;
-
-        // ALWAYS use theoretical scaling, NOT invested-derived k
         k = factor * bonus;
-
     } else {
-
         k = factor * bonus;
 
         if (invested > 0) {
@@ -1577,13 +1663,75 @@ function calculateSectionTotal(sectionName) {
 }
 
 function updateBreakpoints() {
-    const artisanPct = getScienceOutputPct("Artisan");
-    updateCombinedBreakpoint("artisan-breakpoint", artisanPct, ARTISAN_BREAKPOINTS,
-        "Normal Build Time", "Builder's Boon", "BB + Double Construction");
+    updateArtisanBreakpoints();
 
     const valorPct = getScienceOutputPct("Valor");
-
     updateTrainingBreakpoints(valorPct);
+}
+
+function getArtisanConstructionTimes() {
+    const { race } = getCurrentRacePers();
+    const isDwarf = race === "Dwarf";
+
+    const normal = isDwarf ? 8 : ARTISAN_BREAKPOINTS.normal[0].hours;
+    const buildersBoon = isDwarf ? 6 : ARTISAN_BREAKPOINTS.buildersBoon[0].hours;
+    const double = isDwarf ? null : ARTISAN_BREAKPOINTS.double[0].hours;
+
+    return {
+        normal,
+        buildersBoon,
+        double,
+        hasteBuildersBoon: buildersBoon * 0.75,
+        hasteDouble: double !== null ? double * 0.75 : null,
+        doubleAllowed: !isDwarf
+    };
+}
+
+function updateArtisanBreakpoints() {
+    const row = document.getElementById("artisan-breakpoint");
+    if (!row) return;
+
+    const isVisible = document.getElementById("toggle-breakpoints").checked;
+    row.style.display = isVisible ? "table-row" : "none";
+
+    const artisanPct = getScienceOutputPct("Artisan");
+    const modes = getArtisanConstructionTimes();
+    const normal = getTrainingInfo(modes.normal, artisanPct);
+    const builder = getTrainingInfo(modes.buildersBoon, artisanPct);
+    const hasteBuilder = getTrainingInfo(modes.hasteBuildersBoon, artisanPct);
+    const double = modes.double !== null ? getTrainingInfo(modes.double, artisanPct) : null;
+    const hasteDouble = modes.hasteDouble !== null ? getTrainingInfo(modes.hasteDouble, artisanPct) : null;
+
+    let html = `Normal Build Time: ${normal.current}h | Next: `;
+    html += normal.next !== null ? `${normal.next}h at ${normal.nextPct}%` : `--`;
+
+    html += ` | Builder's Boon: ${builder.current}h | Next: `;
+    html += builder.next !== null ? `${builder.next}h at ${builder.nextPct}%` : `--`;
+
+    if (modes.double !== null && double) {
+        html += ` | Haste + Builder's Boon: ${hasteBuilder.current}h | Next: `;
+        html += hasteBuilder.next !== null ? `${hasteBuilder.next}h at ${hasteBuilder.nextPct}%` : `--`;
+        html += ` | BB + Double Construction: ${double.current}h | Next: `;
+        html += double.next !== null ? `${double.next}h at ${double.nextPct}%` : `--`;
+        html += ` | Haste + BB + Double Construction: ${hasteDouble.current}h | Next: `;
+        html += hasteDouble.next !== null ? `${hasteDouble.next}h at ${hasteDouble.nextPct}%` : `--`;
+    } else {
+        html += ` | Haste + Builder's Boon: ${hasteBuilder.current}h | Next: `;
+        html += hasteBuilder.next !== null ? `${hasteBuilder.next}h at ${hasteBuilder.nextPct}%` : `--`;
+    }
+
+    const artisanText = document.getElementById("artisanBreakpointText");
+    if (artisanText) artisanText.textContent = html;
+
+    const artisanRow = document.querySelector('tr[data-science="Artisan"]');
+    const investedBooks = artisanRow
+        ? parseInt(artisanRow.querySelector('[data-type="invested"]').value.replace(/,/g, ''), 10) || 0
+        : 0;
+
+    const currentInfo = document.getElementById("artisanCurrentInfo");
+    if (currentInfo) {
+        currentInfo.textContent = `${artisanPct.toFixed(1)}% - ${investedBooks.toLocaleString()} Books Invested`;
+    }
 }
 
 function updateTrainingBreakpoints(valorPct) {
@@ -1640,6 +1788,74 @@ function updateTrainingBreakpoints(valorPct) {
     }
 
     document.getElementById("valorBreakpointText").innerHTML = html;
+}
+
+function updateArtisanPopup() {
+    const artisanPct = getScienceOutputPct("Artisan");
+    const modes = getArtisanConstructionTimes();
+    const normal = getTrainingInfo(modes.normal, artisanPct);
+    const builder = getTrainingInfo(modes.buildersBoon, artisanPct);
+    const hasteBuilder = getTrainingInfo(modes.hasteBuildersBoon, artisanPct);
+    const double = modes.double !== null ? getTrainingInfo(modes.double, artisanPct) : null;
+    const hasteDouble = modes.hasteDouble !== null ? getTrainingInfo(modes.hasteDouble, artisanPct) : null;
+
+    document.getElementById("artisanPopupNormalTime").textContent = normal.current + " hrs";
+    document.getElementById("artisanPopupBuilderTime").textContent = builder.current + " hrs";
+    document.getElementById("artisanPopupHasteBuilderTime").textContent = hasteBuilder.current + " hrs";
+    document.getElementById("artisanPopupDoubleTime").textContent = double ? double.current + " hrs" : "N/A";
+    document.getElementById("artisanPopupHasteDoubleTime").textContent = hasteDouble ? hasteDouble.current + " hrs" : "N/A";
+
+    const doubleRow = document.getElementById("artisanPopupDoubleRow");
+    const hasteDoubleRow = document.getElementById("artisanPopupHasteDoubleRow");
+    const doubleResultRow = document.getElementById("artisanDoubleResultRow");
+    const hasteDoubleResultRow = document.getElementById("artisanHasteDoubleResultRow");
+
+    const showDouble = modes.double !== null;
+    if (doubleRow) doubleRow.style.display = showDouble ? "table-row" : "none";
+    if (hasteDoubleRow) hasteDoubleRow.style.display = showDouble ? "table-row" : "none";
+    if (doubleResultRow) doubleResultRow.style.display = showDouble ? "table-row" : "none";
+    if (hasteDoubleResultRow) hasteDoubleResultRow.style.display = showDouble ? "table-row" : "none";
+
+    updateArtisanTargetResults(artisanPct, modes.normal, modes.buildersBoon, modes.hasteBuildersBoon, modes.double, modes.hasteDouble);
+}
+
+function updateArtisanTargetResults(artisanPct, normalBase, builderBase, hasteBuilderBase, doubleBase, hasteDoubleBase) {
+    const targetInput = document.getElementById("artisanTargetHours");
+    const targetHours = parseInt(targetInput?.value, 10) || 0;
+    const artisanRow = document.querySelector('tr[data-science="Artisan"]');
+    const investedBooks = artisanRow
+        ? parseInt(artisanRow.querySelector('[data-type="invested"]').value.replace(/,/g, ''), 10) || 0
+        : 0;
+
+    const artisanK = getArtisanScalingFactor();
+
+    const updateResult = (spanId, effectiveBaseHours, isAvailable = true) => {
+        if (!isAvailable) {
+            document.getElementById(spanId).textContent = `--% — -- (+--)`;
+            return;
+        }
+
+        const requiredPct = getRequiredValorPercent(targetHours, effectiveBaseHours);
+        const result = getValorBooksForTarget(requiredPct, investedBooks, artisanK);
+
+        const text = targetHours > 0
+            ? `${requiredPct.toFixed(1)}% — ${result.totalBooks.toLocaleString()} (+${result.moreBooks.toLocaleString()})`
+            : `--% — -- (+--)`;
+
+        document.getElementById(spanId).textContent = text;
+    };
+
+    updateResult("artisanNormalResult", normalBase, true);
+    updateResult("artisanBuilderResult", builderBase, true);
+    updateResult("artisanHasteBuilderResult", hasteBuilderBase, true);
+    updateResult("artisanDoubleResult", doubleBase, doubleBase !== null);
+    updateResult("artisanHasteDoubleResult", hasteDoubleBase, hasteDoubleBase !== null);
+}
+
+function getArtisanScalingFactor() {
+    const libs = parseFloat(document.getElementById('libraries-percent')?.value) || 0;
+    const bonus = 1 + (SciBonusPct(libs) / 100);
+    return applyBonuses(0.04302, "Artisan", "Economy") * bonus;
 }
 
 function updateValorPopup() {
@@ -1815,9 +2031,13 @@ function getTrainingSpell() {
     };
 }
 
+function roundHalfUp(value) {
+    return Math.floor(value + 0.5);
+}
+
 function getTrainingInfo(baseHours, sciPct) {
     const actualHours = baseHours * (1 - sciPct / 100);
-    let displayedHours = Math.round(actualHours);
+    let displayedHours = roundHalfUp(actualHours);
 
     const nextDisplayed = displayedHours - 1;
     if (nextDisplayed < 1) {
@@ -2011,6 +2231,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Artisan Target Hour Popup
+    const artisanCalcBtn = document.getElementById("artisanCalcBtn");
+    const artisanPopup = document.getElementById("artisanTargetPopup");
+
+    if (artisanCalcBtn && artisanPopup) {
+        artisanCalcBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            updateArtisanPopup();
+            artisanPopup.classList.toggle("hidden");
+        });
+        document.addEventListener("click", function () {
+            artisanPopup.classList.add("hidden");
+        });
+        artisanPopup.addEventListener("click", function (e) {
+            e.stopPropagation();
+        });
+    }
+
+    const artisanTargetInput = document.getElementById("artisanTargetHours");
+    if (artisanTargetInput) {
+        artisanTargetInput.addEventListener("input", () => {
+            updateArtisanPopup();
+        });
+    }
+
     // Valor Target Hour Popup
     const calcBtn = document.getElementById("valorCalcBtn");
     const popup = document.getElementById("valorTargetPopup");
