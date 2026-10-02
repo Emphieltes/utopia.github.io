@@ -1424,6 +1424,7 @@ function setupInvestedFormatting() {
         input.addEventListener('input', () => {
             input.value = input.value.replace(/[^\d]/g, '');
             input.dataset.fromParse = 'false';
+            input.dataset.manualZero = input.value === '0' ? 'true' : 'false';
         });
 
     });
@@ -1505,8 +1506,9 @@ function getPotentialOutputIncrease(row, sectionBooks) {
     const scienceName = row.dataset.science;
     const realPct = REAL_SCIENCE_PCTS[scienceName];
 
+    const isExplicitZero = investedInput && investedInput.value === '0' && investedInput.dataset.fromParse === 'false';
     let currentOutput = 0;
-    if (realPct != null && invested === 0) {
+    if (realPct != null && invested === 0 && !isExplicitZero) {
         currentOutput = realPct;
     } else if (invested > 0) {
         currentOutput = Math.pow(invested, EXP) * k;
@@ -1525,7 +1527,8 @@ function calculateRow(row) {
 
     if (!investedInput || !targetInput) return;
 
-    const invested = parseFloat(investedInput.value.replace(/,/g, '')) || 0;
+    const investedRaw = investedInput.value.replace(/,/g, '').trim();
+    const invested = investedRaw === '' ? 0 : (parseFloat(investedRaw) || 0);
     const target   = parseFloat(targetInput.value) || 0;
     let factor     = parseFloat(row.dataset.factor) || 0;
 
@@ -1546,7 +1549,9 @@ function calculateRow(row) {
 
     // If a parsed real % exists from the copied page, prefer it unless the user manually edited the invested amount.
     const cameFromParser = investedInput.dataset.fromParse === 'true';
-    if (realPct != null && (invested === 0 || cameFromParser)) {
+    const manuallyZeroed = investedInput.dataset.manualZero === 'true' || (investedInput.value === '0' && investedInput.dataset.fromParse === 'false');
+
+    if (realPct != null && cameFromParser && !manuallyZeroed && invested === 0) {
         output = realPct;
         k = factor * bonus;
     } else {
@@ -1554,12 +1559,15 @@ function calculateRow(row) {
 
         if (invested > 0) {
             output = Math.pow(invested, EXP) * k;
+        } else {
+            output = 0;
         }
     }
 
     const sectionBooks = getSectionBooksAvailable(row.dataset.section);
     const potentialGain = getPotentialOutputIncrease(row, sectionBooks);
-    const currentDisplay = formatOutputWithLibraryBonus(output, libs);
+    const isExplicitZero = investedInput.value === '0' && investedInput.dataset.fromParse === 'false';
+    const currentDisplay = isExplicitZero ? '0.0%' : formatOutputWithLibraryBonus(output, libs);
 
     if (sectionBooks > 0 && potentialGain > 0) {
         const currentText = currentDisplay === '-' ? '0.0%' : currentDisplay;
