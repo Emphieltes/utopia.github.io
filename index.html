@@ -1860,12 +1860,12 @@ function getUnitTrainingCost(baseCost) {
 
     // General Personality: -25% training cost
     if (pers === "General") {
-        multiplier *= 0.75;
+        multiplier *= 1.00;
     }
 
     // Human Race: -30% training cost
     if (race === "Human") {
-        multiplier *= 0.70;
+        multiplier *= 0.80;
     }
 
     return Math.round(baseCost * multiplier);
@@ -1910,9 +1910,9 @@ function updateAllTrainingCosts() {
         const costEl = eliteExpand.querySelector('.train-cost');
         if (amountEl && costEl) {
             const eliteCosts = {
-                "Avian":750,"Dark Elf":700,"Dwarf":900,"Elf":700,
-                "Faery":1150,"Halfling":900,"Human":800,"Orc":850,
-                "Undead":800,"Gnome":900,"Dryad":800
+                "Avian":900,"Dark Elf":900,"Dwarf":950,"Elf":1000,
+                "Faery":1000,"Halfling":1000,"Human":900,"Orc":900,
+                "Undead":900,"Gnome":850,"Dryad":925
             };
             const baseEliteCost = eliteCosts[race] || 900;
             const amount = parseInt(amountEl.textContent.replace(/,/g,'')) || 0;
@@ -2009,7 +2009,7 @@ function calculateTotalPopulation() {
 
     switch (race) {
         case 'Halfling':
-            raceBonus = 1.125;
+            raceBonus = 1.10;
             break;
 
         case 'Faery':
@@ -2109,7 +2109,7 @@ window.addEventListener('storage', (e) => {
 
 <!-- HEADER -->
 <div class="header-section">
-    <h1>Utopia Province Planner - AGE 115</h1>
+    <h1>Utopia Province Planner - AGE 117</h1>
 
 <!-- POPULATION -->
 <div class="planner-summary-box">
@@ -2146,25 +2146,25 @@ window.addEventListener('storage', (e) => {
     <option>Dwarf</option>
     <option>Elf</option>
     <option>Faery</option>
+    <option>Gnome</option>
     <option>Halfling</option>
     <option>Human</option>
     <option>Orc</option>
     <option>Undead</option>
-	<!--<option>Gnome</option> -->
     </select>
 <!-- PERSONALITY -->
     <label>Personality</label>
     <select id="pers" style="width:200px; height:30px; padding-top: 5px; padding-bottom: 5px;">
-    <option>Artisan</option>
+    <!-- <option>Artisan</option> -->
     <option>Cleric</option>
     <option>General</option>
     <option>Heretic</option>
     <option>Mystic</option>
-    <option>Necromancer</option>
+    <!-- <option>Necromancer</option> -->
     <option>Rogue</option>
     <option>Sage</option>
     <option>Tactician</option>       
-    <option>War Hero</option>
+    <!-- <option>War Hero</option> -->
     <option>Warrior</option>
     </select>
 </div>
@@ -2383,185 +2383,185 @@ function updateBonuses() {
         raceBonusHtml = `
 			<div class="bonus-header">Race Bonuses</div>
 			<span class="bonus">• -25% Attack Time</span><br>
-            <span class="bonus">• -25% Training Time</span><br>
-			<span class="bonus">• -25% Military Wages</span><br>
-            <span class="bonus">• Spells: Town Watch, Illuminate Shadows</span>
+            <span class="bonus">• +25% Birth Rate</span><br>			
+            <span class="bonus">• Spells: Town Watch</span>
 		`;
 
 		racePenaltyHtml = `
-			<div class="bonus-header">Race Penalties</div>
-			<span class="penalty">• +30% Rune Cost</span><br>
+			<div class="bonus-header">Race Penalties</div>			
 			<span class="penalty">• No Access to Stables/War Horses</span>
 		`;
-        raceUnique = "(Passive) - In War, Offensive Specialists gain +2 strength.";
-		warDoctrine = "(In War): Provides up to −10% Attack Time and -12.5% Military Wages to you and all your kingdom.";
+        raceUnique = "(Passive) - Learn and plunder attacks return armies 1 tick faster.";
+		warDoctrine = "(In War): Provides up to −7.5% Attack Time to you and all your kingdom.";
     }
 	// === DARK ELF ===
     else if (race === "Dark Elf") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +30% Offensive WPA</span><br>
-            <span class="bonus">• +30% Instant Spell Damage</span><br>
-            <span class="bonus">• Can Train Thieves with Specialist Credits</span><br>
-            <span class="bonus">• Spells: Blizzard, Mage's Fury, Mind Focus, Fool's Gold</span>
+            <span class="bonus">• +20% Instant Spell Damage</span><br>
+            <span class="bonus">• -25% Spell Rune Costs (Excludes Ritual)</span><br>
+            <span class="bonus">• Immune to Sabotage Wizards</span><br>
+            <span class="bonus">• Spells: Blizzard, Mind Focus</span>
         `;
 		racePenaltyHtml = `
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• -15% Birth Rates</span><br>
-            <span class="penalty">• +30% Damage taken from Sabotage Ops</span>
+            <span class="penalty">• -20% Sabotage Damage</span>            
         `;
         raceUnique = "(Passive) - Successful Offensive instant spells refund 30% Rune Cost.";
-		warDoctrine = "(In War): Provides up to +12.5% Instant Spell Damage and −12.5% Rune Costs to you and all your kingdom.";
+		warDoctrine = "(In War): Provides up to +10% Instant Spell Damage to you and all your kingdom.";
     }
     // === DRYAD ===
     else if (race === "Dryad") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +12.5% DME</span><br>
-            <span class="bonus">• -40% Defensive Military Losses</span><br>
-            <span class="bonus">• +20% Birth Rate</span><br>
-            <span class="bonus">• Spells: Aggression, Greater Protection, Clear Sight</span><br>
+            <span class="bonus">• +10% Offensive Military Efficiency</span><br>
+            <span class="bonus">• +25% Increased Dragon Slaying Strength</span><br>            
+            <span class="bonus">• Spells: Fanaticism</span>
         `;    
 		racePenaltyHtml = `	
-			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• +10% Attack Time</span><br>
-            <span class="penalty">• +1 Cost to Offensive Spells</span><br>
-            <span class="penalty">• Cannot use Forts</span>
+			<div class="bonus-header">Race Penalties</div>            
+            <span class="penalty">• -10% Building Efficiency</span>
         `;
-        raceUnique = "(Passive) - When activated, max population increases by 25% for 3 Utopian Days.";
-		warDoctrine = "(In War): Provides up to +10% Defensive Military Efficiency and -12.5% Defensive Military Casaulties to you and all your kingdom.";
+        raceUnique = "(Passive) - Successful Attacks in War destroy resources as follows:<br>" +
+                            "<span class='pers-indent'>• 15% of Gold</span>" +
+                            "<span class='pers-indent'>• 15% of Runes</span>" +
+                            "<span class='pers-indent'>• 15% of Food</span>"
+		warDoctrine = "(In War): Provides up to +7.5% Offensive Military Efficiency to you and all your kingdom.";
     }
 	// === DWARF ===
     else if (race === "Dwarf") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +30% Building Efficiency</span><br>
-            <span class="bonus">• -50% Construction Time</span><br>
+            <span class="bonus">• +20% Building Efficiency</span><br>            
             <span class="bonus">• -50% Construction Cost</span><br>
-            <span class="bonus">• Spells: Miner's Mystique, Town Watch, Reflect Magic</span><br>
+            <span class="bonus">• +25% Building Credits Gained from Combat</span><br>
+            <span class="bonus">• -20% Damage Taken from Raze Attacks</span><br>
+            <span class="bonus">• Spells: Miner's Mystique</span>
         `;    
 		racePenaltyHtml = `	
-			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• Cannot Accelerate Construction</span><br>
-            <span class="penalty">• +90% Food Consumption</span>
+			<div class="bonus-header">Race Penalties</div>            
+            <span class="penalty">• +50% Food Consumption</span>
         `;
-        raceUnique = "(Passive) - Incoming Raze damage redcued by 15% and Raze damage increased by 20%.";
-		warDoctrine = "(In War): Provides up to -12.5% Construction Costs and +12.5% BE for you and all your kingdom.";
+        raceUnique = "(Passive) - For 3 ticks after a successful attack, targets BE is reduced by 10% (does not stack).";
+		warDoctrine = "(In War): Provides up to -10% Building Efficiency to you and all your kingdom.";
     }
 	// === ELF ===
     else if (race === "Elf") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +40% Magic Effectiveness (WPA)</span><br>
-            <span class="bonus">• +30% Offensive Spell Duration</span><br>
+            <span class="bonus">• +25% Magic Effectiveness (WPA)</span><br>
+            <span class="bonus">• +50% Runes Production</span><br>
             <span class="bonus">• +1 Mana per Tick</span><br>            
-            <span class="bonus">• Spells: Pitfalls, Sloth, Reflect Magic, Chastity, Vermin</span>
+            <span class="bonus">• Spells: Greater Protection, Pitfalls</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• +35% Draft Costs</span>
+            <span class="penalty">• -20% Offensive Thievery per Acre (TPA)</span>
         `;
-        raceUnique = "(Passive) - Chastity reduces Birth Rates by 70%. Offensive duration spells cast last +2 ticks.";
-		warDoctrine = "(In War): Provides up to -12.5% damage from enemy sorcery spells and +12.5% Spell Duration to you and all your kingdom.";
+        raceUnique = "(Active) - Once activated, regenerate +1 mana for the next 6 ticks.";
+		warDoctrine = "(In War): Provides up to -20% own casaulties when defending to you and all your kingdom.";
     }
 	// === FAERY ===
     else if (race === "Faery") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>            
-            <span class="bonus">• +30% Self Spell Duration</span><br>
-            <span class="bonus">• +20% Magic & Thievery Effectiveness (WPA/TPA)</span><br>
-            <span class="bonus">• +1 Mana per Tick</span><br>
-            <span class="bonus">• Spells: Greater Protection, Reflect Magic, Illuminate Shadows, Tree of Gold, Revelation, Fountain of Knowledge</span>
+            <span class="bonus">• +25% Offensive Spell Duration</span><br>
+            <span class="bonus">• -1 Mana Self Spell Cost</span><br>
+            <span class="bonus">• +1 Mana per Tick (In War)</span><br>
+            <span class="bonus">• Spells: Lightning Strike, Town Watch, Invisibility, Ghost Workers, Miner's Mystique</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• -5% Population</span><br>
-            <span class="penalty">• +15% Military Casaulties</span>
+            <span class="penalty">• -5% Population</span>            
         `;
-        raceUnique = "(Passive) - Enemy spells cast against Faery provinces have a 15% chance to fail.";
-		warDoctrine = "(In War): Provides up to +12.5% Defensive WPA and -12.5% Damage from Enemy Thievery Operations to you and all your kingdom.";
+        raceUnique = "(Passive) - (In War) Every successful offensive spell also reduces enemy ritual effectiveness by 0.15%.";
+		warDoctrine = "(In War): Provides up to +7.5% Defensive Military Efficiency to you and all your kingdom.";
     }
 	// === HALFLING ===
     else if (race === "Halfling") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +12.5% Max Population</span><br>
+            <span class="bonus">• +10% Max Population</span><br>
             <span class="bonus">• +1 Stealth Regen per Tick</span><br>
-            <span class="bonus">• +30% Thievery Effectiveness (TPA)</span><br>
-            <span class="bonus">• Spells: Tree of Gold, Greater Protection, Invisibility</span>
+            <span class="bonus">• +25% Thievery Effectiveness (TPA)</span><br>
+            <span class="bonus">• Spells: Invisibility</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• -25% Draft Speed</span>
+            <span class="penalty">• -20% Offensive Wizards per Acre (WPA)</span>
         `;
-        raceUnique = "(Passive) - Sabotage Operations suffer 50% fewer thievery losses.";
-		warDoctrine = "(In War): Provides up to +12.5% Sabotage Damage and -12.5% Thief Losses to you and all your kingdom.";
+        raceUnique = "(Active) - (Once activated) Your maximum population is increased by 25% for 5 ticks.";
+		warDoctrine = "(In War): Provides up to +5% population to you and all your kingdom.";
     }
 	// === HUMAN ===
     else if (race === "Human") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +30% Income</span><br>
-            <span class="bonus">• -30% Training Costs</span><br>
-            <span class="bonus">• +20% Draft Speed</span><br>            
-            <span class="bonus">• Spells: Fountain of Knowledge, Invisibility, Guile, Steal War Horses</span>
+            <span class="bonus">• +25% Income</span><br>
+            <span class="bonus">• -20% Training Costs</span><br>
+            <span class="bonus">• -20% Military Wages</span><br>
+            <span class="bonus">• Immune to Incite Riots</span><br>            
+            <span class="bonus">• Spells: Tree of Gold</span>
         `;    
 		
 		racePenaltyHtml = `		
 			<div class="bonus-header">Race Penalties</div>
-			<span class="penalty">• +25% Military Wages</span>			
+			<span class="penalty">• +1 Mana Self Spell Cost</span>			
         `;
         raceUnique = "(Passive) - Prisoners generate an additional 2gc per tick and Mercenary costs are reduced by 40%.";
-		warDoctrine = "(In War): Provides up to +12.5% Specialist Credits and -12.5% Training Costs to you and all your kingdom.";
+		warDoctrine = "(In War): Provides up to +15% income to you and all your kingdom.";
     }
 	// === ORC ===
     else if (race === "Orc") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• +10% Gains (Out of War) & +15% Gains (In War)</span><br>
-            <span class="bonus">• +15% Enemy Military Casaulties</span><br>
-            <span class="bonus">• -40% Draft Costs</span><br>
-            <span class="bonus">• Spells: Bloodlust, Wrath, Aggression</span>
+            <span class="bonus">• +20% Battle Gains</span><br>            
+            <span class="bonus">• -50% Draft Costs</span><br>
+            <span class="bonus">• Spells: Bloodlust</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• +20% Instant Spell and Sabotage Damage</span>
+            <span class="penalty">• -5% Defensive Military Efficiency</span>
         `;
-        raceUnique = "(Passive) -  Successful attacks convert 25% of enemy military casaulties into specialist credits.";
-		warDoctrine = "(In War): Provides up to +10% Offensive Military Efficiency and +12.5% Raze Damage to you and all your kingdom."                            
+        raceUnique = "(Passive) -  When attacking with 2 or more generals, enemy military casaulties are increaesd by 15%.";
+		warDoctrine = "(In War): Provides up to +15% enemy military casaulties to you and all your kingdom."                            
     }
 	// === UNDEAD ===
     else if (race === "Undead") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• -45% Military Losses</span><br>
+            <span class="bonus">• -40% Military Losses</span><br>
             <span class="bonus">• Immune to Plague</span><br>
             <span class="bonus">• No Food Needed</span><br>
             <span class="bonus">• Always carries Plague and chance to spread</span><br>
-            <span class="bonus">• Spells: Animate Dead, Vermin, Ghost Workers</span>
+            <span class="bonus">• Spells: Ghost Workers</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• Cannot build Hospitals</span>
+            <span class="penalty">• -15% Birth Rate</span>
         `;
-        raceUnique = "(Passive) - Converts 25% of offensive losses into Soldiers instantly.";
-		warDoctrine = "(In War): Provides up to -12.5% Enemy Battle Gains and +12.5% Increased Plague spread chance (does not grant the ability to spread Plague)";
+        raceUnique = "(Passive) - All successful attacks have a 33% chance to spread plague to target province.";
+		warDoctrine = "(In War): Provides up to -20% own casaulties when attacking to you and your kingdom.";
     }
 	// === GNOME ===
     else if (race === "Gnome") {
         raceBonusHtml = `
             <div class="bonus-header">Race Bonuses</div>
-            <span class="bonus">• -10% Attack Time (War Only)</span><br>
-            <span class="bonus">• +15% Enemy Military Casualties</span><br>
-            <span class="bonus">• +15% Thievery Effectiveness (TPA)</span><br>
+            <span class="bonus">• -10% Sabotage Damage</span><br>
+            <span class="bonus">• Can Train Thieves with Specialist Credits</span><br>
+            <span class="bonus">• Immune to Expose Thieves</span><br>
+            <span class="bonus">• -25% Thief Losses</span><br>
+            <span class="bonus">• Spells: Quick Feet</span>
         `;    
 		racePenaltyHtml = `	
 			<div class="bonus-header">Race Penalties</div>
-            <span class="penalty">• +25% Rune Cost</span><br>
-            <span class="penalty">• -15% Wizards per Acre (WPA)</span>
+            <span class="penalty">• +20% Instant Spell Damage Received</span>            
         `;
-        raceUnique = "(Passive) - Each successful attack has a chance to provide all the following thievery boosts for 6 days: +20% TPA; –30% Thief Losses; +25% Sabotage Damage. These boosts can stack and display timers on your Throne.";
-		warDoctrine = "(In War): Provides up to −5% Attack Time to you and all your kingdom.";
+        raceUnique = "(Passive) - Successful Attacks provide one of the following for 6 ticks (All bonuses can be active at the same time):<br>" +
+                            "<span class='pers-indent'>• +25% Offensive Thievery Effectiveness (TPA)</span>" +
+                            "<span class='pers-indent'>• -25% Thief Losses</span>" +
+                            "<span class='pers-indent'>• +10% Sabotage Damage</span>"
+		warDoctrine = "(In War): Provides up to +25% birth rate to you and all your kingdom.";
     }
 
     document.getElementById('raceBonusBox').innerHTML = raceBonusHtml;
@@ -2598,49 +2598,48 @@ function updateBonuses() {
     else if (pers === "Cleric") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +1 Elite Defensive Strength</span><br>
-            <span class="bonus">• +1 Defensive Specialist Strength</span><br>
-            <span class="bonus">• -40% Damage from Instant Spells</span><br>
-            <span class="bonus">• +25% Military Science Efficiency</span><br>
-            <span class="bonus">• Spells: Salvation, Revelation, Divine Shield, Illuminate Shadows, Hero's Inspiration</span>
+            <span class="bonus">• +15% Defensive Military Efficiency (DME)</span><br>
+            <span class="bonus">• -15% Battle (Resource) Losses</span><br>
+            <span class="bonus">• -15% Sabotage Damage </span><br>
+            <span class="bonus">• -15% Instant Spell Damage</span><br>
+            <span class="bonus">• -15% Damage Taken from Massacres</span><br>
+            <span class="bonus">• Immune to Plague</span><br>
+            <span class="bonus">• Spells: Salvation</span>
         `;
-        persUnique = "(Passive) - When casting self-spells, Clerics have a 50% chance to double spell duration.";
+        persUnique = "(Passive) - Incoming raze damage is reduced by 15%. Your raze attacks detroy 20% additional buildings.";
     }
 	// === HERETIC ===
     else if (pers === "Heretic") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +35% Thievery Effectiveness (TPA)</span><br>
-            <span class="bonus">• +35% Wizard Effectiveness (WPA)</span><br>
-            <span class="bonus">• -50% Thief Losses</span><br>
-            <span class="bonus">• Immunity to Expose Thieves</span><br>
-            <span class="bonus">• +50% Guilds Effectiveness</span><br>            
-            <span class="bonus">• +25% Arcane Arts Science Effectiveness</span><br>
-            <span class="bonus">• Spells: Nightmares, Fool's Gold, Magic Ward, Vermin</span>
+            <span class="bonus">• +50% Guilds Land Effect</span><br>
+            <span class="bonus">• +10% Instant Spell Damage</span><br>
+            <span class="bonus">• +10% Sabotage Damage</span><br>
+            <span class="bonus">• No Thieves Lost on Failed Intel Operations</span><br>            
+            <span class="bonus">• Spells: Nightmares, Fool's Gold, Mage's Fury</span>
         `;
-        persUnique = "(Active) - After each successful attack, gain +1 mana, +1 stealth for 5 ticks (Does not stack).";
+        persUnique = "(Passive) - 50% fewer thievery losses when performing sabotage operations.";
     }
 	// === MYSTIC ===
     else if (pers === "Mystic") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +100% Guild Effectiveness</span><br>
+            <span class="bonus">• +100% Guilds Land Effect</span><br>
             <span class="bonus">• +1 Mana Recovery per Tick</span><br>
-            <span class="bonus">• +25% Wizard Effectiveness (WPA)</span><br>            
-            <span class="bonus">• +40% Channeling Science Effectiveness</span><br>
-            <span class="bonus">• Spells: Pitfalls, Meteor Showers, Chastity, Fool's Gold</span>
+            <span class="bonus">• +25% Wizard Effectiveness (WPA)</span><br>
+            <span class="bonus">• Spells: Pitfalls, Meteor Showers, Chastity</span>
         `;
-        persUnique = "(Passive) - While above 40% mana, spells gain +20% WPA.";
+        persUnique = "(Passive) - Successful instant spells also kill 1% of target's peasant population.";
     }
 	// === ROGUE ===
     else if (pers === "Rogue") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +100% Thieves' Den Effectiveness</span><br>
+            <span class="bonus">• +75% Thieves' Den Effectiveness</span><br>
             <span class="bonus">• +1 Stealth Recovery per Tick</span><br>
             <span class="bonus">• +25% Thievery Effectiveness (TPA)</span><br>
             <span class="bonus">• Access to all Thievery Ops</span><br>
-            <span class="bonus">• +40% Crime Science Effectiveness</span>            
+            <span class="bonus">• Spells: Mystic Aura</span>            
         `;
         persUnique = "(Passive) - Rogue provinces may perform thievery operations while overpopulated.";
     }
@@ -2648,28 +2647,22 @@ function updateBonuses() {
     else if (pers === "Tactician") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• -20% Attack Time</span><br>
-			<span class="bonus">• +40% Specialist Credit Gains</span><br>
-            <span class="bonus">• +40% Draft Speed</span><br>            
-            <span class="bonus">• No Thieves Lost on Intel</span><br>
-            <span class="bonus">• +40% Siege Science Effectiveness</span><br>
-			<span class="bonus">• Spells: Clearsight</span>            
+            <span class="bonus">• -15% Attack Time</span><br>
+			<span class="bonus">• +25% Specialist Credit Gains</span><br>
+            <span class="bonus">• 100% Successful Intel Operations at 2x Stealth Cost</span><br>           
+			<span class="bonus">• Spells: Illuminate Shadows</span>            
         `;
-        persUnique = "(Passive) - Successful Attacks in War destroy resources as follows:<br>" +
-                            "<span class='pers-indent'>• 15% of Gold</span>" +
-                            "<span class='pers-indent'>• 15% of Runes</span>" +
-                            "<span class='pers-indent'>• 15% of Food</span>"
+        persUnique = "(Passive) - When attacking with a dragon alive, 3% of your raw offense from units will also deal damage to the dragon.";
     }
 	// === WARRIOR ===
     else if (pers === "Warrior") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
             <span class="bonus">• +15% Offensive Military Efficiency (OME)</span><br>
-            <span class="bonus">• +5 Mercenary & Prisoner Strength</span><br>            
-            <span class="bonus">• Mercenaries and Prisoners may be sent at 1 for every 4 normal troops sent</span><br>
-            <span class="bonus">• +35% Tactics Science Effectiveness</span>
+            <span class="bonus">• +15% Damage Dealt with Massacre Attacks</span><br>
+            <span class="bonus">• Spells: Heroe's Inspiration</span>
         `;
-        persUnique = "(Passive) - Upon each successful attack, the attack destroys 1.5% of the targets total population.";
+        persUnique = "(Active) - Once activated, Warriors gain +5% Offensive Military Efficiency for 6 ticks.";
     }
 	// === PALADIN ===
     else if (pers === "Paladin") {
@@ -2704,28 +2697,23 @@ function updateBonuses() {
     // === SAGE ===
     else if (pers === "Sage") {
         persHtml = `
-            <div class="bonus-header">Personality Bonuses</div>
-            <span class="bonus">• +20% Book Generation</span><br>
-            <span class="bonus">• +20% Scientist Generation</span><br>            
-            <span class="bonus">• +50% Learn Protection</span><br>
-            <span class="bonus">• Start with +2 Scientists</span><br>
-            <span class="bonus">• +15% Science Efficiency</span><br>
-			<span class="bonus">• Spells: Revelation, Fountain of Knowledge</span>
+            <div class="bonus-header">Personality Bonuses</div>                        
+            <span class="bonus">• -50% Losses on Learn Attacks</span><br>
+            <span class="bonus">• Start with +10 Scientists</span><br>            
+			<span class="bonus">• Spells: Scientific Insight, Fountain of Knowledge</span>
         `;
-        persUnique = "(Passive) - During War, Science effects are increased by 1% up to 15%. Effect ends when war ends.";
+        persUnique = "(Passive) - Successful attacks in War or Hostile temporarily suppress 15% of target's Science Effectiveness and reduce book generation by 20% for 6-8 ticks.";
     }
 	// === GENERAL ===
     else if (pers === "General") {
         persHtml = `
             <div class="bonus-header">Personality Bonuses</div>
             <span class="bonus">• +1 General</span><br>
-            <span class="bonus">• +2 Offensive Elite Strength</span><br>            
-            <span class="bonus">• -25% Military Train Time & Train Cost</span><br>
-            <span class="bonus">• Can Train 1 Elite for every 2 Specialist Credits</span><br>
-			<span class="bonus">• +25% Military Science Efficiency</span><br>
-			<span class="bonus">• Spells: Mist, Wrath</span>
+            <span class="bonus">• +1 Offensive Specialist Strength</span><br>
+            <span class="bonus">• +1 Offensive Elite Strength</span><br>
+			<span class="bonus">• Spells: Righteous Aggressor</span>
         `;
-        persUnique = "(Passive) - Attacks inflict +15% Enemy Military Casaulties when 2 or more generals are sent.";
+        persUnique = "(Passive) - Successful attacks reduce Watch Tower effectiveness by 15% for 4 ticks.";
     }
 	// === WAR HERO ===
     else if (pers === "War Hero") {
@@ -2769,17 +2757,17 @@ function buildMilitaryTable() {
     tableBody.innerHTML = '';
 
     const units = {
-        Avian:     { off: "Griffin 12/0",       def: "Harpies 0/10",    elite: "Drakes 16/2",          specCost: 350, eliteCost: 750 },
-        "Dark Elf":{ off: "Night Rangers 14/0", def: "Druids 0/12",     elite: "Drows 16/2",           specCost: 350, eliteCost: 700 },
-        Dwarf:     { off: "Warriors 10/0",      def: "Axemen 0/10",    elite: "Berserkers 15/7",       specCost: 350, eliteCost: 900 },
-        Elf:       { off: "Rangers 10/0",       def: "Archers 0/13",   elite: "Elf Lords 14/4",        specCost: 350, eliteCost: 700 },
-        Faery:     { off: "Magicians 10/0",     def: "Druids 0/10",    elite: "Beastmasters 4/16",     specCost: 350, eliteCost: 1150 },
-        Halfling:  { off: "Strongarms 11/0",    def: "Slingers 0/10",  elite: "Brutes 10/13",          specCost: 350, eliteCost: 900 },
-        Human:     { off: "Swordsmen 15/0",     def: "Archers 0/12",   elite: "Knights 15/5",          specCost: 350, eliteCost: 800 },
-        Orc:       { off: "Goblins 13/0",       def: "Trolls 0/10",    elite: "Ogres 18/3",            specCost: 350, eliteCost: 850 },
-        Undead:    { off: "Skeletons 11/0",     def: "Zombies 0/10",   elite: "Ghouls 16/4",           specCost: 350, eliteCost: 800 },
-        Gnome:     { off: "Quick Blades 11/0",  def: "Pikemen 0/10",   elite: "Golems 14/4",           specCost: 350, eliteCost: 900 },
-        Dryad:     { off: "Huldras 10/0",       def: "Nymphs 0/11",    elite: "Will O The Wisps 16/3", specCost: 350, eliteCost: 800 }
+        Avian:     { off: "Griffin 12/0",       def: "Harpies 0/10",    elite: "Drakes 14/3",           specCost: 350, eliteCost: 900 },
+        "Dark Elf":{ off: "Night Rangers 11/0", def: "Druids 0/11",     elite: "Drows 13/4",            specCost: 350, eliteCost: 900 },
+        Dwarf:     { off: "Warriors 10/0",      def: "Axemen 0/10",     elite: "Berserkers 13/5",       specCost: 350, eliteCost: 950 },
+        Elf:       { off: "Rangers 9/0",        def: "Archers 0/11",    elite: "Elf Lords 5/12",        specCost: 350, eliteCost: 1000 },
+        Faery:     { off: "Magicians 9/0",      def: "Druids 0/10",     elite: "Beastmasters 4/13",     specCost: 350, eliteCost: 1000 },
+        Halfling:  { off: "Strongarms 9/0",     def: "Slingers 0/10",   elite: "Brutes 6/11",           specCost: 350, eliteCost: 1000 },
+        Human:     { off: "Swordsmen 10/0",     def: "Archers 0/10",    elite: "Knights 13/4",          specCost: 350, eliteCost: 900 },
+        Orc:       { off: "Goblins 11/0",       def: "Trolls 0/10",     elite: "Ogres 14/3",            specCost: 350, eliteCost: 900 },
+        Undead:    { off: "Skeletons 10/0",     def: "Zombies 0/10",    elite: "Ghouls 13/4",           specCost: 350, eliteCost: 900 },
+        Gnome:     { off: "Quick Blades 11/0",  def: "Pikemen 0/11",    elite: "Golems 13/3",           specCost: 350, eliteCost: 850 },
+        Dryad:     { off: "Huldras 10/0",       def: "Nymphs 0/9",      elite: "Will O The Wisps 15/3", specCost: 350, eliteCost: 925 }
     }[race];
 
     if (!units) return;
@@ -2846,17 +2834,17 @@ function buildMilitaryTable() {
         if (trainInput) trainInput.addEventListener('input', recalculateAll);
     };
 
-    // === WAR HERO OSPEC BONUS ===
+    // === PERSONALITY SPECIALIST BONUS ===
     function getOffSpecBonus() {
         const pers = document.getElementById('pers')?.value;
+        if (pers === "General") return 1;
         if (pers === "War Hero") return 2;
         return 0;
     }
 
     function getEliteBonusForDisplay() {
         const pers = document.getElementById('pers')?.value;
-        if (pers === "General") return 2;           // +2 Offensive Elite
-        if (pers === "Cleric") return 0;            // Cleric bonus is defensive only
+        if (pers === "General") return 1;
         return 0;
     }
 
@@ -2875,50 +2863,23 @@ function buildMilitaryTable() {
         'curOff', 'trainOff', units.specCost
     );
 
-    // Defensive Specialists (for Cleric +1)
+    // Defensive Specialists
     addRow(
-        (() => {
-            const pers = document.getElementById('pers')?.value;
-            let baseDef = units.def;
-            
-            if (pers === "Cleric") {
-                // Safer way to add +1 to defense
-                const parts = baseDef.match(/(.+?)\s(\d+)\/(\d+)/);
-                if (parts) {
-                    const name = parts[1];
-                    const off = parts[2];
-                    const def = parseInt(parts[3]) + 1;
-                    baseDef = `${name} ${off}/${def}`;
-                }
-            }
-            return baseDef;
-        })(),
+        units.def,
         'curDef', 'trainDef', units.specCost
     );
 
-    // Elites (for General +2 Off and Cleric +1 Def)
+    // Elites (for General +1 Off)
     addRow(
         (() => {
-            const pers = document.getElementById('pers')?.value;
             let baseElite = units.elite;
-            
-            if (pers === "General") {
-                // +2 Offensive Elite
+            const bonus = getEliteBonusForDisplay();
+            if (bonus > 0) {
                 const parts = baseElite.match(/(.+?)\s(\d+)\/(\d+)/);
                 if (parts) {
                     const name = parts[1];
-                    const off = parseInt(parts[2]) + 2;
+                    const off = parseInt(parts[2]) + bonus;
                     const def = parts[3];
-                    baseElite = `${name} ${off}/${def}`;
-                }
-            } 
-            else if (pers === "Cleric") {
-                // +1 Defensive Elite
-                const parts = baseElite.match(/(.+?)\s(\d+)\/(\d+)/);
-                if (parts) {
-                    const name = parts[1];
-                    const off = parts[2];
-                    const def = parseInt(parts[3]) + 1;
                     baseElite = `${name} ${off}/${def}`;
                 }
             }
@@ -2975,14 +2936,14 @@ function updateTargetRatios() {
 function getOspecStrength(race) {
     const baseValues = {
         Avian: 12,
-        "Dark Elf": 14,
+        "Dark Elf": 11,
         Dwarf: 10,
-        Elf: 10,
-        Faery: 10,
-        Halfling: 11,
-        Human: 15,
-        Orc: 13,
-        Undead: 11,
+        Elf: 9,
+        Faery: 9,
+        Halfling: 9,
+        Human: 10,
+        Orc: 11,
+        Undead: 10,
         Gnome: 11,
         Dryad: 10
     };
@@ -2990,9 +2951,10 @@ function getOspecStrength(race) {
     const base = baseValues[race] || 10;
 
     const pers = document.getElementById('pers')?.value;
+    const generalBonus = (pers === "General") ? 1 : 0;
     const warHeroBonus = (pers === "War Hero") ? 2 : 0; // EDIT: War Hero +2 Ospec
 
-    return base + warHeroBonus;
+    return base + generalBonus + warHeroBonus;
 }
 
 // === CALCULATE OSPA ===
@@ -3044,13 +3006,20 @@ function calculateDefNeeded() {
     const pers = document.getElementById('pers')?.value || "Artisan";
 
     const defValues = { 
-        Avian:10, "Dark Elf":12, Dwarf:10, Elf:13, Faery:10, 
-        Halfling:10, Human:12, Orc:10, Undead:10, Gnome:10, Dryad:11 
+        Avian: 10, 
+        "Dark Elf": 11, 
+        Dwarf: 10, 
+        Elf: 11, 
+        Faery: 10, 
+        Halfling: 10, 
+        Human: 10, 
+        Orc: 10, 
+        Undead: 10, 
+        Gnome: 11, 
+        Dryad: 9 
     };
 
     let defValue = defValues[race] || 10;
-    if (pers === "Cleric") defValue += 1;
-
     const pointsPerAcre = acres * targetDSPA;
     const totalDefPointsTarget = pointsPerAcre * 10;
     const adjusted = totalDefPointsTarget / (dme / 100);
@@ -3095,30 +3064,25 @@ function calculateEliteNeeded() {
 
     // === FULL RACE LIST + PERSONALITY BONUSES ===
     const eliteStrength = {
-        "Avian":     { off: 16, def: 2 },
-        "Dark Elf":  { off: 16, def: 2 },
-        "Dwarf":     { off: 15, def: 7 },
-        "Elf":       { off: 14, def: 4 },
-        "Faery":     { off: 4,  def: 16 },
-        "Halfling":  { off: 10, def: 13 },
-        "Human":     { off: 15, def: 5 },
-        "Orc":       { off: 18, def: 3 },
-        "Undead":    { off: 16, def: 4 },
-        "Gnome":     { off: 14, def: 4 },
-        "Dryad":     { off: 16, def: 3 }
+        "Avian":     { off: 14, def: 3 },
+        "Dark Elf":  { off: 13, def: 4 },
+        "Dwarf":     { off: 13, def: 5 },
+        "Elf":       { off: 5,  def: 12 },
+        "Faery":     { off: 4,  def: 13 },
+        "Halfling":  { off: 6,  def: 11 },
+        "Human":     { off: 13, def: 4 },
+        "Orc":       { off: 14, def: 3 },
+        "Undead":    { off: 13, def: 4 },
+        "Gnome":     { off: 13, def: 3 },
+        "Dryad":     { off: 15, def: 3 }
     };
 
     let eliteOff = eliteStrength[race] ? eliteStrength[race].off || 10 : 10;
     let eliteDef = eliteStrength[race] ? eliteStrength[race].def || 10 : 10;
 
-    // General: +2 Offensive Elite Strength
+    // General: +1 Offensive Elite Strength
     if (pers === "General") {
-        eliteOff += 2;
-    }
-
-    // Cleric: +1 Defensive Elite Strength
-    if (pers === "Cleric") {
-        eliteDef += 1;
+        eliteOff += 1;
     }
 
     const modeKey = (mode === "offense") ? "off" : "def";
@@ -3127,9 +3091,17 @@ function calculateEliteNeeded() {
     console.log(`Race="${race}" | Mode=${mode} | Strength/Elite=${strengthPerElite}`);
 
     const eliteCosts = {
-        "Avian": 750, "Dark Elf": 700, "Dwarf": 900, "Elf": 700,
-        "Faery": 1150, "Halfling": 900, "Human": 800, "Orc": 850,
-        "Undead": 800, "Gnome": 900, "Dryad": 800
+        "Avian": 900, 
+        "Dark Elf": 900, 
+        "Dwarf": 950, 
+        "Elf": 1000,
+        "Faery": 1000, 
+        "Halfling": 1000, 
+        "Human": 900, 
+        "Orc": 900,
+        "Undead": 900, 
+        "Gnome": 850, 
+        "Dryad": 925
     };
     const costPerUnit = eliteCosts[race] || 900;
 
@@ -3903,17 +3875,17 @@ window.addEventListener('resize', syncAnalysisWidth);
 // === MISSING HELPER: Elite Offensive Strength ===
 function getEliteOffStrength(race) {
     const eliteOffValues = {
-        Avian: 16,
-        "Dark Elf": 16,
-        Dwarf: 15,
-        Elf: 14,
+        Avian: 14,
+        "Dark Elf": 13,
+        Dwarf: 13,
+        Elf: 5,
         Faery: 4,
-        Halfling: 10,
-        Human: 15,
-        Orc: 18,
-        Undead: 16,
-        Gnome: 14,
-        Dryad: 16
+        Halfling: 6,
+        Human: 13,
+        Orc: 14,
+        Undead: 13,
+        Gnome: 13,
+        Dryad: 15
     };
     return eliteOffValues[race] || 16;
 }
@@ -3922,16 +3894,16 @@ function getEliteOffStrength(race) {
 function getDspecStrength(race) {
     const baseValues = {
         Avian: 10,
-        "Dark Elf": 12,
+        "Dark Elf": 11,
         Dwarf: 10,
-        Elf: 13,
+        Elf: 11,
         Faery: 10,
         Halfling: 10,
-        Human: 12,
+        Human: 10,
         Orc: 10,
         Undead: 10,
-        Gnome: 10,
-        Dryad: 11
+        Gnome: 11,
+        Dryad: 9
     };
     return baseValues[race] || 10;
 }
@@ -3939,16 +3911,16 @@ function getDspecStrength(race) {
 // === Get Elite Defensive Strength ===
 function getEliteDefStrength(race) {
     const eliteDefValues = {
-        "Avian": 2,
-        "Dark Elf": 2,
-        "Dwarf": 7,
-        "Elf": 4,
-        "Faery": 16,
-        "Halfling": 13,
-        "Human": 5,
+        "Avian": 3,
+        "Dark Elf": 4,
+        "Dwarf": 5,
+        "Elf": 12,
+        "Faery": 13,
+        "Halfling": 11,
+        "Human": 4,
         "Orc": 3,
         "Undead": 4,
-        "Gnome": 4,
+        "Gnome": 3,
         "Dryad": 3
     };
     return eliteDefValues[race] || 4;
@@ -4077,18 +4049,12 @@ function updateMilitaryAnalysis() {
 
     // Apply personality bonuses to strengths used in analysis
     if (pers === "General") {
-        eliteOffStrength += 2; // General: +2 Offensive Elite Strength
+        eliteOffStrength += 1; // General: +1 Offensive Elite Strength
     }
-    if (pers === "Cleric") {
-        // Cleric: +1 Defensive Specialist strength AND +1 Elite defensive strength
-        defSpecStrength += 1;
-        eliteDefStrength += 1;
-    }
-
     // Warhorse support: horses are always owned and can only be used with ready (owned) units
     const warhorsesTotal = getParsedWarhorses();
     const ownedOffUnits = ownedOff + ownedElite;          // only ready units
-    const warStrengthPer = (race === 'Human') ? 3 : 2;
+    const warStrengthPer = (race === 'Human') ? 2 : 2;
 
     // Cap horses at the number of owned offensive units
     const usableHorses = Math.min(warhorsesTotal, ownedOffUnits);
