@@ -1632,6 +1632,12 @@ function calculateRow(row) {
 }
 
 // Calculate Book Totals for each Science
+let sectionUnallocatedData = {
+    Economy: { scientists: 0, books: 0 },
+    Military: { scientists: 0, books: 0 },
+    'Arcane Arts': { scientists: 0, books: 0 }
+};
+
 function updateSectionUnallocatedDisplay(sectionValues = {}) {
     const sectionMap = {
         'Economy': document.querySelector('#economy-table .section-header'),
@@ -1645,6 +1651,7 @@ function updateSectionUnallocatedDisplay(sectionValues = {}) {
         const raw = sectionValues[sectionName];
         const scientists = Number.isFinite(raw?.scientists) ? Number(raw.scientists) : (Number.isFinite(raw) ? Number(raw) : 0);
         const books = Number.isFinite(raw?.books) ? Number(raw.books) : (Number.isFinite(raw) ? Number(raw) : 0);
+        sectionUnallocatedData[sectionName] = { scientists, books };
 
         const nameEl = headerEl.querySelector('.section-name');
         const booksEl = headerEl.querySelector('.section-books');
@@ -1750,6 +1757,7 @@ function parseAndFillBooks() {
     const lines = text.split('\n').map(line => line.trim()).filter(line => line);
     const sectionUnallocated = parseSectionUnallocatedBooks(text);
     updateSectionUnallocatedDisplay(sectionUnallocated);
+    saveData();
 
     // Science mapping
     const scienceMap = {
@@ -2308,7 +2316,8 @@ function saveData() {
     localStorage.setItem('utopia-sciences-data', JSON.stringify({
         rows: data,
         libs: libs,
-        realPcts: REAL_SCIENCE_PCTS
+        realPcts: REAL_SCIENCE_PCTS,
+        sectionUnallocated: sectionUnallocatedData
     }));
 }
 
@@ -2322,6 +2331,10 @@ function loadData() {
 
         if (data.realPcts) {
             Object.assign(REAL_SCIENCE_PCTS, data.realPcts);
+        }
+
+        if (data.sectionUnallocated) {
+            updateSectionUnallocatedDisplay(data.sectionUnallocated);
         }
 
         // Restore rows
