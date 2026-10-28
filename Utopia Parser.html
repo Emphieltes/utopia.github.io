@@ -978,14 +978,16 @@ function parseLog(mode = 'offensive') {
 				c.soldiersLost += soldiers;
 			}
 
-			// Troops/specialists lost (everything after soldiers, before "in this battle")
-			// This catches Archers, Knights, etc. — sum all numbers that look like troop losses
-			let extraTroops = 0;
-			const troopNumbers = origLine.matchAll(/(\d[\d,]*)\s+(?!soldiers)(?!peasants)([A-Za-z\s]+?)(?:,| and |!|$)/gi);
-			for (const m of troopNumbers) {
-				extraTroops += parseInt(m[1].replace(/,/g, ''), 10);
+			// Count non-soldier troop losses only within the battle-loss clause.
+			const lossesMatch = origLine.match(/\blost\s+(.+?)\s+in this battle\b/i);
+			if (lossesMatch) {
+				const troopNumbers = lossesMatch[1].matchAll(/(\d[\d,]*)\s+([A-Za-z]+)/g);
+				for (const m of troopNumbers) {
+					if (!/^(soldiers|peasants)$/i.test(m[2])) {
+						c.troopsLost += parseInt(m[1].replace(/,/g, ''), 10);
+					}
+				}
 			}
-			c.troopsLost += extraTroops;
 		}
 		
 		// DEFENSIVE: FAILED INCOMING SABOTAGE OPS
@@ -1875,6 +1877,8 @@ function parseLog(mode = 'offensive') {
 
 	// Output building - different based on mode
     let out = '';
+    let hasAnyDefensiveSorcery = false;
+    let hasAnyDefensiveEvent = false;
 
     if (mode === 'offensive') {
         out += `<span class="title">Offensive T/M War Summary</span>\n${"=".repeat(35)}\n\n`;
@@ -1925,6 +1929,7 @@ function parseLog(mode = 'offensive') {
 
         // Your EXISTING sorcery output (copy-paste your current sorcery block here)
         if (c.spellSuccess) {
+            if (c.attacksMade > 0) out += `\n`;
             out += `<span class="bold underline">Sorcery Ops (${c.spellSuccess}/${c.spellAttempts} - ${c.spellAttempts ? Math.round(c.spellSuccess/c.spellAttempts*100) : 0}%):</span>\n`;
             if (c.fireball) out += `Fireballs: ${c.fireball} - Peasants Killed: ${c.fbP.toLocaleString()} (Avg: ${Math.round(c.fbP/c.fireball)})\n<div class="details">${details("fireball","Fireball")}</div>`;
             if (c.nightmare) out += `Nightmares: ${c.nightmare} - Troops Affected: ${c.nmM.toLocaleString()} (Avg: ${Math.round(c.nmM/c.nightmare)})\n<div class="details">${details("nightmare","Nightmare")}</div>`;
@@ -2252,7 +2257,9 @@ function toggleAllDetails(link) {
     d.style.display = isCollapsed ? 'block' : 'none';
   });
 
-  link.textContent = isCollapsed ? 'Collapse details' : 'Expand for more details';
+  document.querySelectorAll('.expand-link').forEach(expandLink => {
+    expandLink.textContent = isCollapsed ? 'Collapse details' : 'Expand for more details';
+  });
 }
 
 function toggleDetails(link) {
@@ -2278,8 +2285,34 @@ function goToPage(page) {
     window.location.href = page;
 }
 
-// Saved summaries storage (kingdomTag → summary HTML)
+// Saved summaries storage (kingdomTag → offensive/defensive summary HTML)
 let savedSummaries = JSON.parse(localStorage.getItem('utopiaParserSummaries')) || {};
+
+function getSummarySections(savedSummary) {
+    if (typeof savedSummary === 'string') return [savedSummary];
+    if (!savedSummary || typeof savedSummary !== 'object') return [];
+
+    return [savedSummary.offensive, savedSummary.defensive, savedSummary.legacy]
+        .filter(summary => typeof summary === 'string' && summary.length > 0);
+}
+
+function getSummaryModes(summaryHtml) {
+    const headings = [
+        { mode: 'offensive', title: 'Offensive T/M War Summary' },
+        { mode: 'defensive', title: 'Defensive Province Summary' }
+    ].map(({ mode, title }) => ({ mode, index: summaryHtml.indexOf(title) }))
+        .filter(heading => heading.index >= 0)
+        .sort((a, b) => a.index - b.index);
+    const summaries = {};
+
+    headings.forEach((heading, index) => {
+        const end = headings[index + 1]?.index ?? summaryHtml.length;
+        const start = summaryHtml.lastIndexOf('<span class="title">', heading.index);
+        summaries[heading.mode] = summaryHtml.slice(start >= 0 ? start : heading.index, end).trim();
+    });
+
+    return summaries;
+}
 
 // Render saved kingdom buttons
 function renderSavedKingdoms() {
@@ -2307,8 +2340,9 @@ function renderSavedKingdoms() {
                 return;
             }
 
-            // Otherwise load summary
-            document.getElementById('output').innerHTML = savedSummaries[tag];
+            // Otherwise load all summaries saved for this kingdom
+            document.getElementById('output').innerHTML = getSummarySections(savedSummaries[tag])
+                .join('\n<hr>\n');
 
             document.querySelectorAll('.details').forEach(d => d.style.display = 'none');
             updateExpandLink();
@@ -2331,11 +2365,9 @@ function renderSavedKingdoms() {
 
 // Update expand link text after loading saved content
 function updateExpandLink() {
-    const link = document.querySelector('.expand-link');
-    if (link) {
-        const anyVisible = document.querySelector('.details[style*="block"]');
-        link.innerHTML = anyVisible ? 'Collapse Details' : 'Expand for More Details';
-    }
+    const anyVisible = document.querySelector('.details[style*="block"]');
+    const label = anyVisible ? 'Collapse Details' : 'Expand for More Details';
+    document.querySelectorAll('.expand-link').forEach(link => link.textContent = label);
 }
 
 // Save current summary
@@ -2349,13 +2381,48 @@ document.getElementById('saveSummaryBtn').onclick = () => {
         return;
     }
 
-    const currentSummary = document.getElementById('output').innerHTML;
+    const output = document.getElementById('output');
+    const currentSummary = output.innerHTML;
     if (!currentSummary || currentSummary.includes("Summary will appear here")) {
         alert("Generate a summary first!");
         return;
     }
 
-    savedSummaries[tag] = currentSummary;
+    let currentModes = getSummaryModes(currentSummary);
+    if (document.getElementById('input').value.trim()) {
+        let offensiveSummary;
+        let defensiveSummary;
+        try {
+            parseLog('offensive');
+            offensiveSummary = output.innerHTML;
+            parseLog('defensive');
+            defensiveSummary = output.innerHTML;
+        } finally {
+            output.innerHTML = currentSummary;
+        }
+        currentModes = {
+            ...getSummaryModes(offensiveSummary),
+            ...getSummaryModes(defensiveSummary)
+        };
+    }
+
+    if (Object.keys(currentModes).length === 0) {
+        alert("Generate an offensive or defensive summary before saving.");
+        return;
+    }
+
+    const latestSummaries = JSON.parse(localStorage.getItem('utopiaParserSummaries')) || {};
+    const existingSummary = latestSummaries[tag];
+    const savedPair = typeof existingSummary === 'string'
+        ? getSummaryModes(existingSummary)
+        : { ...(existingSummary || {}) };
+    if (typeof existingSummary === 'string' && Object.keys(savedPair).length === 0) {
+        savedPair.legacy = existingSummary;
+    }
+    savedSummaries = {
+        ...latestSummaries,
+        [tag]: { ...savedPair, ...currentModes }
+    };
     localStorage.setItem('utopiaParserSummaries', JSON.stringify(savedSummaries));
 
     tagInput.value = ''; // clear input
